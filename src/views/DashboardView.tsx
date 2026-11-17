@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Sparkles, Compass, ShieldCheck, Flame, BookOpen, ArrowRight, Play, CheckCircle } from 'lucide-react';
+import { Sparkles, Compass, ShieldCheck, Flame, BookOpen, ArrowRight, Play, CheckCircle, Orbit, Atom, Layers } from 'lucide-react';
 import { useSessionStore } from '../store/useSessionStore';
 import { Subject3DArt } from '../components/ui/Subject3DArt';
 
@@ -12,53 +12,65 @@ export const DashboardView: React.FC = () => {
 
   return (
     <div className="space-y-8">
-      {/* Grand Hero Showcase */}
+      {/* Grand Hero Showcase with VisionOS Multi-layer Glass and Aurora Depth */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-3xl p-8 sm:p-10 bg-gradient-to-br from-white/90 via-white/70 to-indigo-50/50 backdrop-blur-2xl border border-white/90 shadow-glass"
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        className="relative overflow-hidden rounded-3xl p-8 sm:p-12 glass-panel border border-white/95"
       >
+        {/* Subtle decorative background glow orbs */}
+        <div className="absolute top-0 right-10 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-10 -left-10 w-80 h-80 bg-teal-400/10 rounded-full blur-3xl pointer-events-none" />
+
         <div className="max-w-3xl mx-auto text-center relative z-10">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50 border border-indigo-200/80 mb-4">
-            <Sparkles className="w-4 h-4 text-indigo-600" />
-            <span className="text-xs font-bold text-indigo-800 tracking-wide uppercase">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.1, duration: 0.4 }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/15 border border-indigo-300/80 mb-5 shadow-sm"
+          >
+            <Sparkles className="w-4 h-4 text-indigo-700 animate-spin" style={{ animationDuration: '6s' }} />
+            <span className="text-xs font-black text-indigo-900 tracking-wider uppercase font-mono">
               {curriculum.stageLabel} • {curriculum.gradeBandName}
             </span>
-          </div>
+          </motion.div>
 
-          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-slate-900 leading-[1.15] mb-4">
-            Gramin PocketLab
+          <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-slate-900 leading-[1.1] mb-4">
+            Gramin <span className="bg-gradient-to-r from-indigo-600 via-indigo-700 to-cyan-500 bg-clip-text text-transparent">PocketLab</span>
           </h1>
-          <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto mb-6 leading-relaxed">
-            Explore authentic science and mathematics investigations designed for offline rural schools. Aligned to official NCERT standards.
+          <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto mb-8 leading-relaxed font-medium">
+            Explore authentic science experiments and mathematics investigations designed specifically for offline rural schools. Aligned to official NCERT standards with zero internet dependency.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-3">
-            <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-sm">
-              <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
-              {curriculum.subjects.length} Core Subjects Enrolled
-            </span>
-            <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold bg-teal-50 text-teal-800 border border-teal-200 shadow-sm">
-              <ShieldCheck className="w-3.5 h-3.5 text-teal-600" />
-              Local Storage Mode (100% Offline)
-            </span>
-            <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200 shadow-sm">
-              <Flame className="w-3.5 h-3.5 text-amber-600" />
-              {userProfile.streakDays}-Day Learning Streak
-            </span>
+            <motion.div whileHover={{ scale: 1.04 }} className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-black bg-emerald-500/15 text-emerald-900 border border-emerald-300/80 shadow-sm backdrop-blur-md">
+              <CheckCircle className="w-4 h-4 text-emerald-600" />
+              {curriculum.subjects.length} Flagship NCERT Laboratories
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.04 }} className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-black bg-teal-500/15 text-teal-900 border border-teal-300/80 shadow-sm backdrop-blur-md">
+              <ShieldCheck className="w-4 h-4 text-teal-600" />
+              100% Offline IndexedDB & Audio Engine
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.04 }} className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-black bg-amber-500/15 text-amber-900 border border-amber-300/80 shadow-sm backdrop-blur-md">
+              <Flame className="w-4 h-4 text-amber-500 fill-amber-500" />
+              {userProfile.streakDays}-Day Learning Streak Active
+            </motion.div>
           </div>
         </div>
       </motion.div>
 
-      {/* Core Subjects Grid */}
+      {/* Core Subjects Grid with 3D-styled glass bento cards */}
       <section>
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-5">
           <div>
-            <h2 className="text-xl font-bold text-slate-900 tracking-tight">Core STEM Field Investigations</h2>
-            <p className="text-xs text-slate-500">Choose any inquiry mission below to begin your hands-on investigation:</p>
+            <h2 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+              <Layers className="w-6 h-6 text-indigo-600" /> Core STEM Field Laboratories
+            </h2>
+            <p className="text-xs text-slate-500 font-medium">Interactive dynamic simulators tailored to Class {selectedClass} curriculum:</p>
           </div>
-          <span className="px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">
-            {curriculum.subjects.length} Flagship Laboratories
+          <span className="px-3 py-1 rounded-full text-xs font-black bg-indigo-50 text-indigo-800 border border-indigo-200 shadow-sm">
+            Class {selectedClass} Active
           </span>
         </div>
 
@@ -70,47 +82,58 @@ export const DashboardView: React.FC = () => {
             return (
               <motion.article
                 key={sub.id}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.08 }}
-                whileHover={{ y: -5, scale: 1.01 }}
-                className={`relative overflow-hidden rounded-3xl p-6 border ${sub.colorTheme.border} ${sub.colorTheme.bgTint} backdrop-blur-2xl shadow-glass flex flex-col justify-between group`}
+                transition={{ delay: idx * 0.08, duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                whileHover={{ y: -6, scale: 1.015 }}
+                className={`relative overflow-hidden rounded-3xl p-7 border ${sub.colorTheme.border} ${sub.colorTheme.bgTint} glass-panel shadow-glass flex flex-col justify-between group cursor-pointer`}
+                onClick={() => navigate(`/subject/${sub.id}`)}
               >
+                {/* Background Ambient Glow */}
+                <div className={`absolute -right-10 -bottom-10 w-48 h-48 rounded-full blur-2xl opacity-20 pointer-events-none bg-gradient-to-tr ${sub.colorTheme.gradient}`} />
+
                 <div>
                   <div className="flex items-start justify-between gap-4 mb-4">
                     <div>
-                      <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold border mb-2 ${sub.colorTheme.badgeBg}`}>
+                      <span className={`inline-block px-3 py-1 rounded-full text-[11px] font-black tracking-wider uppercase border mb-2.5 ${sub.colorTheme.badgeBg}`}>
                         {sub.category.toUpperCase()} • CLASS {selectedClass}
                       </span>
-                      <h3 className="text-xl font-extrabold text-slate-900 group-hover:text-indigo-700 transition-colors">
+                      <h3 className="text-2xl font-black text-slate-900 group-hover:text-indigo-700 transition-colors">
                         {sub.name}
                       </h3>
-                      <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                        {firstChapter ? firstChapter.title : 'Comprehensive STEM Curriculum'}
+                      <p className="text-xs text-slate-600 mt-1 font-medium leading-relaxed">
+                        {firstChapter ? `Chapter ${firstChapter.number}: ${firstChapter.title}` : 'Comprehensive STEM Curriculum'}
                       </p>
                     </div>
 
-                    <div className="w-20 h-20 flex-shrink-0 flex items-center justify-center">
-                      <Subject3DArt category={sub.category as any} size={70} />
+                    <div className="w-20 h-20 flex-shrink-0 flex items-center justify-center transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
+                      <Subject3DArt category={sub.category as any} size={76} />
                     </div>
                   </div>
 
-                  <div className="p-3.5 rounded-2xl bg-white/70 border border-white/80 text-xs space-y-1 mb-5">
-                    <div className="font-bold text-slate-800">Latest NCERT Topic:</div>
-                    <div className="text-slate-600">{firstTopic?.title || 'Interactive laboratory experiments'}</div>
+                  <div className="p-4 rounded-2xl bg-white/75 border border-white/90 text-xs space-y-1.5 mb-6 shadow-sm backdrop-blur-md">
+                    <div className="font-extrabold text-slate-800 flex items-center gap-1.5">
+                      <Atom className="w-3.5 h-3.5 text-indigo-600" />
+                      <span>Featured Inquiry Topic:</span>
+                    </div>
+                    <div className="text-slate-600 font-medium">{firstTopic?.title || 'Interactive laboratory experiments'}</div>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between gap-3 pt-3 border-t border-slate-200/60">
-                  <span className="text-xs font-bold text-slate-500 font-mono">
-                    {sub.chapters.length} Chapters • {sub.chapters.reduce((acc, c) => acc + c.topics.length, 0)} Labs
+                <div className="pt-4 border-t border-slate-200/50 flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-500 flex items-center gap-1">
+                    <BookOpen className="w-3.5 h-3.5" />
+                    {sub.chapters.length} Chapters • {sub.chapters.reduce((acc, c) => acc + c.topics.length, 0)} Topics
                   </span>
 
                   <button
-                    onClick={() => navigate(`/subject/${sub.id}`)}
-                    className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl font-bold text-xs bg-slate-900 text-white hover:bg-indigo-600 shadow-md transition-all cursor-pointer group-hover:shadow-indigo-500/25"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/subject/${sub.id}`);
+                    }}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-900 text-white font-extrabold text-xs shadow-md shadow-slate-900/20 group-hover:bg-indigo-600 group-hover:shadow-indigo-600/30 transition-all cursor-pointer"
                   >
-                    <span>Start Investigation</span>
+                    <span>Enter Subject</span>
                     <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                   </button>
                 </div>
@@ -122,4 +145,3 @@ export const DashboardView: React.FC = () => {
     </div>
   );
 };
-
