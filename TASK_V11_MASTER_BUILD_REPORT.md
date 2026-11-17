@@ -4,7 +4,7 @@
 **Lead Engineering Architect & Multi-Agent Orchestrator:** Antigravity Governed Swarm (AGT-01 through AGT-14)  
 **Target Repository:** `c:\Users\priya\Downloads\STEM`  
 **Distribution Archive:** `c:\Users\priya\Downloads\STEM_COMPLETE_BUILD.zip`  
-**Archive SHA-256:** `86d8ebf91261e7d041534a338c232f2382eb7ed9915fb735141c8b72c776f8c0`  
+**Archive SHA-256:** `246ae6d5ed8d8f60ae3291364b15ff0a25d3e36f97ad6dc12b03456e1e43a373`  
 **Git Commit SHA:** `7978390`  
 
 ---
@@ -132,8 +132,8 @@ Baseline 41 tests status: ALL PRESERVED WITH ZERO REGRESSION
 ## 4. ARCHIVE CHECKSUM & DISTRIBUTION
 
 - **Zip File Location:** `c:\Users\priya\Downloads\STEM_COMPLETE_BUILD.zip`
-- **File Size:** `5,216,175 bytes`
-- **SHA-256 Digest:** `86d8ebf91261e7d041534a338c232f2382eb7ed9915fb735141c8b72c776f8c0`
+- **File Size:** `5,220,678 bytes`
+- **SHA-256 Digest:** `246ae6d5ed8d8f60ae3291364b15ff0a25d3e36f97ad6dc12b03456e1e43a373`
 - **Verification Command:**
   ```powershell
   Get-FileHash -Algorithm SHA256 c:\Users\priya\Downloads\STEM_COMPLETE_BUILD.zip
