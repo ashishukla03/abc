@@ -54,6 +54,10 @@ export function createDefaultState() {
     activeTab: 'missions',
     learnerProfile: {
       name: 'Aarav Sharma',
+      school: 'Zilla Parishad High School, Ballari',
+      board: 'CBSE',
+      classLevel: 7,
+      section: 'B',
       avatar: '👨‍🎓',
       streakDays: 7,
       xp: 450,
@@ -503,6 +507,85 @@ class StateStore {
     if (!updates || typeof updates !== 'object') return;
     this._state.learnerProfile = { ...this._state.learnerProfile, ...updates };
     this._notify('UPDATE_PROFILE', this._state.learnerProfile);
+  }
+
+  addTimetablePeriod(periodObj) {
+    if (!periodObj || !periodObj.subject) return;
+    const newPeriod = {
+      period: (this._state.studyHub.timetable.length + 1),
+      time: periodObj.time || '10:00 - 10:45',
+      subject: String(periodObj.subject),
+      topic: String(periodObj.topic || 'General Lesson'),
+      room: String(periodObj.room || 'Classroom'),
+      teacher: String(periodObj.teacher || 'Teacher'),
+      active: false
+    };
+    this._state.studyHub.timetable.push(newPeriod);
+    this._notify('ADD_TIMETABLE_PERIOD', newPeriod);
+  }
+
+  deleteTimetablePeriod(index) {
+    if (index >= 0 && index < this._state.studyHub.timetable.length) {
+      this._state.studyHub.timetable.splice(index, 1);
+      this._state.studyHub.timetable.forEach((p, idx) => { p.period = idx + 1; });
+      this._notify('DELETE_TIMETABLE_PERIOD', index);
+    }
+  }
+
+  addExamCountdown(examObj) {
+    if (!examObj || !examObj.title) return;
+    const days = Number(examObj.daysLeft) >= 0 ? Number(examObj.daysLeft) : 7;
+    const newExam = {
+      id: `exam-${Date.now()}`,
+      title: String(examObj.title),
+      daysLeft: days,
+      date: String(examObj.date || 'Upcoming'),
+      syllabus: String(examObj.syllabus || 'All chapters'),
+      urgency: days <= 7 ? 'high' : (days <= 15 ? 'medium' : 'normal')
+    };
+    this._state.studyHub.examCountdowns.push(newExam);
+    this._notify('ADD_EXAM_COUNTDOWN', newExam);
+  }
+
+  deleteExamCountdown(examId) {
+    this._state.studyHub.examCountdowns = this._state.studyHub.examCountdowns.filter((e) => e.id !== examId);
+    this._notify('DELETE_EXAM_COUNTDOWN', examId);
+  }
+
+  addSyllabusChapter(chapterObj) {
+    if (!chapterObj || !chapterObj.chapter) return;
+    const newChapter = {
+      id: `custom-ch-${Date.now()}`,
+      subject: String(chapterObj.subject || 'General Science'),
+      chapter: String(chapterObj.chapter),
+      completed: Boolean(chapterObj.completed)
+    };
+    this._state.studyHub.syllabusChecklist.push(newChapter);
+    this._notify('ADD_SYLLABUS_CHAPTER', newChapter);
+  }
+
+  deleteSyllabusChapter(chapterId) {
+    this._state.studyHub.syllabusChecklist = this._state.studyHub.syllabusChecklist.filter((c) => c.id !== chapterId);
+    this._notify('DELETE_SYLLABUS_CHAPTER', chapterId);
+  }
+
+  updateSchoolInfo({ schoolName, board, classLevel, section }) {
+    if (schoolName) this._state.learnerProfile.school = String(schoolName);
+    if (board) {
+      this._state.learnerProfile.board = String(board);
+      this._state.selectedBoard = String(board);
+    }
+    if (classLevel) {
+      const num = Number(classLevel);
+      this._state.learnerProfile.classLevel = num;
+      this._state.selectedClass = num;
+      if (num === 5) this._state.gradeBand = 'preparatory';
+      else if (num <= 8) this._state.gradeBand = 'middle';
+      else if (num <= 10) this._state.gradeBand = 'secondary';
+      else this._state.gradeBand = 'senior';
+    }
+    if (section) this._state.learnerProfile.section = String(section);
+    this._notify('UPDATE_SCHOOL_INFO', this._state.learnerProfile);
   }
 
   /**

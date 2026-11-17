@@ -1686,3 +1686,315 @@ input[type="range"].accessible-slider:focus-visible::-moz-range-thumb {
   margin: var(--space-3) 0;
 }
 
+/* ======================================================================
+   SCHOOL & STUDY HUB: SCHOOL BANNER, ALERT BANNER & INTERACTIVE FORMS
+   ====================================================================== */
+.school-banner {
+  background: linear-gradient(135deg, #F8FAFC 0%, #EFF6FF 100%);
+  border: 1px solid var(--color-border);
+  border-left: 4px solid var(--color-subject-accent);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.25s ease;
+}
+
+.school-banner-content {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.school-icon {
+  font-size: 32px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Urgent Test Preparation Alert Banner */
+.test-alert-banner {
+  background: linear-gradient(135deg, #FEF2F2 0%, #FFFBEB 100%);
+  border: 2px solid #FCA5A5;
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.12);
+  animation: pulseSubtle 3s infinite ease-in-out;
+}
+
+.test-alert-banner.urgent {
+  border-color: #EF4444;
+  box-shadow: 0 4px 18px rgba(239, 68, 68, 0.22);
+}
+
+@keyframes pulseSubtle {
+  0% { border-color: #FCA5A5; }
+  50% { border-color: #EF4444; }
+  100% { border-color: #FCA5A5; }
+}
+
+.test-alert-content {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  flex: 1;
+  min-width: 280px;
+}
+
+.test-alert-icon {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.test-alert-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.test-alert-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: var(--font-size-sm);
+  color: #991B1B;
+}
+
+.test-alert-title {
+  font-weight: 800;
+  color: #7F1D1D;
+  font-size: 15px;
+}
+
+.test-alert-portions {
+  font-size: var(--font-size-xs);
+  color: #78350F;
+  background: rgba(254, 243, 199, 0.6);
+  padding: 4px 8px;
+  border-radius: 4px;
+  border-left: 3px solid #F59E0B;
+}
+
+.test-alert-strategy {
+  font-size: var(--font-size-xs);
+  color: #1E293B;
+  margin-top: 2px;
+}
+
+.test-alert-actions {
+  display: flex;
+  align-items: center;
+}
+
+/* Hub Form Cards & Inputs */
+.hub-form-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-sm);
+}
+
+.grid-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-3);
+}
+
+.col-span-full {
+  grid-column: 1 / -1;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-label {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.form-input {
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-main);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  font-family: inherit;
+  width: 100%;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--color-subject-accent);
+  box-shadow: 0 0 0 3px rgba(39, 93, 219, 0.15);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 54px;
+}
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.exam-syllabus-box {
+  background: rgba(0, 0, 0, 0.03);
+  border-left: 3px solid var(--color-subject-accent);
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.btn-icon-danger {
+  background: transparent;
+  border: none;
+  color: #94A3B8;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+  font-size: 14px;
+  line-height: 1;
+  transition: all 0.15s ease;
+}
+
+.btn-icon-danger:hover {
+  color: #DC2626;
+  background: #FEE2E2;
+}
+
+.animate-slide-down {
+  animation: slideDown 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ======================================================================
+   AGE-ADAPTIVE ATMOSPHERIC STYLING (PREPARATORY, MIDDLE, SECONDARY, SENIOR)
+   ====================================================================== */
+
+/* 1. Preparatory Stage (Class 5 - Ages 8–11) */
+html[data-band="preparatory"] {
+  --color-subject-accent: #D97706;
+}
+
+html[data-band="preparatory"] .hub-hero,
+html[data-band="preparatory"] .profile-hero,
+html[data-band="preparatory"] .catalog-hero {
+  background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+  border-color: #FDE68A;
+}
+
+html[data-band="preparatory"] .qw-card {
+  border-radius: 18px;
+  border-color: #FDE68A;
+}
+
+html[data-band="preparatory"] .badge-purple {
+  background: #FEF3C7;
+  color: #92400E;
+}
+
+/* 2. Middle Stage (Classes 6–8 - Ages 11–14) */
+html[data-band="middle"] {
+  --color-subject-accent: #2563EB;
+}
+
+html[data-band="middle"] .hub-hero,
+html[data-band="middle"] .profile-hero,
+html[data-band="middle"] .catalog-hero {
+  background: linear-gradient(135deg, #F0FDF4 0%, #EFF6FF 100%);
+  border-color: #BFDBFE;
+}
+
+/* 3. Secondary Stage (Classes 9–10 - Ages 14–16) */
+html[data-band="secondary"] {
+  --color-subject-accent: #0D9488;
+}
+
+html[data-band="secondary"] .hub-hero,
+html[data-band="secondary"] .profile-hero,
+html[data-band="secondary"] .catalog-hero {
+  background: linear-gradient(135deg, #F0FDFA 0%, #F1F5F9 100%);
+  border-color: #99F6E4;
+}
+
+html[data-band="secondary"] .qw-card:hover {
+  border-color: #0D9488;
+  box-shadow: 0 12px 24px -6px rgba(13, 148, 136, 0.15);
+}
+
+/* 4. Senior Secondary Stage (Classes 11–12 - Ages 16–18) */
+html[data-band="senior"],
+html[data-band="senior secondary"] {
+  --color-subject-accent: #8B5CF6;
+}
+
+html[data-band="senior"] .hub-hero,
+html[data-band="senior secondary"] .hub-hero,
+html[data-band="senior"] .profile-hero,
+html[data-band="senior secondary"] .profile-hero,
+html[data-band="senior"] .catalog-hero,
+html[data-band="senior secondary"] .catalog-hero {
+  background: linear-gradient(135deg, #1E1B4B 0%, #0F172A 100%);
+  border-color: #4338CA;
+  color: #F8FAFC;
+}
+
+html[data-band="senior"] .hub-hero h1,
+html[data-band="senior secondary"] .hub-hero h1,
+html[data-band="senior"] .profile-hero h1,
+html[data-band="senior secondary"] .profile-hero h1,
+html[data-band="senior"] .catalog-hero h1,
+html[data-band="senior secondary"] .catalog-hero h1 {
+  color: #FFFFFF;
+}
+
+html[data-band="senior"] .hub-hero p,
+html[data-band="senior secondary"] .hub-hero p,
+html[data-band="senior"] .profile-hero p,
+html[data-band="senior secondary"] .profile-hero p,
+html[data-band="senior"] .catalog-hero p,
+html[data-band="senior secondary"] .catalog-hero p {
+  color: #CBD5E1;
+}
+
+html[data-band="senior"] .qw-card:hover,
+html[data-band="senior secondary"] .qw-card:hover {
+  border-color: #8B5CF6;
+  box-shadow: 0 12px 24px -6px rgba(139, 92, 246, 0.25);
+}
+
+

@@ -116,10 +116,11 @@ function updateHeader(state) {
   if (typeof document === 'undefined') return;
   const { currentSubject, currentStep, selectedLocale, audioMuted, activeTab = 'missions', gradeBand = 'middle' } = state;
 
-  // 1. Dynamic theme accent on root html
+  // 1. Dynamic theme accent and grade band on root html
   const themeSubject = currentSubject || 'physics';
   if (document.documentElement && typeof document.documentElement.setAttribute === 'function') {
     document.documentElement.setAttribute('data-subject', themeSubject);
+    document.documentElement.setAttribute('data-band', gradeBand);
   }
 
   // 2. Audio mute button state
@@ -298,6 +299,28 @@ let catalogFilterGrade = 'all';
 let catalogFilterSubject = 'all';
 let catalogSearchQuery = '';
 
+// Interactive Study Hub & Profile UI state flags
+let isEditingSchool = false;
+let isAddingPeriod = false;
+let isAddingExam = false;
+let isAddingChapter = false;
+let isEditingProfile = false;
+
+/**
+ * Escapes unsafe HTML characters to prevent XSS.
+ * @param {string} str
+ * @returns {string}
+ */
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 /**
  * Delegates view rendering to learning_runner.js or renders an accessible fallback.
  * @param {Object} state
@@ -370,10 +393,10 @@ if (typeof window !== 'undefined') {
 }
 
 /**
- * Renders the School & Study Hub: Timetable, Exam Countdown, Syllabus Checklist, 40/30/20/10 Recommender.
+ * Renders the School & Study Hub: School Profile, Timetable, Exam Countdown & Custom Syllabus, 40/30/20/10 Recommender.
  */
 function renderStudyHub(stage, state) {
-  const { studyHub } = state;
+  const { studyHub, learnerProfile = {}, gradeBand = 'middle' } = state;
   const timetable = studyHub?.timetable || [];
   const examCountdowns = studyHub?.examCountdowns || [];
   const checklist = studyHub?.syllabusChecklist || [];
@@ -393,8 +416,108 @@ function renderStudyHub(stage, state) {
     return { ...rec, priorityScore: score };
   }).sort((a, b) => b.priorityScore - a.priorityScore);
 
+  const topRec = recommendations[0];
+  const topRecSubject = topRec?.subject.toLowerCase() === 'mathematics' ? 'math' : (topRec?.subject.toLowerCase() || 'physics');
+
+  // Find nearest upcoming test
+  const upcomingExams = [...examCountdowns].sort((a, b) => (Number(a.daysLeft) || 0) - (Number(b.daysLeft) || 0));
+  const nearestExam = upcomingExams[0];
+
   stage.innerHTML = `
     <div class="hub-container">
+      <!-- School Identity Banner & Settings Trigger -->
+      <section class="school-banner">
+        <div class="school-banner-content">
+          <div class="school-icon">🏫</div>
+          <div class="school-details">
+            <div class="d-flex align-center gap-2 flex-wrap">
+              <h2 class="text-md font-bold mb-0">${escapeHtml(learnerProfile.school || 'Zilla Parishad High School, Ballari')}</h2>
+              <span class="badge badge-purple">${escapeHtml(learnerProfile.board || 'CBSE')}</span>
+              <span class="badge badge-info">Class ${learnerProfile.classLevel || 7}-${escapeHtml(learnerProfile.section || 'B')}</span>
+              <span class="badge badge-secondary">${(gradeBand || 'middle').toUpperCase()} STAGE</span>
+            </div>
+            <p class="text-xs text-secondary mb-0 mt-1">Configured school timetable, local test portions, and personalized NCERT curriculum alignment.</p>
+          </div>
+        </div>
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-toggle-edit-school">
+          ${isEditingSchool ? '✕ Close School Settings' : '✏️ Configure School & Class'}
+        </button>
+      </section>
+
+      <!-- Collapsible School Configuration Form -->
+      ${isEditingSchool ? `
+        <section class="hub-form-card animate-slide-down">
+          <div class="d-flex justify-between align-center mb-2">
+            <h3 class="text-sm font-bold mb-0">⚙️ School & Class Details</h3>
+            <span class="text-xs text-secondary">Local-First Storage</span>
+          </div>
+          <form id="form-school-config" class="grid-form">
+            <div class="form-group">
+              <label for="input-school-name" class="form-label">School Name</label>
+              <input type="text" id="input-school-name" class="form-input" value="${escapeHtml(learnerProfile.school || 'Zilla Parishad High School, Ballari')}" required placeholder="e.g. Govt Higher Secondary School" />
+            </div>
+            <div class="form-group">
+              <label for="select-school-board" class="form-label">Board / Educational Authority</label>
+              <select id="select-school-board" class="form-input">
+                <option value="CBSE" ${learnerProfile.board === 'CBSE' ? 'selected' : ''}>CBSE (Central Board)</option>
+                <option value="CISCE" ${learnerProfile.board === 'CISCE' ? 'selected' : ''}>CISCE / ICSE</option>
+                <option value="KSEAB" ${learnerProfile.board === 'KSEAB' ? 'selected' : ''}>KSEAB (Karnataka State Board)</option>
+                <option value="State Board" ${learnerProfile.board === 'State Board' ? 'selected' : ''}>State Board</option>
+                <option value="NIOS" ${learnerProfile.board === 'NIOS' ? 'selected' : ''}>NIOS (Open Schooling)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="select-school-class" class="form-label">Class / Grade Level</label>
+              <select id="select-school-class" class="form-input">
+                <option value="5" ${Number(learnerProfile.classLevel) === 5 ? 'selected' : ''}>Class 5 (Preparatory Stage)</option>
+                <option value="6" ${Number(learnerProfile.classLevel) === 6 ? 'selected' : ''}>Class 6 (Middle Stage)</option>
+                <option value="7" ${Number(learnerProfile.classLevel) === 7 ? 'selected' : ''}>Class 7 (Middle Stage)</option>
+                <option value="8" ${Number(learnerProfile.classLevel) === 8 ? 'selected' : ''}>Class 8 (Middle Stage)</option>
+                <option value="9" ${Number(learnerProfile.classLevel) === 9 ? 'selected' : ''}>Class 9 (Secondary Stage)</option>
+                <option value="10" ${Number(learnerProfile.classLevel) === 10 ? 'selected' : ''}>Class 10 (Secondary Stage)</option>
+                <option value="11" ${Number(learnerProfile.classLevel) === 11 ? 'selected' : ''}>Class 11 (Senior Secondary)</option>
+                <option value="12" ${Number(learnerProfile.classLevel) === 12 ? 'selected' : ''}>Class 12 (Senior Secondary)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="input-school-section" class="form-label">Section / Division</label>
+              <input type="text" id="input-school-section" class="form-input" value="${escapeHtml(learnerProfile.section || 'B')}" maxlength="4" placeholder="A, B, C..." />
+            </div>
+            <div class="form-actions col-span-full">
+              <button type="submit" class="btn btn-primary btn-sm">💾 Save School Settings</button>
+              <button type="button" class="btn btn-outline btn-sm" id="btn-cancel-school">Cancel</button>
+            </div>
+          </form>
+        </section>
+      ` : ''}
+
+      <!-- Prominent Test / Exam Preparation Alert Banner -->
+      ${nearestExam ? `
+        <section class="test-alert-banner ${Number(nearestExam.daysLeft) <= 7 ? 'urgent' : ''}">
+          <div class="test-alert-content">
+            <div class="test-alert-icon">${Number(nearestExam.daysLeft) <= 3 ? '🚨' : '⏰'}</div>
+            <div class="test-alert-text">
+              <div class="test-alert-header">
+                <strong>${Number(nearestExam.daysLeft) <= 3 ? 'CRITICAL TEST PREPARATION ALERT' : 'UPCOMING TEST PREPARATION ALERT'}:</strong>
+                <span class="test-alert-title">${escapeHtml(nearestExam.title)}</span>
+                <span class="badge ${Number(nearestExam.daysLeft) <= 7 ? 'badge-danger' : 'badge-warning'}">
+                  ${nearestExam.daysLeft} DAYS LEFT (${escapeHtml(nearestExam.date)})
+                </span>
+              </div>
+              <div class="test-alert-portions">
+                <strong>📖 School Exam Syllabus:</strong> ${escapeHtml(nearestExam.syllabus || 'All chapters')}
+              </div>
+              <div class="test-alert-strategy">
+                💡 <strong>PocketLab Prep Strategy:</strong> Review <em>${escapeHtml(topRec?.title || 'Key Scientific Invariants')}</em> today. Master the experimental concepts to ensure 100% exam readiness.
+              </div>
+            </div>
+          </div>
+          <div class="test-alert-actions">
+            <button type="button" class="btn btn-primary btn-sm btn-study-alert" data-subject="${topRecSubject}">Start Targeted Prep →</button>
+          </div>
+        </section>
+      ` : ''}
+
       <div class="hub-hero">
         <div>
           <span class="badge badge-purple">Curriculum & School Hub</span>
@@ -430,10 +553,10 @@ function renderStudyHub(stage, state) {
                 <span style="font-size: 18px; font-weight: 800; color: var(--color-subject-accent); min-width: 28px;">#${idx + 1}</span>
                 <div>
                   <div style="display: flex; align-items: center; gap: 8px;">
-                    <strong style="color: var(--color-text-main); font-size: 15px;">${rec.title}</strong>
+                    <strong style="color: var(--color-text-main); font-size: 15px;">${escapeHtml(rec.title)}</strong>
                     <span class="badge badge-secondary" style="font-size: 11px;">Class ${rec.classLvl} ${rec.subject}</span>
                   </div>
-                  <p style="font-size: 12px; color: var(--color-text-secondary); margin: 2px 0 0 0;">${rec.reason}</p>
+                  <p style="font-size: 12px; color: var(--color-text-secondary); margin: 2px 0 0 0;">${escapeHtml(rec.reason)}</p>
                 </div>
               </div>
               <div style="display: flex; align-items: center; gap: 12px;">
@@ -455,20 +578,71 @@ function renderStudyHub(stage, state) {
           <div class="d-flex justify-between align-center mb-3">
             <div>
               <h2 class="text-md font-bold mb-0">📅 Today's Period Timetable</h2>
-              <span class="text-xs text-secondary">Zilla Parishad High School — Class 7 Schedule</span>
+              <span class="text-xs text-secondary">${escapeHtml(learnerProfile.school || 'School')} — Class ${learnerProfile.classLevel || 7}-${escapeHtml(learnerProfile.section || 'B')} Schedule</span>
             </div>
-            <span class="badge badge-success"><span class="active-pulse"></span>In Session</span>
+            <div class="d-flex gap-2 align-center">
+              <span class="badge badge-success"><span class="active-pulse"></span>In Session</span>
+              <button type="button" class="btn btn-xs btn-outline" id="btn-toggle-add-period">
+                ${isAddingPeriod ? '✕ Close' : '+ Add Period'}
+              </button>
+            </div>
           </div>
+
+          ${isAddingPeriod ? `
+            <div class="hub-form-card mb-3 animate-slide-down">
+              <h4 class="text-xs font-bold mb-2">➕ Add New Period to Timetable</h4>
+              <form id="form-add-period" class="grid-form">
+                <div class="form-group">
+                  <label class="form-label">Time Slot</label>
+                  <input type="text" id="period-time" class="form-input" placeholder="e.g. 10:45 - 11:30" required />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Subject</label>
+                  <select id="period-subject" class="form-input">
+                    <option value="Physics">Physics</option>
+                    <option value="Chemistry">Chemistry</option>
+                    <option value="Biology">Biology</option>
+                    <option value="Mathematics">Mathematics</option>
+                    <option value="Social Science">Social Science</option>
+                    <option value="English">English</option>
+                    <option value="Kannada">Kannada</option>
+                    <option value="Hindi">Hindi</option>
+                    <option value="Computer Science">Computer Science</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Topic / Unit</label>
+                  <input type="text" id="period-topic" class="form-input" placeholder="e.g. Natural indicators turmeric lab" required />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Teacher Name</label>
+                  <input type="text" id="period-teacher" class="form-input" placeholder="e.g. Sri R. K. Hegde" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Room / Lab</label>
+                  <input type="text" id="period-room" class="form-input" placeholder="e.g. Science Lab 1" />
+                </div>
+                <div class="form-actions col-span-full">
+                  <button type="submit" class="btn btn-primary btn-sm">Add Period</button>
+                  <button type="button" class="btn btn-outline btn-sm" id="btn-cancel-period">Cancel</button>
+                </div>
+              </form>
+            </div>
+          ` : ''}
+
           <div class="timetable-grid" style="grid-template-columns: 1fr;">
-            ${timetable.map(p => `
+            ${timetable.map((p, idx) => `
               <div class="period-item ${p.active ? 'active-period' : ''}">
                 <div class="d-flex justify-between align-center">
                   <div>
-                    <span class="text-xs font-bold text-secondary">Period ${p.period} (${p.time})</span>
-                    <h4 class="mt-1 mb-0 font-bold" style="font-size: 14px;">${p.subject}: ${p.topic}</h4>
-                    <span class="text-xs text-secondary">${p.room} • ${p.teacher}</span>
+                    <span class="text-xs font-bold text-secondary">Period ${p.period} (${escapeHtml(p.time)})</span>
+                    <h4 class="mt-1 mb-0 font-bold" style="font-size: 14px;">${escapeHtml(p.subject)}: ${escapeHtml(p.topic)}</h4>
+                    <span class="text-xs text-secondary">${escapeHtml(p.room)} • ${escapeHtml(p.teacher)}</span>
                   </div>
-                  ${p.active ? '<span class="badge badge-success text-xs">Active Now</span>' : ''}
+                  <div class="d-flex align-center gap-2">
+                    ${p.active ? '<span class="badge badge-success text-xs">Active Now</span>' : ''}
+                    <button type="button" class="btn-icon-danger btn-delete-period" data-period-idx="${idx}" title="Remove period" aria-label="Remove period ${p.period}">🗑️</button>
+                  </div>
                 </div>
               </div>
             `).join('')}
@@ -479,17 +653,59 @@ function renderStudyHub(stage, state) {
         <div style="display: flex; flex-direction: column; gap: var(--space-4);">
           <!-- Exam Countdown -->
           <section class="exams-card">
-            <h2 class="text-md font-bold mb-2">⏳ Exam & Assessment Countdown</h2>
+            <div class="d-flex justify-between align-center mb-2">
+              <h2 class="text-md font-bold mb-0">⏳ Exam & Assessment Countdown</h2>
+              <button type="button" class="btn btn-xs btn-outline" id="btn-toggle-add-exam">
+                ${isAddingExam ? '✕ Close' : '+ Schedule Test'}
+              </button>
+            </div>
+
+            ${isAddingExam ? `
+              <div class="hub-form-card mb-3 animate-slide-down">
+                <h4 class="text-xs font-bold mb-2">➕ Schedule School Test / Exam</h4>
+                <form id="form-add-exam" class="grid-form">
+                  <div class="form-group col-span-full">
+                    <label class="form-label">Test / Exam Name</label>
+                    <input type="text" id="exam-title" class="form-input" placeholder="e.g. Class Weekly Test 2: Sound & Waves" required />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Date</label>
+                    <input type="text" id="exam-date" class="form-input" placeholder="e.g. Nov 28, 2026" required />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Days Left</label>
+                    <input type="number" id="exam-days" class="form-input" min="0" max="365" placeholder="e.g. 5" required />
+                  </div>
+                  <div class="form-group col-span-full">
+                    <label class="form-label">School Syllabus & Portions Announced</label>
+                    <textarea id="exam-syllabus" class="form-input form-textarea" rows="2" placeholder="List exact chapters, concepts, formulas, or experiments considered for the test..." required></textarea>
+                  </div>
+                  <div class="form-actions col-span-full">
+                    <button type="submit" class="btn btn-primary btn-sm">Schedule Test & Alert</button>
+                    <button type="button" class="btn btn-outline btn-sm" id="btn-cancel-exam">Cancel</button>
+                  </div>
+                </form>
+              </div>
+            ` : ''}
+
             <div style="display: flex; flex-direction: column; gap: 10px;">
               ${examCountdowns.map(ex => `
-                <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface-subtle);">
-                  <div>
-                    <strong style="font-size: 14px;">${ex.title}</strong>
-                    <div style="font-size: 12px; color: var(--color-text-secondary);">${ex.date} • ${ex.syllabus}</div>
+                <div style="display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface-subtle);">
+                  <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                      <strong style="font-size: 14px;">${escapeHtml(ex.title)}</strong>
+                      <div style="font-size: 12px; color: var(--color-text-secondary);">${escapeHtml(ex.date)}</div>
+                    </div>
+                    <div class="d-flex align-center gap-2">
+                      <div class="countdown-badge ${ex.urgency === 'high' || Number(ex.daysLeft) <= 7 ? 'urgent' : ''}">
+                        <span class="countdown-days">${ex.daysLeft}</span>
+                        <span class="countdown-label">Days</span>
+                      </div>
+                      <button type="button" class="btn-icon-danger btn-delete-exam" data-exam-id="${ex.id}" title="Remove test" aria-label="Remove test">🗑️</button>
+                    </div>
                   </div>
-                  <div class="countdown-badge ${ex.urgency === 'high' ? 'urgent' : ''}">
-                    <span class="countdown-days">${ex.daysLeft}</span>
-                    <span class="countdown-label">Days</span>
+                  <div class="exam-syllabus-box">
+                    <strong>Portions Considered:</strong> ${escapeHtml(ex.syllabus)}
                   </div>
                 </div>
               `).join('')}
@@ -499,18 +715,54 @@ function renderStudyHub(stage, state) {
           <!-- NCERT Syllabus Checklist -->
           <section class="checklist-card">
             <div class="d-flex justify-between align-center mb-2">
-              <h2 class="text-md font-bold mb-0">📋 NCERT Syllabus Checklist</h2>
-              <span class="text-xs font-bold text-secondary">${completedChecklistCount}/${checklist.length} Done</span>
+              <div>
+                <h2 class="text-md font-bold mb-0">📋 NCERT & School Syllabus Checklist</h2>
+                <span class="text-xs font-bold text-secondary">${completedChecklistCount}/${checklist.length} Done</span>
+              </div>
+              <button type="button" class="btn btn-xs btn-outline" id="btn-toggle-add-chapter">
+                ${isAddingChapter ? '✕ Close' : '+ Add Topic'}
+              </button>
             </div>
+
+            ${isAddingChapter ? `
+              <div class="hub-form-card mb-3 animate-slide-down">
+                <h4 class="text-xs font-bold mb-2">➕ Add Chapter or Topic</h4>
+                <form id="form-add-chapter" class="grid-form">
+                  <div class="form-group">
+                    <label class="form-label">Subject</label>
+                    <select id="chapter-subject" class="form-input">
+                      <option value="Physics">Physics</option>
+                      <option value="Chemistry">Chemistry</option>
+                      <option value="Biology">Biology</option>
+                      <option value="Mathematics">Mathematics</option>
+                      <option value="Social Science">Social Science</option>
+                      <option value="English">English</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Chapter / Topic Name</label>
+                    <input type="text" id="chapter-title" class="form-input" placeholder="e.g. Sound Wave Frequencies & Timbre" required />
+                  </div>
+                  <div class="form-actions col-span-full">
+                    <button type="submit" class="btn btn-primary btn-sm">Add to Checklist</button>
+                    <button type="button" class="btn btn-outline btn-sm" id="btn-cancel-chapter">Cancel</button>
+                  </div>
+                </form>
+              </div>
+            ` : ''}
+
             <div style="width: 100%; height: 6px; background: #E2E8F0; border-radius: 3px; overflow: hidden; margin-bottom: 12px;">
               <div style="width: ${checklistPercent}%; height: 100%; background: #10B981; transition: width 0.3s ease;"></div>
             </div>
             <div style="display: flex; flex-direction: column; gap: 8px;">
               ${checklist.map(item => `
-                <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; padding: 4px 6px; border-radius: 4px; transition: background 0.15s ease;">
-                  <input type="checkbox" class="chk-syllabus" data-item-id="${item.id}" ${item.completed ? 'checked' : ''} style="width: 16px; height: 16px; accent-color: #10B981;" />
-                  <span style="${item.completed ? 'text-decoration: line-through; color: var(--color-text-secondary);' : 'font-weight: 600;'}">${item.chapter}</span>
-                </label>
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 4px 6px; border-radius: 4px; transition: background 0.15s ease;">
+                  <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; flex: 1;">
+                    <input type="checkbox" class="chk-syllabus" data-item-id="${item.id}" ${item.completed ? 'checked' : ''} style="width: 16px; height: 16px; accent-color: #10B981;" />
+                    <span style="${item.completed ? 'text-decoration: line-through; color: var(--color-text-secondary);' : 'font-weight: 600;'}">${escapeHtml(item.chapter)}</span>
+                  </label>
+                  <button type="button" class="btn-icon-danger btn-delete-chapter" data-chapter-id="${item.id}" title="Remove topic" aria-label="Remove topic">✕</button>
+                </div>
               `).join('')}
             </div>
           </section>
@@ -519,7 +771,120 @@ function renderStudyHub(stage, state) {
     </div>
   `;
 
-  stage.querySelectorAll('.btn-study-rec').forEach(btn => {
+  // Wire Event Listeners
+  // School Settings Toggle
+  stage.querySelector('#btn-toggle-edit-school')?.addEventListener('click', () => {
+    isEditingSchool = !isEditingSchool;
+    delegateRender(store.getState());
+  });
+
+  stage.querySelector('#btn-cancel-school')?.addEventListener('click', () => {
+    isEditingSchool = false;
+    delegateRender(store.getState());
+  });
+
+  stage.querySelector('#form-school-config')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const schoolName = stage.querySelector('#input-school-name')?.value;
+    const board = stage.querySelector('#select-school-board')?.value;
+    const classLevel = stage.querySelector('#select-school-class')?.value;
+    const section = stage.querySelector('#input-school-section')?.value;
+    store.updateSchoolInfo({ schoolName, board, classLevel, section });
+    isEditingSchool = false;
+    announce('School configuration updated.');
+  });
+
+  // Timetable Add Toggle
+  stage.querySelector('#btn-toggle-add-period')?.addEventListener('click', () => {
+    isAddingPeriod = !isAddingPeriod;
+    delegateRender(store.getState());
+  });
+
+  stage.querySelector('#btn-cancel-period')?.addEventListener('click', () => {
+    isAddingPeriod = false;
+    delegateRender(store.getState());
+  });
+
+  stage.querySelector('#form-add-period')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const time = stage.querySelector('#period-time')?.value;
+    const subject = stage.querySelector('#period-subject')?.value;
+    const topic = stage.querySelector('#period-topic')?.value;
+    const teacher = stage.querySelector('#period-teacher')?.value;
+    const room = stage.querySelector('#period-room')?.value;
+    store.addTimetablePeriod({ time, subject, topic, teacher, room });
+    isAddingPeriod = false;
+    announce('Period added to timetable.');
+  });
+
+  stage.querySelectorAll('.btn-delete-period').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const idx = Number(e.currentTarget.getAttribute('data-period-idx'));
+      store.deleteTimetablePeriod(idx);
+      announce('Period removed.');
+    });
+  });
+
+  // Exam Add Toggle
+  stage.querySelector('#btn-toggle-add-exam')?.addEventListener('click', () => {
+    isAddingExam = !isAddingExam;
+    delegateRender(store.getState());
+  });
+
+  stage.querySelector('#btn-cancel-exam')?.addEventListener('click', () => {
+    isAddingExam = false;
+    delegateRender(store.getState());
+  });
+
+  stage.querySelector('#form-add-exam')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const title = stage.querySelector('#exam-title')?.value;
+    const date = stage.querySelector('#exam-date')?.value;
+    const daysLeft = stage.querySelector('#exam-days')?.value;
+    const syllabus = stage.querySelector('#exam-syllabus')?.value;
+    store.addExamCountdown({ title, date, daysLeft, syllabus });
+    isAddingExam = false;
+    announce('School exam scheduled with study alert.');
+  });
+
+  stage.querySelectorAll('.btn-delete-exam').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const id = e.currentTarget.getAttribute('data-exam-id');
+      store.deleteExamCountdown(id);
+      announce('Exam removed.');
+    });
+  });
+
+  // Chapter Add Toggle
+  stage.querySelector('#btn-toggle-add-chapter')?.addEventListener('click', () => {
+    isAddingChapter = !isAddingChapter;
+    delegateRender(store.getState());
+  });
+
+  stage.querySelector('#btn-cancel-chapter')?.addEventListener('click', () => {
+    isAddingChapter = false;
+    delegateRender(store.getState());
+  });
+
+  stage.querySelector('#form-add-chapter')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const subject = stage.querySelector('#chapter-subject')?.value;
+    const chapter = stage.querySelector('#chapter-title')?.value;
+    store.addSyllabusChapter({ subject, chapter });
+    isAddingChapter = false;
+    announce('Chapter added to syllabus.');
+  });
+
+  stage.querySelectorAll('.btn-delete-chapter').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const id = e.currentTarget.getAttribute('data-chapter-id');
+      store.deleteSyllabusChapter(id);
+      announce('Chapter removed from syllabus.');
+    });
+  });
+
+  // Study Alert Button
+  stage.querySelectorAll('.btn-study-alert, .btn-study-rec').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const sub = e.currentTarget.getAttribute('data-subject');
       if (SUBJECT_IDS.includes(sub)) {
@@ -542,9 +907,13 @@ function renderStudyHub(stage, state) {
  * Renders the Learner Profile & Model: Mastery Radar Chart, Streak, Level/XP, Badges, Offline Diagnostics.
  */
 function renderLearnerProfile(stage, state) {
-  const { learnerProfile } = state;
+  const { learnerProfile, gradeBand = 'middle' } = state;
   const p = learnerProfile || {
     name: 'Aarav Sharma',
+    school: 'Zilla Parishad High School, Ballari',
+    board: 'CBSE',
+    classLevel: 7,
+    section: 'B',
     avatar: '👨‍🎓',
     streakDays: 7,
     xp: 450,
@@ -605,16 +974,17 @@ function renderLearnerProfile(stage, state) {
       <div class="profile-hero">
         <div style="display: flex; align-items: center; gap: 16px;">
           <div style="width: 72px; height: 72px; border-radius: 50%; background: #EFF6FF; border: 3px solid #275DDB; display: flex; align-items: center; justify-content: center; font-size: 36px; box-shadow: 0 4px 12px rgba(39, 93, 219, 0.2);">
-            ${p.avatar}
+            ${p.avatar || '👨‍🎓'}
           </div>
           <div>
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <h1 class="text-xl font-bold mb-0">${p.name}</h1>
-              <span class="badge badge-purple">Class 7 Scholar</span>
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <h1 class="text-xl font-bold mb-0">${escapeHtml(p.name || 'Scholar')}</h1>
+              <span class="badge badge-purple">Class ${p.classLevel || 7}-${escapeHtml(p.section || 'B')}</span>
+              <span class="badge badge-info">${(gradeBand || 'middle').toUpperCase()} STAGE</span>
             </div>
-            <p class="text-sm text-secondary mb-1">Zilla Parishad High School • Karnataka KSEAB / CBSE</p>
+            <p class="text-sm text-secondary mb-1">${escapeHtml(p.school || 'Zilla Parishad High School, Ballari')} • ${escapeHtml(p.board || 'CBSE')}</p>
             <div style="display: flex; gap: 6px; font-size: 12px; font-weight: 700; color: #10B981;">
-              <span>● Offline Local Learner</span> • <span>Active Session</span>
+              <span>● Offline Local Learner Model</span> • <span>Personalized Learning State Active</span>
             </div>
           </div>
         </div>
@@ -623,19 +993,50 @@ function renderLearnerProfile(stage, state) {
           <div class="d-flex align-center gap-2" style="background: #FFF7ED; border: 1px solid #FFEDD5; border-radius: var(--radius-md); padding: 8px 14px;">
             <span class="streak-flame">🔥</span>
             <div>
-              <strong style="font-size: 18px; color: #EA580C; display: block; line-height: 1;">${p.streakDays} Days</strong>
+              <strong style="font-size: 18px; color: #EA580C; display: block; line-height: 1;">${p.streakDays || 7} Days</strong>
               <span style="font-size: 11px; text-transform: uppercase; color: #9A3412; font-weight: 700;">Daily Study Streak</span>
             </div>
           </div>
           <div class="d-flex align-center gap-2" style="background: #F0FDF4; border: 1px solid #DCFCE7; border-radius: var(--radius-md); padding: 8px 14px;">
             <span style="font-size: 28px;">🌟</span>
             <div>
-              <strong style="font-size: 18px; color: #16A34A; display: block; line-height: 1;">Level ${p.level}</strong>
-              <span style="font-size: 11px; text-transform: uppercase; color: #15803D; font-weight: 700;">${p.xp} / 600 XP</span>
+              <strong style="font-size: 18px; color: #16A34A; display: block; line-height: 1;">Level ${p.level || 1}</strong>
+              <span style="font-size: 11px; text-transform: uppercase; color: #15803D; font-weight: 700;">${p.xp || 0} / 600 XP</span>
             </div>
           </div>
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-toggle-edit-profile">
+            ${isEditingProfile ? '✕ Close' : '✏️ Edit Profile'}
+          </button>
         </div>
       </div>
+
+      <!-- Collapsible Profile Edit Form -->
+      ${isEditingProfile ? `
+        <section class="hub-form-card animate-slide-down">
+          <h3 class="text-sm font-bold mb-2">👤 Customize Scholar Profile</h3>
+          <form id="form-profile-edit" class="grid-form">
+            <div class="form-group">
+              <label for="profile-name-input" class="form-label">Student Name</label>
+              <input type="text" id="profile-name-input" class="form-input" value="${escapeHtml(p.name || 'Scholar')}" required />
+            </div>
+            <div class="form-group">
+              <label for="profile-avatar-select" class="form-label">Avatar Emoji</label>
+              <select id="profile-avatar-select" class="form-input">
+                <option value="👨‍🎓" ${p.avatar === '👨‍🎓' ? 'selected' : ''}>👨‍🎓 Student (Boy)</option>
+                <option value="👩‍🎓" ${p.avatar === '👩‍🎓' ? 'selected' : ''}>👩‍🎓 Student (Girl)</option>
+                <option value="🧑‍🔬" ${p.avatar === '🧑‍🔬' ? 'selected' : ''}>🧑‍🔬 Young Scientist</option>
+                <option value="👩‍🔬" ${p.avatar === '👩‍🔬' ? 'selected' : ''}>👩‍🔬 Lab Researcher</option>
+                <option value="🚀" ${p.avatar === '🚀' ? 'selected' : ''}>🚀 Space Explorer</option>
+                <option value="🦉" ${p.avatar === '🦉' ? 'selected' : ''}>🦉 Wise Scholar</option>
+              </select>
+            </div>
+            <div class="form-actions col-span-full">
+              <button type="submit" class="btn btn-primary btn-sm">Save Profile</button>
+              <button type="button" class="btn btn-outline btn-sm" id="btn-cancel-profile-edit">Cancel</button>
+            </div>
+          </form>
+        </section>
+      ` : ''}
 
       <!-- Radar Mastery Chart & Adjusters -->
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-4);">
@@ -724,6 +1125,26 @@ function renderLearnerProfile(stage, state) {
       </section>
     </div>
   `;
+
+  // Profile Edit Listeners
+  stage.querySelector('#btn-toggle-edit-profile')?.addEventListener('click', () => {
+    isEditingProfile = !isEditingProfile;
+    delegateRender(store.getState());
+  });
+
+  stage.querySelector('#btn-cancel-profile-edit')?.addEventListener('click', () => {
+    isEditingProfile = false;
+    delegateRender(store.getState());
+  });
+
+  stage.querySelector('#form-profile-edit')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = stage.querySelector('#profile-name-input')?.value;
+    const avatar = stage.querySelector('#profile-avatar-select')?.value;
+    store.updateLearnerProfile({ name, avatar });
+    isEditingProfile = false;
+    announce('Profile updated.');
+  });
 
   stage.querySelectorAll('.radar-slider').forEach(slider => {
     slider.addEventListener('input', (e) => {

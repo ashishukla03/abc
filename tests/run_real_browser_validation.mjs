@@ -167,9 +167,18 @@ async function run() {
       BASE_URL
     ], { stdio: 'ignore' });
 
-    await new Promise(r => setTimeout(r, 2000));
-    const targets = await fetchJson('http://127.0.0.1:9222/json/list');
-    const pageTarget = targets.find(t => t.type === 'page');
+    let targets = null;
+    for (let attempt = 0; attempt < 12; attempt++) {
+      try {
+        await new Promise(r => setTimeout(r, 700));
+        targets = await fetchJson('http://127.0.0.1:9222/json/list');
+        if (targets && targets.length > 0) break;
+      } catch (e) {
+        // retry while Chrome initializes
+      }
+    }
+    if (!targets) throw new Error('Could not connect to Chrome debugging port 9222 after retries');
+    const pageTarget = targets.find(t => t.type === 'page') || targets[0];
     if (!pageTarget) throw new Error('No page target found in Chrome');
 
     client = new CDPClient(pageTarget.webSocketDebuggerUrl);
@@ -458,6 +467,7 @@ async function run() {
   const reportPath = path.resolve(ROOT_DIR, 'audit/BROWSER_VERIFICATION_EVIDENCE.json');
   fs.writeFileSync(reportPath, JSON.stringify(results, null, 2), 'utf-8');
   console.log(`\nDetailed verification results written to: ${reportPath}`);
+  process.exit(0);
 }
 
 run();
