@@ -81,3 +81,4 @@ export const AppleGlassCard: React.FC<AppleGlassCardProps> = ({
     </motion.article>
   );
 };
+

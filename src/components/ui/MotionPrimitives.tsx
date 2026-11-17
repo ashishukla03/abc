@@ -101,3 +101,4 @@ export const LiquidPill: React.FC<LiquidPillProps> = ({
     </button>
   );
 };
+

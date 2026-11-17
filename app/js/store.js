@@ -327,6 +327,22 @@ class StateStore {
     });
   }
 
+  setSubjectAndStep(subjectId, stepId) {
+    if (subjectId !== null && !SUBJECT_IDS.includes(subjectId)) {
+      console.warn(`[Gramin PocketLab Store] Invalid subjectId rejected: "${subjectId}"`);
+      return;
+    }
+    if (!STEP_IDS.includes(stepId)) {
+      console.warn(`[Gramin PocketLab Store] Invalid stepId rejected: "${stepId}"`);
+      return;
+    }
+    if (this._state.currentSubject === subjectId && this._state.currentStep === stepId) return;
+
+    this._state.currentSubject = subjectId;
+    this._state.currentStep = stepId;
+    this._notify('SET_SUBJECT_AND_STEP', { subjectId, stepId });
+  }
+
   /**
    * Sets the current active STEM subject.
    * @param {'physics'|'math'|'biology'|'chemistry'|null} subjectId
@@ -543,6 +559,7 @@ class StateStore {
   setActiveTab(tab) {
     const validTabs = ['missions', 'hub', 'profile', 'onboarding', 'browser', 'mock-test', 'tutor', 'profiles'];
     if (!validTabs.includes(tab)) return;
+    if (this._state.activeTab === tab) return;
     this._state.activeTab = tab;
     this._notify('SET_ACTIVE_TAB', tab);
   }

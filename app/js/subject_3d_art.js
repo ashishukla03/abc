@@ -475,3 +475,4 @@ export function render3DStudyBuddy({ size = 56, className = '' } = {}) {
     </div>
   `;
 }
+

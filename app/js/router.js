@@ -153,14 +153,22 @@ class ClientRouter {
       window.location.hash = this.formatHash(validation.redirectSubject, validation.redirectStep);
       this._isSyncing = false;
 
-      store.setSubject(validation.redirectSubject);
-      store.setStep(validation.redirectStep);
+      if (typeof store.setSubjectAndStep === 'function') {
+        store.setSubjectAndStep(validation.redirectSubject, validation.redirectStep);
+      } else {
+        store.setSubject(validation.redirectSubject);
+        store.setStep(validation.redirectStep);
+      }
       return;
     }
 
     this._isSyncing = true;
-    store.setSubject(parsed.subject);
-    store.setStep(parsed.step);
+    if (typeof store.setSubjectAndStep === 'function') {
+      store.setSubjectAndStep(parsed.subject, parsed.step);
+    } else {
+      store.setSubject(parsed.subject);
+      store.setStep(parsed.step);
+    }
     this._isSyncing = false;
   }
 
@@ -172,7 +180,7 @@ class ClientRouter {
     if (this._isSyncing) return;
 
     // React to subject or step modifications
-    if (action === 'SET_SUBJECT' || action === 'SET_STEP' || action === 'RESET_ALL_PROGRESS') {
+    if (action === 'SET_SUBJECT' || action === 'SET_STEP' || action === 'SET_SUBJECT_AND_STEP' || action === 'RESET_ALL_PROGRESS') {
       const targetHash = this.formatHash(state.currentSubject, state.currentStep);
       if (window.location.hash !== targetHash) {
         this._isSyncing = true;

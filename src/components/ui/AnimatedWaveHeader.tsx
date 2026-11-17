@@ -75,3 +75,4 @@ export const AnimatedWaveHeader: React.FC<AnimatedWaveHeaderProps> = ({
     </div>
   );
 };
+

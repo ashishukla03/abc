@@ -90,3 +90,4 @@ export const Subject3DArt: React.FC<Subject3DArtProps> = ({
     </motion.div>
   );
 };
+

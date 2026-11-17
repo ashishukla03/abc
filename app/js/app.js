@@ -2909,7 +2909,7 @@ function renderExtendedLabStage(stage, state, moduleId) {
     if (mission.interactionHandler && typeof mission.interactionHandler.destroy === 'function') {
       mission.interactionHandler.destroy();
     }
-    renderEnhancedMissionMap(stage, state);
+    delegateRender(store.getState());
   });
 
   stage.querySelector('#btn-reset-ext-lab')?.addEventListener('click', () => {
@@ -3015,7 +3015,7 @@ function renderEnhancedMissionMap(stage, state) {
                 </div>
                 <div class="card-meta">
                   ${isDone ? `<span class="badge badge-completed">✓ Completed (${totalScore}/2)</span>` : `<span class="card-meta-tag">${cfg.curriculum}</span>`}
-                  <button type="button" class="btn btn-secondary btn-sm" data-start-subject="${subId}">
+                  <button type="button" class="btn btn-secondary btn-sm btn-select-subject btn-subject-${subId}" data-subject="${subId}" data-start-subject="${subId}">
                     ${isDone ? 'Revisit Lab ↺' : 'Launch Investigation →'}
                   </button>
                 </div>
