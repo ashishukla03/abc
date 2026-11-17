@@ -53,7 +53,13 @@ function startStaticServer(dir, port = 8000) {
   });
   return new Promise((resolve, reject) => {
     server.listen(port, '127.0.0.1', () => resolve(server));
-    server.on('error', reject);
+    server.on('error', (err) => {
+      if (err.code === 'EADDRINUSE') {
+        resolve({ close: (cb) => { if (cb) cb(); } });
+      } else {
+        reject(err);
+      }
+    });
   });
 }
 

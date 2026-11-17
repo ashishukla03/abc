@@ -384,6 +384,95 @@ export class LearningRunner {
         <div class="subject-grid">
           ${subjectCardsHtml}
         </div>
+
+        <!-- Section 2: Multi-Grade Interactive Micro-Labs -->
+        <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--color-border);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
+            <div>
+              <h3 class="h2" style="margin-bottom: 2px;">🚀 Multi-Grade Interactive Micro-Labs</h3>
+              <p class="text-secondary" style="font-size: 13px; margin-bottom: 0;">Class-specific interactive investigations spanning Preparatory, Middle, Secondary, and Senior Secondary.</p>
+            </div>
+            <span class="badge badge-purple">Classes 5–12</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+            <article class="qw-card" style="border-left: 4px solid #F59E0B;">
+              <div class="qw-card-top">
+                <div>
+                  <span class="badge badge-secondary" style="font-size: 11px;">Class 5 • Preparatory</span>
+                  <h4 class="font-bold text-md mt-1 mb-0">Baker's Chapati Feast</h4>
+                  <span class="text-xs text-secondary">NCERT Class 5 Math: Equivalent Fractions</span>
+                </div>
+                <span style="font-size: 26px;">🫓</span>
+              </div>
+              <p class="text-xs text-secondary my-2">Cut and merge village festival chapati slices to visually verify 2/4 and 4/8 equal 1/2.</p>
+              <div class="qw-misconception-callout">
+                <strong>Misconception:</strong> Larger denominator means bigger piece fallacy.
+              </div>
+              <div class="d-flex justify-between align-center mt-3 pt-2 border-top">
+                <span class="text-xs font-bold text-secondary">Interactive SVG Cutter</span>
+                <button type="button" class="btn btn-primary btn-sm btn-launch-ext" data-ext-id="fractions">Launch Lab →</button>
+              </div>
+            </article>
+
+            <article class="qw-card" style="border-left: 4px solid #8B5CF6;">
+              <div class="qw-card-top">
+                <div>
+                  <span class="badge badge-purple" style="font-size: 11px;">Class 8 • Middle</span>
+                  <h4 class="font-bold text-md mt-1 mb-0">Solar Rover Algorithm Studio</h4>
+                  <span class="text-xs text-secondary">CBSE Class 8 Computing: Sequence & Loops</span>
+                </div>
+                <span style="font-size: 26px;">🤖</span>
+              </div>
+              <p class="text-xs text-secondary my-2">Compose sequential instructions and 3x loop blocks to navigate the solar rover through a grid maze.</p>
+              <div class="qw-misconception-callout">
+                <strong>Misconception:</strong> Assuming computers possess human intuition to fix missing steps.
+              </div>
+              <div class="d-flex justify-between align-center mt-3 pt-2 border-top">
+                <span class="text-xs font-bold text-secondary">Interactive Algorithm Grid</span>
+                <button type="button" class="btn btn-primary btn-sm btn-launch-ext" data-ext-id="coding">Launch Lab →</button>
+              </div>
+            </article>
+
+            <article class="qw-card" style="border-left: 4px solid #087E79;">
+              <div class="qw-card-top">
+                <div>
+                  <span class="badge badge-info" style="font-size: 11px;">Class 10 • Secondary</span>
+                  <h4 class="font-bold text-md mt-1 mb-0">Ray Optics Refraction & Snell's Law</h4>
+                  <span class="text-xs text-secondary">CISCE / CBSE Class 10 Physics: Light Refraction</span>
+                </div>
+                <span style="font-size: 26px;">🔦</span>
+              </div>
+              <p class="text-xs text-secondary my-2">Drag the laser angle slider into the glass slab to observe Snell's law bending and critical angles.</p>
+              <div class="qw-misconception-callout">
+                <strong>Misconception:</strong> Belief that light bends towards normal when speeding up.
+              </div>
+              <div class="d-flex justify-between align-center mt-3 pt-2 border-top">
+                <span class="text-xs font-bold text-secondary">60 FPS Canvas Ray Tracer</span>
+                <button type="button" class="btn btn-primary btn-sm btn-launch-ext" data-ext-id="optics">Launch Lab →</button>
+              </div>
+            </article>
+
+            <article class="qw-card" style="border-left: 4px solid #275DDB;">
+              <div class="qw-card-top">
+                <div>
+                  <span class="badge badge-phys" style="font-size: 11px;">Class 12 • Senior Secondary</span>
+                  <h4 class="font-bold text-md mt-1 mb-0">Solar Roof Calculus Integrals</h4>
+                  <span class="text-xs text-secondary">CBSE Class 12 Math: Applications of Integrals</span>
+                </div>
+                <span style="font-size: 26px;">☀️</span>
+              </div>
+              <p class="text-xs text-secondary my-2">Increase rectangular Riemann sum strips to watch discrete area slices converge to the definite integral limit.</p>
+              <div class="qw-misconception-callout">
+                <strong>Misconception:</strong> Confusing antiderivative constant with definite boundary area.
+              </div>
+              <div class="d-flex justify-between align-center mt-3 pt-2 border-top">
+                <span class="text-xs font-bold text-secondary">Riemann Sum Plotter</span>
+                <button type="button" class="btn btn-primary btn-sm btn-launch-ext" data-ext-id="calculus">Launch Lab →</button>
+              </div>
+            </article>
+          </div>
+        </div>
       </section>
     `;
 
@@ -412,6 +501,15 @@ export class LearningRunner {
         e.stopPropagation();
         const subjectId = btn.getAttribute('data-subject');
         router.goToSubject(subjectId);
+      });
+    });
+
+    this._container.querySelectorAll('.btn-launch-ext').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        const extId = e.currentTarget.getAttribute('data-ext-id');
+        if (typeof window !== 'undefined' && typeof window.__launchExtendedLab === 'function') {
+          window.__launchExtendedLab(extId);
+        }
       });
     });
   }

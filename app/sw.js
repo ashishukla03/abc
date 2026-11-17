@@ -23,7 +23,11 @@ const PRECACHE_ASSETS = [
   './modules/physics.js',
   './modules/math_stub.js',
   './modules/biology_stub.js',
-  './modules/chemistry_stub.js'
+  './modules/chemistry_stub.js',
+  './modules/fractions_module.js',
+  './modules/optics_module.js',
+  './modules/calculus_module.js',
+  './modules/coding_module.js'
 ];
 
 /**

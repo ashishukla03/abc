@@ -55,6 +55,34 @@
         </div>
       </div>
 
+      <!-- Navigation Tabs & Grade Band Bar -->
+      <nav class="app-nav-tabs" id="app-nav-tabs" role="navigation" aria-label="Main Views">
+        <div class="tabs-container">
+          <div class="primary-tabs" role="tablist">
+            <button type="button" class="tab-btn active" id="tab-btn-missions" data-tab="missions" role="tab" aria-selected="true">
+              <span class="tab-icon">🔬</span>
+              <span class="tab-label">Question Worlds</span>
+            </button>
+            <button type="button" class="tab-btn" id="tab-btn-hub" data-tab="hub" role="tab" aria-selected="false">
+              <span class="tab-icon">🏫</span>
+              <span class="tab-label">School & Study Hub</span>
+            </button>
+            <button type="button" class="tab-btn" id="tab-btn-profile" data-tab="profile" role="tab" aria-selected="false">
+              <span class="tab-icon">👤</span>
+              <span class="tab-label">My Learning Model</span>
+            </button>
+          </div>
+
+          <div class="grade-band-selector" id="grade-band-selector" role="group" aria-label="Select Grade Band">
+            <span class="grade-label">Curriculum Stage:</span>
+            <button type="button" class="grade-pill" data-band="preparatory" title="Class 5 Preparatory Stage">Prep (Cl 5)</button>
+            <button type="button" class="grade-pill active" data-band="middle" title="Classes 6–8 Middle Stage">Middle (6–8)</button>
+            <button type="button" class="grade-pill" data-band="secondary" title="Classes 9–10 Secondary Stage">Sec (9–10)</button>
+            <button type="button" class="grade-pill" data-band="senior" title="Classes 11–12 Senior Secondary Stage">Senior (11–12)</button>
+          </div>
+        </div>
+      </nav>
+
       <!-- Secondary Sub-bar: Active Subject & Step Progress -->
       <div id="header-subbar" class="header-subbar" style="display: none;">
         <span id="header-subject-badge" class="badge badge-phys">Physics</span>

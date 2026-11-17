@@ -48,6 +48,57 @@ export function createDefaultState() {
     selectedLocale: 'en',
     activeSessionId: 'default_learner',
     audioMuted: false,
+    gradeBand: 'middle',
+    selectedClass: 7,
+    selectedBoard: 'CBSE',
+    activeTab: 'missions',
+    learnerProfile: {
+      name: 'Aarav Sharma',
+      avatar: '👨‍🎓',
+      streakDays: 7,
+      xp: 450,
+      level: 3,
+      badges: ['badge-phys-dhwani', 'badge-math-bhaga'],
+      radarScores: {
+        math: 85,
+        physics: 90,
+        chemistry: 75,
+        biology: 80,
+        social: 70,
+        computing: 85
+      }
+    },
+    studyHub: {
+      timetable: [
+        { period: 1, time: '09:00 - 09:45', subject: 'Mathematics', topic: 'Ratio & Proportional Water Sharing', room: 'Room 7B', teacher: 'Mrs. Rao', active: false },
+        { period: 2, time: '09:50 - 10:35', subject: 'Science (Physics)', topic: 'Sound Wave Oscilloscope & Pitch', room: 'Science Lab', teacher: 'Mr. Patel', active: true },
+        { period: 3, time: '10:50 - 11:35', subject: 'Science (Chemistry)', topic: 'pH Color Lab & Indicators', room: 'Chemistry Lab', teacher: 'Dr. Sharma', active: false },
+        { period: 4, time: '11:40 - 12:25', subject: 'Social Science', topic: 'Indus Valley Urban Drainage', room: 'Room 7B', teacher: 'Mr. Kumar', active: false },
+        { period: 5, time: '01:15 - 02:00', subject: 'Computing', topic: 'Solar Rover Algorithm Sequence', room: 'ICT Room', teacher: 'Ms. Anitha', active: false },
+        { period: 6, time: '02:05 - 02:50', subject: 'Kannada / Language', topic: 'Basavanna Vachana Decipherer', room: 'Room 7B', teacher: 'Mr. Gowda', active: false }
+      ],
+      examCountdowns: [
+        { id: 'exam-sci-t1', title: 'Term 1 Science Summative', daysLeft: 14, date: '01 Dec 2026', syllabus: 'Sound, Acids & Bases, Ecosystems', urgency: 'high' },
+        { id: 'exam-mth-mid', title: 'CBSE Mathematics Mid-Term', daysLeft: 21, date: '08 Dec 2026', syllabus: 'Ratio & Proportion, Fractions, Geometry', urgency: 'medium' },
+        { id: 'exam-talent-nstse', title: 'National Science Talent Search (NSTSE)', daysLeft: 45, date: '02 Jan 2027', syllabus: 'Class 6–8 Integrated Science & Tech', urgency: 'normal' }
+      ],
+      syllabusChecklist: [
+        { id: 'ncert-math-ch12', subject: 'Mathematics', chapter: 'Class 6 Ch 12: Ratio & Proportion', completed: true },
+        { id: 'ncert-phys-ch13', subject: 'Physics', chapter: 'Class 8 Ch 13: Sound Frequency & Pitch', completed: true },
+        { id: 'ncert-chem-ch5', subject: 'Chemistry', chapter: 'Class 7 Ch 5: Acids, Bases and Salts', completed: true },
+        { id: 'ncert-bio-ch10', subject: 'Biology', chapter: 'Class 7 Ch 10: Food Webs & Ecosystems', completed: false },
+        { id: 'ncert-csc-ch4', subject: 'Computing', chapter: 'Class 8 Ch 4: Sequence Loops & Rover Logic', completed: false },
+        { id: 'ncert-mth-ch5', subject: 'Mathematics', chapter: 'Class 5 Ch 4: Equivalent Fractions', completed: true },
+        { id: 'ncert-phys-ch10', subject: 'Physics', chapter: 'Class 10 Ch 10: Ray Optics & Refraction', completed: false },
+        { id: 'ncert-mth-ch12-calc', subject: 'Mathematics', chapter: 'Class 12 Ch 8: Applications of Integrals', completed: false }
+      ],
+      recommendationWeights: {
+        examImportance: 0.40,
+        misconceptionCount: 0.30,
+        retentionGapDays: 0.20,
+        curriculumSequence: 0.10
+      }
+    },
     progress: {
       physics: createInitialSubjectProgress(),
       math: createInitialSubjectProgress(),
@@ -97,6 +148,16 @@ function loadPersistedState() {
     if (typeof parsed.activeSessionId === 'string' && parsed.activeSessionId) {
       base.activeSessionId = parsed.activeSessionId;
     }
+    if (parsed.gradeBand) base.gradeBand = parsed.gradeBand;
+    if (parsed.selectedClass) base.selectedClass = parsed.selectedClass;
+    if (parsed.selectedBoard) base.selectedBoard = parsed.selectedBoard;
+    if (parsed.activeTab) base.activeTab = parsed.activeTab;
+    if (parsed.learnerProfile && typeof parsed.learnerProfile === 'object') {
+      base.learnerProfile = { ...base.learnerProfile, ...parsed.learnerProfile };
+    }
+    if (parsed.studyHub && typeof parsed.studyHub === 'object') {
+      base.studyHub = { ...base.studyHub, ...parsed.studyHub };
+    }
 
     // Restore per-subject progress
     if (parsed.progress && typeof parsed.progress === 'object') {
@@ -139,6 +200,12 @@ function savePersistedState(state) {
       activeSessionId: state.activeSessionId,
       selectedLocale: state.selectedLocale,
       audioMuted: state.audioMuted,
+      gradeBand: state.gradeBand,
+      selectedClass: state.selectedClass,
+      selectedBoard: state.selectedBoard,
+      activeTab: state.activeTab,
+      learnerProfile: state.learnerProfile,
+      studyHub: state.studyHub,
       progress: state.progress,
       lastActiveTimestamp: Date.now()
     };
@@ -390,6 +457,52 @@ class StateStore {
       }
     }
     this._notify('RESET_ALL_PROGRESS', null);
+  }
+
+  setGradeBand(band) {
+    if (!['preparatory', 'middle', 'secondary', 'senior'].includes(band)) return;
+    this._state.gradeBand = band;
+    this._notify('SET_GRADE_BAND', band);
+  }
+
+  setClass(classNum) {
+    const num = Number(classNum);
+    if (num < 5 || num > 12) return;
+    this._state.selectedClass = num;
+    this._notify('SET_CLASS', num);
+  }
+
+  setBoard(board) {
+    this._state.selectedBoard = String(board);
+    this._notify('SET_BOARD', board);
+  }
+
+  setActiveTab(tab) {
+    if (!['missions', 'hub', 'profile'].includes(tab)) return;
+    this._state.activeTab = tab;
+    this._notify('SET_ACTIVE_TAB', tab);
+  }
+
+  toggleSyllabusItem(id) {
+    const item = this._state.studyHub.syllabusChecklist.find((s) => s.id === id);
+    if (item) {
+      item.completed = !item.completed;
+      this._notify('TOGGLE_SYLLABUS', { id, completed: item.completed });
+    }
+  }
+
+  addXP(amount) {
+    const num = Number(amount) || 0;
+    this._state.learnerProfile.xp += num;
+    const newLevel = Math.floor(this._state.learnerProfile.xp / 200) + 1;
+    this._state.learnerProfile.level = newLevel;
+    this._notify('ADD_XP', { xp: this._state.learnerProfile.xp, level: newLevel });
+  }
+
+  updateLearnerProfile(updates) {
+    if (!updates || typeof updates !== 'object') return;
+    this._state.learnerProfile = { ...this._state.learnerProfile, ...updates };
+    this._notify('UPDATE_PROFILE', this._state.learnerProfile);
   }
 
   /**

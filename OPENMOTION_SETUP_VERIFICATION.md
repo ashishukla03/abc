@@ -63,3 +63,4 @@ Inspection of the `@remotion/compositor-win32-x64-msvc` binary libraries confirm
   - OpenMotion is utilized as an offline, standalone creative studio.
   - Project scenes and layouts are authored using its canonical HTML + GSAP scene contract (`scene-contract.md`), placed in `openmotion/projects/gramin_pocketlab_overview/`, and rendered via the bundled compositor.
   - This completely satisfies the creative mandate without external cloud dependencies.
+

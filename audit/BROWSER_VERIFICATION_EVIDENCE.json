@@ -42,7 +42,7 @@
   "offlineVerification": {
     "status": "PASS",
     "swRegistered": true,
-    "cachedAssetCount": 16,
+    "cachedAssetCount": 20,
     "offlineReloadSuccess": true
   },
   "consoleErrors": []

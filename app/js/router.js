@@ -53,6 +53,16 @@ class ClientRouter {
       return { subject: null, step: 's0_map' };
     }
 
+    if (parts[0] === 'hub') {
+      if (typeof store.setActiveTab === 'function') store.setActiveTab('hub');
+      return { subject: null, step: 's0_map' };
+    }
+
+    if (parts[0] === 'profile') {
+      if (typeof store.setActiveTab === 'function') store.setActiveTab('profile');
+      return { subject: null, step: 's0_map' };
+    }
+
     const candidateSubject = parts[0];
     if (!SUBJECT_IDS.includes(candidateSubject)) {
       return { subject: null, step: 's0_map' };
@@ -201,6 +211,23 @@ class ClientRouter {
    * Navigates to the Mission Map (S0).
    */
   goToMap() {
+    if (typeof store.setActiveTab === 'function') store.setActiveTab('missions');
+    this.navigate(null, 's0_map');
+  }
+
+  /**
+   * Navigates to the School & Study Hub.
+   */
+  goToHub() {
+    if (typeof store.setActiveTab === 'function') store.setActiveTab('hub');
+    this.navigate(null, 's0_map');
+  }
+
+  /**
+   * Navigates to the Learner Profile & Model.
+   */
+  goToProfile() {
+    if (typeof store.setActiveTab === 'function') store.setActiveTab('profile');
     this.navigate(null, 's0_map');
   }
 

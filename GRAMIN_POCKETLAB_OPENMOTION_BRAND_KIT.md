@@ -63,3 +63,4 @@ For any marketing or explainer media integrated within the application:
 3. **Lazy Loading:** Videos must have `preload="none"` or `loading="lazy"` with a lightweight static poster image (`.png` / `.webp`).
 4. **Offline Isolation:** Prerecorded marketing videos **must never** be precached by the Service Worker into `pocketlab-v2`, preserving scarce device storage on rural student handsets.
 5. **Universal Captions:** Every video deliverable must be accompanied by a WebVTT (`.vtt`) track and an accessible text transcript.
+
