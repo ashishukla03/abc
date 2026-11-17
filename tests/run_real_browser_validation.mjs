@@ -367,11 +367,22 @@ async function run() {
       return Boolean(data.progress?.physics?.isCompleted && data.progress?.physics?.earnedBadgeId);
     `);
 
-    results.browserValidation.endToEndJourney = {
-      status: isCompletedInStorage ? 'PASS' : 'FAIL',
-      scoreRecordedInStorage: isCompletedInStorage
-    };
+    const s6CelebrationDetails = await client.evaluate(`
+      return {
+        hasConfetti: Boolean(document.querySelector(".confetti-burst")),
+        hasCelebrationCard: Boolean(document.querySelector(".celebration-card")),
+        hasCurriculumBtn: Boolean(document.querySelector("#btn-s6-curriculum")),
+        hasReturnBtn: Boolean(document.querySelector("#btn-s6-return"))
+      };
+    `);
     console.log(`   Badge & Completion Saved to LocalStorage: ${isCompletedInStorage}`);
+    console.log(`   S6 Celebration Visuals & Buttons: Confetti=${s6CelebrationDetails.hasConfetti}, CurriculumBtn=${s6CelebrationDetails.hasCurriculumBtn}`);
+
+    results.browserValidation.endToEndJourney = {
+      status: (isCompletedInStorage && s6CelebrationDetails.hasConfetti && s6CelebrationDetails.hasCurriculumBtn) ? 'PASS' : 'FAIL',
+      scoreRecordedInStorage: isCompletedInStorage,
+      celebrationVisualsVerified: s6CelebrationDetails
+    };
 
     // 6. Refresh Persistence
     console.log('6. Testing Refresh Persistence...');

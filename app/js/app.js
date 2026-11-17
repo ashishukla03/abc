@@ -342,6 +342,7 @@ let activeBrowserSubject = 'physics';
 let activeTopicTest = null;
 let activeTopicTestResult = null;
 let onboardingStep = 1;
+let onboardingMode = 'register';
 let onboardingData = {
   name: 'Aarav Sharma',
   avatar: '👨‍🎓',
@@ -2311,6 +2312,7 @@ function renderProfileSwitcher(stage, state) {
  */
 function renderOnboardingWizard(stage, state) {
   const { learnerProfile = {} } = state;
+  const profiles = store.getProfiles();
 
   const cartoonAvatars = [
     { emoji: '🦊', label: 'Sparky Fox' },
@@ -2342,186 +2344,277 @@ function renderOnboardingWizard(stage, state) {
   ];
 
   stage.innerHTML = `
-    <div class="hub-container" style="max-width: 680px; margin: 20px auto;">
+    <div class="hub-container ambient-glow-wrapper" style="max-width: 680px; margin: 20px auto; position: relative;">
+      <!-- Ambient Motion Glow Orbs -->
+      <div class="ambient-orb ambient-orb--blue" aria-hidden="true"></div>
+      <div class="ambient-orb ambient-orb--amber" aria-hidden="true"></div>
+      <div class="ambient-orb ambient-orb--purple" aria-hidden="true"></div>
+
+      <!-- Mode Switcher: Register vs Sign In -->
+      <div class="onboarding-mode-toggle mb-3 d-flex justify-center gap-2" style="position: relative; z-index: 2;">
+        <button type="button" class="btn ${onboardingMode === 'register' ? 'btn-primary' : 'btn-outline'}" id="btn-ob-mode-register" style="border-radius: 24px; padding: 8px 20px; font-weight: 600;">
+          📝 Register New Student
+        </button>
+        <button type="button" class="btn ${onboardingMode === 'login' ? 'btn-primary' : 'btn-outline'}" id="btn-ob-mode-login" style="border-radius: 24px; padding: 8px 20px; font-weight: 600;">
+          🔑 Sign In (${profiles.length} ${profiles.length === 1 ? 'Scholar' : 'Scholars'})
+        </button>
+      </div>
+
       <!-- Wizard Card Header -->
-      <div class="hub-hero" style="text-align: center; justify-content: center; flex-direction: column;">
+      <div class="hub-hero" style="text-align: center; justify-content: center; flex-direction: column; position: relative; z-index: 2;">
         <span class="badge badge-purple mb-2">Student Onboarding & Setup</span>
         <h1 class="mb-1" style="font-size: 26px;">Welcome to Gramin PocketLab! 🚀</h1>
         <p class="text-secondary mb-0">Your personalized multi-board learning companion for Classes 5–12</p>
       </div>
 
-      <!-- Stepper Navigation -->
-      <div class="onboarding-stepper mt-4">
-        <div class="onboarding-step-dot ${onboardingStep >= 1 ? (onboardingStep > 1 ? 'completed' : 'active') : ''}">1</div>
-        <div class="onboarding-step-line"></div>
-        <div class="onboarding-step-dot ${onboardingStep >= 2 ? (onboardingStep > 2 ? 'completed' : 'active') : ''}">2</div>
-        <div class="onboarding-step-line"></div>
-        <div class="onboarding-step-dot ${onboardingStep >= 3 ? (onboardingStep > 3 ? 'completed' : 'active') : ''}">3</div>
-        <div class="onboarding-step-line"></div>
-        <div class="onboarding-step-dot ${onboardingStep >= 4 ? (onboardingStep > 4 ? 'completed' : 'active') : ''}">4</div>
-      </div>
-
-      <div class="timetable-card p-4">
-        ${onboardingStep === 1 ? `
-          <!-- STEP 1: Student Identity & 3D Cartoon Avatar -->
-          <h2 class="text-lg font-bold mb-1">Step 1: Who is learning today?</h2>
-          <p class="text-secondary text-sm mb-4">Choose your learning character and enter your student name.</p>
-
-          <div class="form-group mb-4">
-            <label class="form-label" for="ob-input-name">Student Full Name</label>
-            <input type="text" id="ob-input-name" class="form-input" placeholder="e.g. Aarav Sharma" value="${escapeHtml(onboardingData.name || learnerProfile.name || '')}" required />
+      ${onboardingMode === 'login' ? `
+        <!-- SIGN IN MODE: Quick Account Picker -->
+        <div class="timetable-card p-4 mt-4" style="position: relative; z-index: 2; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.06);">
+          <div class="d-flex align-center justify-between mb-3 pb-2 border-bottom">
+            <div>
+              <h2 class="text-lg font-bold mb-0">Select Your Scholar Account</h2>
+              <p class="text-secondary text-xs mb-0">Choose your profile to resume tests, streaks, and school prep.</p>
+            </div>
+            <span class="badge badge-purple">${profiles.length} Registered</span>
           </div>
 
-          <div class="form-group mb-4">
-            <label class="form-label" for="ob-select-class">Select Your Class / Grade</label>
-            <select id="ob-select-class" class="form-select">
-              ${[5, 6, 7, 8, 9, 10, 11, 12].map(c => `
-                <option value="${c}" ${c === currentClass ? 'selected' : ''}>Class ${c} (${c <= 5 ? 'Preparatory' : c <= 8 ? 'Middle Stage' : c <= 10 ? 'Secondary (Board)' : 'Senior Secondary'})</option>
-              `).join('')}
-            </select>
-          </div>
-
-          <div class="form-group mb-4">
-            <label class="form-label">Pick Your 3D Learning Avatar</label>
-            <div class="avatar-grid">
-              ${cartoonAvatars.map(av => `
-                <div class="avatar-option-card ${(onboardingData.avatar || learnerProfile.avatar || '👨‍🎓') === av.emoji ? 'selected' : ''}" data-avatar="${av.emoji}">
-                  <span class="avatar-3d-box">${av.emoji}</span>
-                  <span class="avatar-label">${av.label}</span>
+          <div style="display: flex; flex-direction: column; gap: 12px; margin: 16px 0;">
+            ${profiles.map(p => `
+              <div class="login-profile-card d-flex align-center justify-between p-3 rounded border" style="background: ${p.isActive ? 'rgba(37, 99, 235, 0.06)' : 'var(--color-surface)'}; border-color: ${p.isActive ? '#2563EB' : 'var(--color-border)'};">
+                <div class="d-flex align-center gap-3">
+                  <span style="font-size: 34px; animation: float-bob 4s ease-in-out infinite;">${p.avatar}</span>
+                  <div>
+                    <div class="font-bold text-sm d-flex align-center gap-2">
+                      ${escapeHtml(p.name)}
+                      ${p.isActive ? '<span class="badge badge-success text-xs">Active Session</span>' : ''}
+                    </div>
+                    <div class="text-xs text-secondary mt-1">
+                      Class ${p.classLevel} • ${escapeHtml(p.board)}
+                    </div>
+                  </div>
                 </div>
-              `).join('')}
-            </div>
-          </div>
-
-          <div class="d-flex justify-between mt-4 pt-3 border-top">
-            <span></span>
-            <button type="button" class="btn btn-primary" id="btn-ob-step1-next">Continue to School Details →</button>
-          </div>
-        ` : ''}
-
-        ${onboardingStep === 2 ? `
-          <!-- STEP 2: School & Board Setup -->
-          <h2 class="text-lg font-bold mb-1">Step 2: Tell us about your School & Board</h2>
-          <p class="text-secondary text-sm mb-4">We'll align your syllabus, textbooks, and examination patterns.</p>
-
-          <div class="form-group mb-3">
-            <label class="form-label" for="ob-input-school">School Name</label>
-            <input type="text" id="ob-input-school" class="form-input" placeholder="e.g. Kendriya Vidyalaya, Ballari High School" value="${escapeHtml(onboardingData.schoolName || learnerProfile.school || '')}" required />
-          </div>
-
-          <div class="form-group mb-3">
-            <label class="form-label" for="ob-select-state">State / Union Territory</label>
-            <select id="ob-select-state" class="form-select">
-              <option value="Karnataka" ${(onboardingData.state || 'Karnataka') === 'Karnataka' ? 'selected' : ''}>Karnataka</option>
-              <option value="Maharashtra" ${onboardingData.state === 'Maharashtra' ? 'selected' : ''}>Maharashtra</option>
-              <option value="Tamil Nadu" ${onboardingData.state === 'Tamil Nadu' ? 'selected' : ''}>Tamil Nadu</option>
-              <option value="Delhi" ${onboardingData.state === 'Delhi' ? 'selected' : ''}>Delhi NCR</option>
-              <option value="Uttar Pradesh" ${onboardingData.state === 'Uttar Pradesh' ? 'selected' : ''}>Uttar Pradesh</option>
-              <option value="Kerala" ${onboardingData.state === 'Kerala' ? 'selected' : ''}>Kerala</option>
-              <option value="West Bengal" ${onboardingData.state === 'West Bengal' ? 'selected' : ''}>West Bengal</option>
-            </select>
-          </div>
-
-          <div class="form-group mb-3">
-            <label class="form-label" for="ob-select-board">Education Board</label>
-            <select id="ob-select-board" class="form-select">
-              ${boards.map(b => `
-                <option value="${b.id}" ${b.id === currentBoard ? 'selected' : ''}>${b.name}</option>
-              `).join('')}
-            </select>
-          </div>
-
-          <div class="form-group mb-4">
-            <label class="form-label" for="ob-select-medium">Medium of Instruction</label>
-            <select id="ob-select-medium" class="form-select">
-              <option value="English" ${(onboardingData.medium || 'English') === 'English' ? 'selected' : ''}>English</option>
-              <option value="Kannada" ${onboardingData.medium === 'Kannada' ? 'selected' : ''}>Kannada (ಕನ್ನಡ)</option>
-              <option value="Hindi" ${onboardingData.medium === 'Hindi' ? 'selected' : ''}>Hindi (हिन्दी)</option>
-              <option value="Marathi" ${onboardingData.medium === 'Marathi' ? 'selected' : ''}>Marathi (मराठी)</option>
-              <option value="Tamil" ${onboardingData.medium === 'Tamil' ? 'selected' : ''}>Tamil (தமிழ்)</option>
-            </select>
-          </div>
-
-          <div class="d-flex justify-between mt-4 pt-3 border-top">
-            <button type="button" class="btn btn-outline" id="btn-ob-prev">← Back</button>
-            <button type="button" class="btn btn-primary" id="btn-ob-step2-next">Confirm School & Continue →</button>
-          </div>
-        ` : ''}
-
-        ${onboardingStep === 3 ? `
-          <!-- STEP 3: Enrolled Subjects -->
-          <h2 class="text-lg font-bold mb-1">Step 3: Select Your Enrolled Subjects</h2>
-          <p class="text-secondary text-sm mb-4">Choose the subjects you study in school. We'll track your progress in each.</p>
-
-          <div class="d-flex gap-2 wrap mb-4" id="ob-subjects-container">
-            ${availableSubjects.map(sub => {
-              const isEnrolled = (onboardingData.enrolledSubjects || ['physics', 'chemistry', 'biology', 'math']).includes(sub.id);
-              return `
-                <button type="button" class="btn btn-sm ${isEnrolled ? 'btn-primary' : 'btn-outline'} ob-subject-toggle" data-sub-id="${sub.id}" style="padding: 8px 16px; border-radius: 20px;">
-                  ${isEnrolled ? '✓ ' : '+ '} ${escapeHtml(sub.name)}
+                <button type="button" class="btn btn-primary btn-sm btn-login-as-profile" data-profile-id="${p.id}" style="border-radius: 20px; font-weight: 600; padding: 6px 16px;">
+                  ${p.isActive ? 'Continue Learning →' : 'Sign In 🚀'}
                 </button>
-              `;
-            }).join('')}
-          </div>
-
-          <div class="p-3 bg-surface-subtle border rounded mb-4">
-            <div class="text-xs text-secondary mb-1">SELECTED SYLLABUS AUTHORITY</div>
-            <strong>${escapeHtml(currCurriculum.authority.name)} (${currCurriculum.authority.academicSession})</strong>
-            <div class="text-xs text-secondary mt-1">Prescribed Textbooks: ${escapeHtml(currCurriculum.authority.textbookAuthority)}</div>
-          </div>
-
-          <div class="d-flex justify-between mt-4 pt-3 border-top">
-            <button type="button" class="btn btn-outline" id="btn-ob-prev">← Back</button>
-            <button type="button" class="btn btn-primary" id="btn-ob-step3-next">Schedule Exams & Finish →</button>
-          </div>
-        ` : ''}
-
-        ${onboardingStep === 4 ? `
-          <!-- STEP 4: Schedule Upcoming School Exam & Guardian Consent -->
-          <h2 class="text-lg font-bold mb-1">Step 4: Upcoming School Tests & Consent</h2>
-          <p class="text-secondary text-sm mb-4">Add your upcoming exam so PocketLab can schedule prep quizzes and test alerts.</p>
-
-          <div class="form-group mb-3">
-            <label class="form-label" for="ob-exam-title">Upcoming Test / Exam Title</label>
-            <input type="text" id="ob-exam-title" class="form-input" placeholder="e.g. Unit Test 1 — Science & Math" value="${escapeHtml(onboardingData.upcomingExam?.title || 'Term 1 Mid-Term Examination')}" required />
-          </div>
-
-          <div class="row d-flex gap-3 mb-3">
-            <div style="flex: 1;">
-              <label class="form-label" for="ob-exam-date">Test Date</label>
-              <input type="date" id="ob-exam-date" class="form-input" value="2026-11-28" />
-            </div>
-            <div style="flex: 1;">
-              <label class="form-label" for="ob-exam-days">Days Remaining</label>
-              <input type="number" id="ob-exam-days" class="form-input" value="11" min="1" max="180" />
-            </div>
-          </div>
-
-          <div class="form-group mb-4">
-            <label class="form-label" for="ob-exam-syllabus">Teacher's Syllabus Portions</label>
-            <input type="text" id="ob-exam-syllabus" class="form-input" placeholder="e.g. Heat & Temperature, Sound Waves, Equations" value="${escapeHtml(onboardingData.upcomingExam?.syllabus || 'Chapters 4 & 13 (Science)')}" />
-          </div>
-
-          <div class="p-3 bg-surface-subtle border rounded mb-4">
-            <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer;">
-              <input type="checkbox" id="ob-consent-check" checked style="margin-top: 3px; width: 18px; height: 18px; accent-color: #2563EB;" />
-              <div style="font-size: 13px;">
-                <strong>Parent / Guardian Consent Verified (DPDP Act 2023)</strong>
-                <p class="text-secondary text-xs mb-0 mt-1">All learning progress and exam schedules are encrypted and stored locally on this device. Zero ads, zero tracking.</p>
               </div>
-            </label>
+            `).join('')}
           </div>
 
-          <div class="d-flex justify-between mt-4 pt-3 border-top">
-            <button type="button" class="btn btn-outline" id="btn-ob-prev">← Back</button>
-            <button type="button" class="btn btn-primary btn-lg" id="btn-ob-finish" style="background: linear-gradient(135deg, #2563EB 0%, #10B981 100%);">
-              Enter My Learning World 🚀
+          <div class="d-flex justify-between align-center pt-3 border-top mt-3">
+            <button type="button" class="btn btn-ghost btn-sm" id="btn-switch-to-create">
+              + Register New Student Profile
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-login-cancel">
+              Back to Missions 🔬
             </button>
           </div>
-        ` : ''}
-      </div>
+        </div>
+      ` : `
+        <!-- Stepper Navigation -->
+        <div class="onboarding-stepper mt-4" style="position: relative; z-index: 2;">
+          <div class="onboarding-step-dot ${onboardingStep >= 1 ? (onboardingStep > 1 ? 'completed' : 'active') : ''}">1</div>
+          <div class="onboarding-step-line"></div>
+          <div class="onboarding-step-dot ${onboardingStep >= 2 ? (onboardingStep > 2 ? 'completed' : 'active') : ''}">2</div>
+          <div class="onboarding-step-line"></div>
+          <div class="onboarding-step-dot ${onboardingStep >= 3 ? (onboardingStep > 3 ? 'completed' : 'active') : ''}">3</div>
+          <div class="onboarding-step-line"></div>
+          <div class="onboarding-step-dot ${onboardingStep >= 4 ? (onboardingStep > 4 ? 'completed' : 'active') : ''}">4</div>
+        </div>
+
+        <div class="timetable-card p-4" style="position: relative; z-index: 2;">
+          ${onboardingStep === 1 ? `
+            <!-- STEP 1: Student Identity & 3D Cartoon Avatar -->
+            <h2 class="text-lg font-bold mb-1">Step 1: Who is learning today?</h2>
+            <p class="text-secondary text-sm mb-4">Choose your learning character and enter your student name.</p>
+
+            <div class="form-group mb-4">
+              <label class="form-label" for="ob-input-name">Student Full Name</label>
+              <input type="text" id="ob-input-name" class="form-input" placeholder="e.g. Aarav Sharma" value="${escapeHtml(onboardingData.name || learnerProfile.name || '')}" required />
+            </div>
+
+            <div class="form-group mb-4">
+              <label class="form-label" for="ob-select-class">Select Your Class / Grade</label>
+              <select id="ob-select-class" class="form-select">
+                ${[5, 6, 7, 8, 9, 10, 11, 12].map(c => `
+                  <option value="${c}" ${c === currentClass ? 'selected' : ''}>Class ${c} (${c <= 5 ? 'Preparatory' : c <= 8 ? 'Middle Stage' : c <= 10 ? 'Secondary (Board)' : 'Senior Secondary'})</option>
+                `).join('')}
+              </select>
+            </div>
+
+            <div class="form-group mb-4">
+              <label class="form-label">Pick Your 3D Learning Avatar</label>
+              <div class="avatar-grid">
+                ${cartoonAvatars.map(av => `
+                  <div class="avatar-option-card ${(onboardingData.avatar || learnerProfile.avatar || '👨‍🎓') === av.emoji ? 'selected' : ''}" data-avatar="${av.emoji}">
+                    <span class="avatar-3d-box">${av.emoji}</span>
+                    <span class="avatar-label">${av.label}</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <div class="d-flex justify-between mt-4 pt-3 border-top">
+              <span></span>
+              <button type="button" class="btn btn-primary" id="btn-ob-step1-next">Continue to School Details →</button>
+            </div>
+          ` : ''}
+
+          ${onboardingStep === 2 ? `
+            <!-- STEP 2: School & Board Setup -->
+            <h2 class="text-lg font-bold mb-1">Step 2: Tell us about your School & Board</h2>
+            <p class="text-secondary text-sm mb-4">We'll align your syllabus, textbooks, and examination patterns.</p>
+
+            <div class="form-group mb-3">
+              <label class="form-label" for="ob-input-school">School Name</label>
+              <input type="text" id="ob-input-school" class="form-input" placeholder="e.g. Kendriya Vidyalaya, Ballari High School" value="${escapeHtml(onboardingData.schoolName || learnerProfile.school || '')}" required />
+            </div>
+
+            <div class="form-group mb-3">
+              <label class="form-label" for="ob-select-state">State / Union Territory</label>
+              <select id="ob-select-state" class="form-select">
+                <option value="Karnataka" ${(onboardingData.state || 'Karnataka') === 'Karnataka' ? 'selected' : ''}>Karnataka</option>
+                <option value="Maharashtra" ${onboardingData.state === 'Maharashtra' ? 'selected' : ''}>Maharashtra</option>
+                <option value="Tamil Nadu" ${onboardingData.state === 'Tamil Nadu' ? 'selected' : ''}>Tamil Nadu</option>
+                <option value="Delhi" ${onboardingData.state === 'Delhi' ? 'selected' : ''}>Delhi NCR</option>
+                <option value="Uttar Pradesh" ${onboardingData.state === 'Uttar Pradesh' ? 'selected' : ''}>Uttar Pradesh</option>
+                <option value="Kerala" ${onboardingData.state === 'Kerala' ? 'selected' : ''}>Kerala</option>
+                <option value="West Bengal" ${onboardingData.state === 'West Bengal' ? 'selected' : ''}>West Bengal</option>
+              </select>
+            </div>
+
+            <div class="form-group mb-3">
+              <label class="form-label" for="ob-select-board">Education Board</label>
+              <select id="ob-select-board" class="form-select">
+                ${boards.map(b => `
+                  <option value="${b.id}" ${b.id === currentBoard ? 'selected' : ''}>${b.name}</option>
+                `).join('')}
+              </select>
+            </div>
+
+            <div class="form-group mb-4">
+              <label class="form-label" for="ob-select-medium">Medium of Instruction</label>
+              <select id="ob-select-medium" class="form-select">
+                <option value="English" ${(onboardingData.medium || 'English') === 'English' ? 'selected' : ''}>English</option>
+                <option value="Kannada" ${onboardingData.medium === 'Kannada' ? 'selected' : ''}>Kannada (ಕನ್ನಡ)</option>
+                <option value="Hindi" ${onboardingData.medium === 'Hindi' ? 'selected' : ''}>Hindi (हिन्दी)</option>
+                <option value="Marathi" ${onboardingData.medium === 'Marathi' ? 'selected' : ''}>Marathi (मराठी)</option>
+                <option value="Tamil" ${onboardingData.medium === 'Tamil' ? 'selected' : ''}>Tamil (தமிழ்)</option>
+              </select>
+            </div>
+
+            <div class="d-flex justify-between mt-4 pt-3 border-top">
+              <button type="button" class="btn btn-outline" id="btn-ob-prev">← Back</button>
+              <button type="button" class="btn btn-primary" id="btn-ob-step2-next">Confirm School & Continue →</button>
+            </div>
+          ` : ''}
+
+          ${onboardingStep === 3 ? `
+            <!-- STEP 3: Enrolled Subjects -->
+            <h2 class="text-lg font-bold mb-1">Step 3: Select Your Enrolled Subjects</h2>
+            <p class="text-secondary text-sm mb-4">Choose the subjects you study in school. We'll track your progress in each.</p>
+
+            <div class="d-flex gap-2 wrap mb-4" id="ob-subjects-container">
+              ${availableSubjects.map(sub => {
+                const isEnrolled = (onboardingData.enrolledSubjects || ['physics', 'chemistry', 'biology', 'math']).includes(sub.id);
+                return `
+                  <button type="button" class="btn btn-sm ${isEnrolled ? 'btn-primary' : 'btn-outline'} ob-subject-toggle" data-sub-id="${sub.id}" style="padding: 8px 16px; border-radius: 20px;">
+                    ${isEnrolled ? '✓ ' : '+ '} ${escapeHtml(sub.name)}
+                  </button>
+                `;
+              }).join('')}
+            </div>
+
+            <div class="p-3 bg-surface-subtle border rounded mb-4">
+              <div class="text-xs text-secondary mb-1">SELECTED SYLLABUS AUTHORITY</div>
+              <strong>${escapeHtml(currCurriculum.authority.name)} (${currCurriculum.authority.academicSession})</strong>
+              <div class="text-xs text-secondary mt-1">Prescribed Textbooks: ${escapeHtml(currCurriculum.authority.textbookAuthority)}</div>
+            </div>
+
+            <div class="d-flex justify-between mt-4 pt-3 border-top">
+              <button type="button" class="btn btn-outline" id="btn-ob-prev">← Back</button>
+              <button type="button" class="btn btn-primary" id="btn-ob-step3-next">Schedule Exams & Finish →</button>
+            </div>
+          ` : ''}
+
+          ${onboardingStep === 4 ? `
+            <!-- STEP 4: Schedule Upcoming School Exam & Guardian Consent -->
+            <h2 class="text-lg font-bold mb-1">Step 4: Upcoming School Tests & Consent</h2>
+            <p class="text-secondary text-sm mb-4">Add your upcoming exam so PocketLab can schedule prep quizzes and test alerts.</p>
+
+            <div class="form-group mb-3">
+              <label class="form-label" for="ob-exam-title">Upcoming Test / Exam Title</label>
+              <input type="text" id="ob-exam-title" class="form-input" placeholder="e.g. Unit Test 1 — Science & Math" value="${escapeHtml(onboardingData.upcomingExam?.title || 'Term 1 Mid-Term Examination')}" required />
+            </div>
+
+            <div class="row d-flex gap-3 mb-3">
+              <div style="flex: 1;">
+                <label class="form-label" for="ob-exam-date">Test Date</label>
+                <input type="date" id="ob-exam-date" class="form-input" value="2026-11-28" />
+              </div>
+              <div style="flex: 1;">
+                <label class="form-label" for="ob-exam-days">Days Remaining</label>
+                <input type="number" id="ob-exam-days" class="form-input" value="11" min="1" max="180" />
+              </div>
+            </div>
+
+            <div class="form-group mb-4">
+              <label class="form-label" for="ob-exam-syllabus">Teacher's Syllabus Portions</label>
+              <input type="text" id="ob-exam-syllabus" class="form-input" placeholder="e.g. Heat & Temperature, Sound Waves, Equations" value="${escapeHtml(onboardingData.upcomingExam?.syllabus || 'Chapters 4 & 13 (Science)')}" />
+            </div>
+
+            <div class="p-3 bg-surface-subtle border rounded mb-4">
+              <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer;">
+                <input type="checkbox" id="ob-consent-check" checked style="margin-top: 3px; width: 18px; height: 18px; accent-color: #2563EB;" />
+                <div style="font-size: 13px;">
+                  <strong>Parent / Guardian Consent Verified (DPDP Act 2023)</strong>
+                  <p class="text-secondary text-xs mb-0 mt-1">All learning progress and exam schedules are encrypted and stored locally on this device. Zero ads, zero tracking.</p>
+                </div>
+              </label>
+            </div>
+
+            <div class="d-flex justify-between mt-4 pt-3 border-top">
+              <button type="button" class="btn btn-outline" id="btn-ob-prev">← Back</button>
+              <button type="button" class="btn btn-primary btn-lg" id="btn-ob-finish" style="background: linear-gradient(135deg, #2563EB 0%, #10B981 100%);">
+                Enter My Learning World 🚀
+              </button>
+            </div>
+          ` : ''}
+        </div>
+      `}
     </div>
   `;
+
+  // Attach mode switcher listeners
+  stage.querySelector('#btn-ob-mode-register')?.addEventListener('click', () => {
+    onboardingMode = 'register';
+    renderOnboardingWizard(stage, state);
+  });
+  stage.querySelector('#btn-ob-mode-login')?.addEventListener('click', () => {
+    onboardingMode = 'login';
+    renderOnboardingWizard(stage, state);
+  });
+
+  // Login Mode handlers
+  if (onboardingMode === 'login') {
+    stage.querySelectorAll('.btn-login-as-profile').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const profId = e.currentTarget.getAttribute('data-profile-id');
+        if (profId) {
+          store.switchProfile(profId);
+          showToast('Welcome back! Resuming your learning session. 🚀');
+          router.goToBrowser();
+        }
+      });
+    });
+    stage.querySelector('#btn-switch-to-create')?.addEventListener('click', () => {
+      onboardingMode = 'register';
+      renderOnboardingWizard(stage, state);
+    });
+    stage.querySelector('#btn-login-cancel')?.addEventListener('click', () => {
+      router.goToMap();
+    });
+    return;
+  }
 
   // Attach interactive step listeners
   if (onboardingStep === 1) {

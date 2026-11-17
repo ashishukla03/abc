@@ -1287,7 +1287,20 @@ export class LearningRunner {
 
         <!-- Summative Celebration Score Card (Rendered upon submission) -->
         ${this._s6State.submitted ? `
-          <div class="score-card" role="region" aria-label="Mission Mastery Result">
+          <div class="score-card celebration-card" role="region" aria-label="Mission Mastery Result" style="position: relative; overflow: hidden;">
+            <div class="confetti-burst" aria-hidden="true">
+              <span class="confetti-piece p1">🎉</span>
+              <span class="confetti-piece p2">✨</span>
+              <span class="confetti-piece p3">⭐</span>
+              <span class="confetti-piece p4">🌟</span>
+              <span class="confetti-piece p5">🚀</span>
+              <span class="confetti-piece p6">🎯</span>
+            </div>
+
+            <div class="xp-ticker-badge" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 16px; background: linear-gradient(135deg, #10B981, #059669); color: white; border-radius: 20px; font-weight: 700; font-size: 14px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); animation: float-bob 3s ease-in-out infinite;">
+              <span>⚡ +150 XP Mastery Awarded!</span>
+            </div>
+
             <div class="score-badge" aria-hidden="true">${mission.iconEmoji}</div>
             <h3 class="score-title">${t('s6.score_banner', { title: t(mission.titleKey) })}</h3>
             <p class="score-detail">${t('s6.score_text', { score: totalScore })}</p>
@@ -1312,6 +1325,9 @@ export class LearningRunner {
             <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 20px;">
               <button type="button" id="btn-s6-replay" class="btn btn-secondary" style="min-height: 48px;">
                 ${t('btn.replay_lab')}
+              </button>
+              <button type="button" id="btn-s6-curriculum" class="btn btn-outline" style="min-height: 48px;">
+                📚 View Curriculum Progress
               </button>
               <button type="button" id="btn-s6-return" class="btn btn-primary" style="min-height: 48px;">
                 ${t('btn.return_map')}
@@ -1363,6 +1379,12 @@ export class LearningRunner {
     this._container.querySelector('#btn-s6-replay')?.addEventListener('click', () => {
       store.resetSubjectLab(subjectId);
       router.navigate(subjectId, 's3_explore');
+    });
+
+    // View Curriculum Progress button
+    this._container.querySelector('#btn-s6-curriculum')?.addEventListener('click', () => {
+      this.destroy();
+      router.goToBrowser();
     });
 
     // Return to map button

@@ -24,7 +24,13 @@
     },
     "endToEndJourney": {
       "status": "PASS",
-      "scoreRecordedInStorage": true
+      "scoreRecordedInStorage": true,
+      "celebrationVisualsVerified": {
+        "hasConfetti": true,
+        "hasCelebrationCard": true,
+        "hasCurriculumBtn": true,
+        "hasReturnBtn": true
+      }
     },
     "refreshPersistence": {
       "status": "PASS",
