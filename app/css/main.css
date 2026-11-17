@@ -3086,5 +3086,176 @@ html[data-band="preparatory"] .prep-accent-btn {
   color: #475569;
 }
 
+/* ==========================================================================
+   26. Cinematic Motion Graphics Engine & Kinetic Choreography
+   ========================================================================== */
+
+/* Ambient Orb Drifting Physics */
+.ambient-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  pointer-events: none;
+  opacity: 0.65;
+  will-change: transform, opacity;
+}
+
+.ambient-orb--blue {
+  width: 380px;
+  height: 380px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.35) 0%, rgba(37, 99, 235, 0.05) 70%, transparent 100%);
+  animation: floatOrbBlue 14s ease-in-out infinite alternate;
+}
+
+.ambient-orb--purple {
+  width: 340px;
+  height: 340px;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.3) 0%, rgba(139, 92, 246, 0.05) 70%, transparent 100%);
+  animation: floatOrbPurple 18s ease-in-out infinite alternate;
+}
+
+.ambient-orb--amber {
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.25) 0%, transparent 70%);
+  animation: floatOrbAmber 12s ease-in-out infinite alternate;
+}
+
+@keyframes floatOrbBlue {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(30px, 20px) scale(1.08); }
+  100% { transform: translate(-20px, 40px) scale(0.95); }
+}
+
+@keyframes floatOrbPurple {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-35px, -25px) scale(1.1); }
+  100% { transform: translate(25px, -15px) scale(0.92); }
+}
+
+@keyframes floatOrbAmber {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(20px, -30px) scale(1.05); }
+  100% { transform: translate(-25px, 15px) scale(0.98); }
+}
+
+/* Staggered Card Entrance Transitions */
+.subject-grid > *:nth-child(1),
+.enrolled-subjects-grid > *:nth-child(1) { animation: staggerIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) 0.04s both; }
+.subject-grid > *:nth-child(2),
+.enrolled-subjects-grid > *:nth-child(2) { animation: staggerIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both; }
+.subject-grid > *:nth-child(3),
+.enrolled-subjects-grid > *:nth-child(3) { animation: staggerIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both; }
+.subject-grid > *:nth-child(4),
+.enrolled-subjects-grid > *:nth-child(4) { animation: staggerIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) 0.16s both; }
+.subject-grid > *:nth-child(5),
+.enrolled-subjects-grid > *:nth-child(5) { animation: staggerIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) 0.20s both; }
+.subject-grid > *:nth-child(6),
+.enrolled-subjects-grid > *:nth-child(6) { animation: staggerIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) 0.24s both; }
+
+@keyframes staggerIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Skill Tree Pathway Energy Pulse */
+.skill-tree-path {
+  position: relative;
+  overflow: hidden;
+}
+
+.skill-tree-path::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 40px;
+  background: linear-gradient(180deg, transparent 0%, #3B82F6 50%, transparent 100%);
+  animation: treePulse 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  opacity: 0.8;
+}
+
+@keyframes treePulse {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(400%); }
+}
+
+/* Star Badge Victory Flare */
+.topic-badge-mastered,
+.skill-node-marker.mastered {
+  position: relative;
+  animation: starFlare 4s ease-in-out infinite;
+}
+
+@keyframes starFlare {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 16px 4px rgba(245, 158, 11, 0.35);
+  }
+}
+
+/* Active Period Beacon Glowing Ring */
+.active-pulse {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10B981;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: beaconPulse 2s infinite;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+@keyframes beaconPulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+/* Tactile Elastic Button Squeeze */
+.btn:active:not(:disabled) {
+  transform: scale(0.96) !important;
+  transition: transform 0.08s ease;
+}
+
+/* Reduced Motion Safety Conformance (WCAG 2.2.2 & 2.3.3) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .ambient-orb,
+  .active-pulse,
+  .ai-companion-pill,
+  .mascot-avatar-large,
+  .skill-tree-path::after {
+    animation: none !important;
+    transform: none !important;
+  }
+}
+
 
 

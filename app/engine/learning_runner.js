@@ -154,9 +154,11 @@ export class LearningRunner {
 
   /**
    * Manages accessible keyboard focus on screen transition.
+   * Respects prefers-reduced-motion user accessibility preferences.
    * @private
    */
   _manageScreenFocus() {
+    const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
     requestAnimationFrame(() => {
       if (!this._container) return;
       const target = this._container.querySelector('h2') || this._container.querySelector('h1') || this._container;

@@ -143,6 +143,9 @@ function updateHeader(state) {
     muteBtn.setAttribute('title', audioMuted ? 'Audio muted' : 'Audio enabled');
   }
 
+  // Motion safety check for kinetic animations
+  const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+
   // 3. Locale button state
   const localeLabel = document.getElementById('locale-label');
   if (localeLabel) {

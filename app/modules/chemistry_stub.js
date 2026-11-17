@@ -135,6 +135,7 @@ export const ChemistryModule = {
           <h4 id="chem-test-heading">Status: Ready to Test</h4>
           <p id="chem-test-subtext" style="color: var(--color-text-secondary); margin-bottom: 12px;">Click "Dip Indicator Strip" above to observe the chemical reaction.</p>
           
+          <!-- Indicator Strip with smooth color diffusion (respects prefers-reduced-motion) -->
           <div style="margin: 20px auto; width: 64px; height: 120px; border-radius: 6px; border: 2px dashed #999; background: #F8F9FA; transition: background 0.4s ease, border 0.4s ease;" id="indicator-strip" role="img" aria-label="Indicator strip awaiting test"></div>
           
           <div style="font-size: 1.25rem; font-weight: 700; color: var(--color-text-main);" id="chem-ph-readout">Illustrative pH: —</div>
