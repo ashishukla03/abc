@@ -6,9 +6,9 @@ import { execSync } from 'node:child_process';
 const dest = path.resolve('..', 'STEM_COMPLETE_BUILD.zip');
 if (fs.existsSync(dest)) fs.unlinkSync(dest);
 
-// Collect all directories and files except cdp_browser_profile and .git
+// Collect all directories and files except test browser profiles and .git
 const items = fs.readdirSync('.')
-  .filter(item => item !== 'cdp_browser_profile' && item !== '.git')
+  .filter(item => !item.startsWith('cdp_') && item !== '.git')
   .map(item => `'${item}'`)
   .join(', ');
 

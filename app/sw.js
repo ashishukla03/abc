@@ -5,7 +5,7 @@
  * Strategy: Cache-First with Stale-While-Revalidate & Graceful Offline Fallback
  */
 
-const CACHE_NAME = 'pocketlab-v3';
+const CACHE_NAME = 'pocketlab-v5';
 
 const PRECACHE_ASSETS = [
   './',

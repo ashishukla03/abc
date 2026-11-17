@@ -365,45 +365,71 @@ export class LearningRunner {
 
     this._container.innerHTML = `
       <section class="screen-s0-map" role="region" aria-label="Mission Map">
-        <div style="text-align: center; margin-bottom: 24px;">
-          <h2 class="h1" style="margin-bottom: 8px;">${t('map.title')}</h2>
-          <p class="lead" style="max-width: 640px; margin: 0 auto 12px auto;">${t('map.subtitle')}</p>
-          <div style="display: inline-flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
-            <span class="status-pill status-pill--offline">
-              <span class="status-pill-dot" aria-hidden="true"></span>
-              ${t('map.progress_summary', { completed: completedCount })}
-            </span>
-            <span class="status-pill status-pill--offline">
-              ${t('app.session_badge')}
-            </span>
+        <!-- Grand Hero Showcase -->
+        <div class="map-hero-showcase ambient-glow-wrapper mb-5" style="position: relative; border-radius: 24px; padding: 36px 32px; background: linear-gradient(135deg, rgba(240, 249, 255, 0.9) 0%, rgba(245, 243, 255, 0.9) 50%, rgba(238, 242, 255, 0.9) 100%); border: 1px solid rgba(226, 232, 240, 0.8); box-shadow: 0 16px 40px -10px rgba(37, 99, 235, 0.08); overflow: hidden;">
+          <div class="ambient-orb ambient-orb--blue" aria-hidden="true" style="top: -60px; right: 10%;"></div>
+          <div class="ambient-orb ambient-orb--purple" aria-hidden="true" style="bottom: -50px; left: 5%;"></div>
+          
+          <div style="position: relative; z-index: 2; max-width: 900px; margin: 0 auto; text-align: center;">
+            <div style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 18px; background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.2); border-radius: 9999px; margin-bottom: 16px;">
+              <span style="font-size: 16px;">🚀</span>
+              <span style="font-size: 13px; font-weight: 700; color: #1D4ED8; letter-spacing: 0.5px; text-transform: uppercase;">Gramin PocketLab • Multi-Board STEM Platform</span>
+            </div>
+
+            <h2 class="h1" style="font-size: 2.6rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 14px; line-height: 1.15; background: linear-gradient(135deg, #0F172A 0%, #1E40AF 50%, #4338CA 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+              ${t('map.title')}
+            </h2>
+            <p class="lead" style="font-size: 1.15rem; color: #475569; max-width: 760px; margin: 0 auto 24px auto; line-height: 1.6;">
+              ${t('map.subtitle')}
+            </p>
+
+            <!-- Telemetry Status Pills Row -->
+            <div style="display: inline-flex; gap: 12px; flex-wrap: wrap; justify-content: center; align-items: center;">
+              <span class="status-pill status-pill--ready" style="padding: 8px 16px; font-size: 13.5px; border-radius: 9999px;">
+                <span class="status-pill-dot" aria-hidden="true"></span>
+                ${t('map.progress_summary', { completed: completedCount })}
+              </span>
+              <span class="status-pill status-pill--offline" style="padding: 8px 16px; font-size: 13.5px; border-radius: 9999px;">
+                🔒 ${t('app.session_badge')}
+              </span>
+              <span class="badge badge-purple" style="padding: 8px 16px; font-size: 13.5px; font-weight: 700; border-radius: 9999px;">
+                🔥 7-Day Streak Active
+              </span>
+            </div>
           </div>
         </div>
 
-        <p class="text-secondary" style="font-weight: 600; margin-bottom: 12px;">${t('map.instructions')}</p>
+        <div class="d-flex justify-between align-center mb-3">
+          <div>
+            <h3 class="h3 font-bold mb-0" style="font-size: 1.35rem;">Core STEM Field Investigations</h3>
+            <p class="text-secondary text-sm mb-0">${t('map.instructions')}</p>
+          </div>
+          <span class="badge badge-blue">4 Flagship Laboratories</span>
+        </div>
 
-        <div class="subject-grid">
+        <div class="subject-grid mb-5">
           ${subjectCardsHtml}
         </div>
 
         <!-- Section 2: Multi-Grade Interactive Micro-Labs -->
-        <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--color-border);">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
+        <div style="margin-top: 48px; padding-top: 32px; border-top: 1px solid var(--color-border);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 8px;">
             <div>
-              <h3 class="h2" style="margin-bottom: 2px;">🚀 Multi-Grade Interactive Micro-Labs</h3>
-              <p class="text-secondary" style="font-size: 13px; margin-bottom: 0;">Class-specific interactive investigations spanning Preparatory, Middle, Secondary, and Senior Secondary.</p>
+              <h3 class="h2 font-bold" style="font-size: 1.4rem; margin-bottom: 4px;">🚀 Multi-Grade Interactive Micro-Labs</h3>
+              <p class="text-secondary text-sm mb-0">Class-specific interactive investigations spanning Preparatory, Middle, Secondary, and Senior Secondary.</p>
             </div>
-            <span class="badge badge-purple">Classes 5–12</span>
+            <span class="badge badge-purple" style="padding: 6px 14px; font-size: 13px; font-weight: 700;">Classes 5–12</span>
           </div>
 
-          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
-            <article class="qw-card" style="border-left: 4px solid #F59E0B;">
+          <div class="multi-grade-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
+            <article class="qw-card" style="border-left: 5px solid #F59E0B;">
               <div class="qw-card-top">
                 <div>
                   <span class="badge badge-secondary" style="font-size: 11px;">Class 5 • Preparatory</span>
                   <h4 class="font-bold text-md mt-1 mb-0">Baker's Chapati Feast</h4>
                   <span class="text-xs text-secondary">NCERT Class 5 Math: Equivalent Fractions</span>
                 </div>
-                <span style="font-size: 26px;">🫓</span>
+                <span style="font-size: 28px;">🫓</span>
               </div>
               <p class="text-xs text-secondary my-2">Cut and merge village festival chapati slices to visually verify 2/4 and 4/8 equal 1/2.</p>
               <div class="qw-misconception-callout">
@@ -415,14 +441,14 @@ export class LearningRunner {
               </div>
             </article>
 
-            <article class="qw-card" style="border-left: 4px solid #8B5CF6;">
+            <article class="qw-card" style="border-left: 5px solid #8B5CF6;">
               <div class="qw-card-top">
                 <div>
                   <span class="badge badge-purple" style="font-size: 11px;">Class 8 • Middle</span>
                   <h4 class="font-bold text-md mt-1 mb-0">Solar Rover Algorithm Studio</h4>
                   <span class="text-xs text-secondary">CBSE Class 8 Computing: Sequence & Loops</span>
                 </div>
-                <span style="font-size: 26px;">🤖</span>
+                <span style="font-size: 28px;">🤖</span>
               </div>
               <p class="text-xs text-secondary my-2">Compose sequential instructions and 3x loop blocks to navigate the solar rover through a grid maze.</p>
               <div class="qw-misconception-callout">
@@ -434,14 +460,14 @@ export class LearningRunner {
               </div>
             </article>
 
-            <article class="qw-card" style="border-left: 4px solid #087E79;">
+            <article class="qw-card" style="border-left: 5px solid #087E79;">
               <div class="qw-card-top">
                 <div>
                   <span class="badge badge-info" style="font-size: 11px;">Class 10 • Secondary</span>
                   <h4 class="font-bold text-md mt-1 mb-0">Ray Optics Refraction & Snell's Law</h4>
                   <span class="text-xs text-secondary">CISCE / CBSE Class 10 Physics: Light Refraction</span>
                 </div>
-                <span style="font-size: 26px;">🔦</span>
+                <span style="font-size: 28px;">🔦</span>
               </div>
               <p class="text-xs text-secondary my-2">Drag the laser angle slider into the glass slab to observe Snell's law bending and critical angles.</p>
               <div class="qw-misconception-callout">
@@ -453,14 +479,14 @@ export class LearningRunner {
               </div>
             </article>
 
-            <article class="qw-card" style="border-left: 4px solid #275DDB;">
+            <article class="qw-card" style="border-left: 5px solid #275DDB;">
               <div class="qw-card-top">
                 <div>
                   <span class="badge badge-phys" style="font-size: 11px;">Class 12 • Senior Secondary</span>
                   <h4 class="font-bold text-md mt-1 mb-0">Solar Roof Calculus Integrals</h4>
                   <span class="text-xs text-secondary">CBSE Class 12 Math: Applications of Integrals</span>
                 </div>
-                <span style="font-size: 26px;">☀️</span>
+                <span style="font-size: 28px;">☀️</span>
               </div>
               <p class="text-xs text-secondary my-2">Increase rectangular Riemann sum strips to watch discrete area slices converge to the definite integral limit.</p>
               <div class="qw-misconception-callout">

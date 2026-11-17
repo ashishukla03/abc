@@ -2696,6 +2696,84 @@ html[data-band="preparatory"] .btn-primary {
   border-color: #2563EB;
 }
 
+/* ==========================================================================
+   25. Premium Expansive Desktop Layout & High-End Motion Graphics
+   ========================================================================== */
+@media (min-width: 1024px) {
+  .multi-grade-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+}
+
+/* Shimmer Sheen on Primary Action Buttons */
+.btn-primary {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 40%;
+  height: 200%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.35) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: rotate(25deg);
+  pointer-events: none;
+  transition: all 0.75s ease;
+}
+
+.btn-primary:hover::after {
+  left: 130%;
+}
+
+/* Premium Card Elevate & Interactive 3D Depth */
+.mission-card,
+.qw-card,
+.timetable-card,
+.exams-card,
+.checklist-card,
+.topic-item-card {
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s ease, border-color 0.28s ease !important;
+}
+
+.mission-card:hover,
+.qw-card:hover,
+.timetable-card:hover,
+.exams-card:hover,
+.checklist-card:hover,
+.topic-item-card:hover {
+  transform: translateY(-5px) scale(1.01) !important;
+  box-shadow: 0 20px 40px -8px rgba(37, 99, 235, 0.12), 0 8px 16px -4px rgba(0, 0, 0, 0.04) !important;
+  border-color: #93C5FD !important;
+}
+
+/* Smooth Entrance Transition for Dynamic Screen Views */
+.screen-s0-map,
+.hub-container,
+.interactive-lab-shell,
+.onboarding-stepper {
+  animation: page-enter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes page-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
 
 
 

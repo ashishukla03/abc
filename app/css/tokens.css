@@ -147,8 +147,8 @@
   --touch-target-min: 48px;
 
   /* Layout Max-Width Boundary */
-  --container-max-width: 1200px;
-  --content-read-max-width: 1140px;
+  --container-max-width: 1440px;
+  --content-read-max-width: 1380px;
 
   /* ==========================================================================
      8. Border Radius Tokens
