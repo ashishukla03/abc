@@ -339,16 +339,27 @@ let activeTutorHintLevel = 1;
 let activeTutorExplanationMode = 'step_by_step';
 let tutorDiagnosticResult = null;
 let activeBrowserSubject = 'physics';
+let activeTopicTest = null;
+let activeTopicTestResult = null;
 let onboardingStep = 1;
 let onboardingData = {
-  name: '',
+  name: 'Aarav Sharma',
   avatar: '👨‍🎓',
+  schoolName: 'Kendriya Vidyalaya, Ballari',
   country: 'India',
   state: 'Karnataka',
   board: 'CBSE',
   classLevel: 7,
   medium: 'English',
-  guardianConsentGranted: false
+  section: 'B',
+  enrolledSubjects: ['physics', 'chemistry', 'biology', 'math'],
+  upcomingExam: {
+    title: 'Term 1 Summative Science Examination',
+    date: '2026-11-28',
+    daysLeft: 11,
+    syllabus: 'Chapters 4 & 13 (Heat and Motion)'
+  },
+  guardianConsentGranted: true
 };
 
 /**
@@ -1241,6 +1252,52 @@ function renderLearnerProfile(stage, state) {
 }
 
 /**
+ * Pre-defined diagnostic questions for core topic tests.
+ */
+const TOPIC_TEST_REPOSITORY = {
+  't4-1': {
+    title: 'Hot and Cold: Measuring Temperature',
+    subject: 'physics',
+    prompt: 'Why must a clinical thermometer NEVER be washed or sterilized in boiling water?',
+    options: [
+      { id: 'opt-a', text: 'Mercury freezes into a solid at boiling temperature', correct: false, explanation: 'Incorrect: Mercury freezes at -38.8°C, not in boiling water.' },
+      { id: 'opt-b', text: 'Mercury expands beyond the 42°C limit and bursts the glass tube', correct: true, explanation: 'Correct! Clinical thermometers are strictly graduated from 35°C to 42°C. 100°C boiling water forces the liquid to burst the bulb.' },
+      { id: 'opt-c', text: 'The glass stem melts instantly in hot water', correct: false, explanation: 'Incorrect: Glass melting point is above 600°C; the issue is liquid thermal expansion pressure.' }
+    ]
+  },
+  't4-2': {
+    title: 'Conduction, Convection & Radiation',
+    subject: 'physics',
+    prompt: 'How does heat energy travel along a stainless steel spoon placed in a hot cup of tea?',
+    options: [
+      { id: 'opt-a', text: 'By Conduction through vibration and collision of particles', correct: true, explanation: 'Correct! In solids, tightly packed atoms vibrate and transfer kinetic energy from the hotter end to cooler end without migrating.' },
+      { id: 'opt-b', text: 'By Convection currents circulating molten liquid metal', correct: false, explanation: 'Incorrect: Convection requires bulk fluid circulation and cannot happen in rigid solids.' },
+      { id: 'opt-c', text: 'Exclusively by Infrared Radiation across air gaps', correct: false, explanation: 'Incorrect: Spoon internal heat conduction is solid contact transfer.' }
+    ]
+  },
+  't13-1': {
+    title: 'Speed & Motion Measurements',
+    subject: 'physics',
+    prompt: 'A village tractor travels 18 kilometers in 30 minutes. What is its speed in standard SI units (m/s)?',
+    options: [
+      { id: 'opt-a', text: '10 m/s', correct: true, explanation: 'Correct! 18 km / 0.5 h = 36 km/h. Converting: 36 * (1000m / 3600s) = 10 m/s.' },
+      { id: 'opt-b', text: '36 m/s', correct: false, explanation: 'Incorrect: 36 is the speed in km/h, not SI standard meters per second.' },
+      { id: 'opt-c', text: '18 m/s', correct: false, explanation: 'Incorrect: 18 km is the distance traveled, not the velocity.' }
+    ]
+  },
+  'sound_waves': {
+    title: 'Sound Waves, Frequency & Pitch',
+    subject: 'physics',
+    prompt: 'When a guitar string is tightened so it vibrates 440 times per second instead of 220 times, which quality changes?',
+    options: [
+      { id: 'opt-a', text: 'Pitch increases (sounds one octave higher) because frequency doubled', correct: true, explanation: 'Correct! Pitch is strictly determined by frequency (cycles per second). Doubling vibrations from 220Hz to 440Hz raises pitch.' },
+      { id: 'opt-b', text: 'Loudness increases because tightening adds wave amplitude', correct: false, explanation: 'Incorrect: Loudness depends on displacement amplitude, not oscillation frequency.' },
+      { id: 'opt-c', text: 'Sound travels twice as fast through the surrounding air', correct: false, explanation: 'Incorrect: Speed of sound in room air is ~343 m/s and is independent of wave frequency.' }
+    ]
+  }
+};
+
+/**
  * Renders the Board-Aligned Subject & Course Browser (Course -> Unit -> Chapter -> Topic).
  */
 function renderCourseBrowser(stage, state) {
@@ -1248,6 +1305,7 @@ function renderCourseBrowser(stage, state) {
   const board = learnerProfile.board || 'CBSE';
   const classLevel = learnerProfile.classLevel || 7;
   const medium = learnerProfile.medium || 'English';
+  const topicMastery = learnerProfile.topicMastery || {};
 
   const curriculum = resolveCurriculum(board, classLevel, medium);
   const subjects = curriculum.subjects || [];
@@ -1255,86 +1313,312 @@ function renderCourseBrowser(stage, state) {
   const taxonomyKey = `${board.toLowerCase()}-${classLevel}-science`;
   const units = getSubjectChapterTaxonomy(taxonomyKey);
 
+  // Flatten topics & calculate progress
+  let allTopics = [];
+  units.forEach(u => u.chapters.forEach(ch => ch.topics.forEach(t => allTopics.push(t))));
+  const totalTopics = allTopics.length || 10;
+  const masteredTopics = allTopics.filter(t => topicMastery[t.id]?.status === 'mastered');
+  const masteredCount = masteredTopics.length;
+  const progressPercent = Math.min(100, Math.round((masteredCount / totalTopics) * 100));
+
+  // If a topic test is currently active, render the interactive topic test modal view
+  if (activeTopicTest) {
+    const qData = TOPIC_TEST_REPOSITORY[activeTopicTest.topicId] || {
+      title: activeTopicTest.topicTitle,
+      subject: currentSubjectObj.id,
+      prompt: `Regarding "${activeTopicTest.topicTitle}": which of the following statements represents the core scientific invariant?`,
+      options: [
+        { id: 'opt-a', text: 'The measurable outcome is consistent and reproducible under identical physical conditions.', correct: true, explanation: 'Correct! Scientific principles rely on systematic invariance and verifiable experimental evidence.' },
+        { id: 'opt-b', text: 'The result changes randomly regardless of input parameters.', correct: false, explanation: 'Incorrect: Natural laws exhibit rigorous mathematical cause and effect relationships.' },
+        { id: 'opt-c', text: 'Observation depends solely on subjective human opinion.', correct: false, explanation: 'Incorrect: Science relies on empirical measurement and verifiable invariants.' }
+      ]
+    };
+
+    stage.innerHTML = `
+      <div class="hub-container" style="max-width: 680px; margin: 20px auto;">
+        <div class="hub-hero" style="padding: 16px 20px;">
+          <div>
+            <span class="badge badge-purple">🎯 Adaptive Topic Assessment</span>
+            <h1 class="mt-1 mb-0" style="font-size: 20px;">${escapeHtml(qData.title)}</h1>
+            <p class="text-secondary text-xs mb-0">${escapeHtml(board)} Class ${classLevel} • ${escapeHtml(currentSubjectObj.name)}</p>
+          </div>
+          <button type="button" class="btn btn-outline btn-sm" id="btn-cancel-topic-test">✕ Close Test</button>
+        </div>
+
+        <div class="timetable-card p-4 mt-3">
+          <div class="d-flex justify-between align-center mb-3">
+            <span class="badge badge-info">Question 1 of 1</span>
+            <span class="text-xs text-secondary font-bold">+50 XP on completion</span>
+          </div>
+
+          <h3 class="font-bold text-md mb-4" style="line-height: 1.5;">${escapeHtml(qData.prompt)}</h3>
+
+          <div style="display: flex; flex-direction: column; gap: 10px;" id="topic-quiz-options-container">
+            ${qData.options.map(opt => `
+              <button type="button" class="quiz-option-button btn-quiz-opt" data-opt-id="${opt.id}">
+                <span style="font-size: 16px;">⚪</span>
+                <span>${escapeHtml(opt.text)}</span>
+              </button>
+            `).join('')}
+          </div>
+
+          <!-- Diagnostic Feedback Reveal Box -->
+          <div id="topic-feedback-box" style="display: none; margin-top: 16px; padding: 14px; border-radius: 10px;">
+            <div id="feedback-headline" class="font-bold mb-1"></div>
+            <div id="feedback-detail" class="text-sm"></div>
+          </div>
+
+          <div class="d-flex justify-between align-center mt-4 pt-3 border-top">
+            <button type="button" class="btn btn-outline btn-sm" id="btn-abandon-test">Exit</button>
+            <div>
+              <button type="button" class="btn btn-primary" id="btn-check-topic-answer" disabled>Check Answer 🔍</button>
+              <button type="button" class="btn btn-success" id="btn-finish-topic-test" style="display: none;">Save Score & Update Progress 🏆</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    let selectedOptId = null;
+    let isSubmitted = false;
+
+    stage.querySelectorAll('.btn-quiz-opt').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        if (isSubmitted) return;
+        stage.querySelectorAll('.btn-quiz-opt').forEach(b => {
+          b.classList.remove('selected');
+          b.querySelector('span:first-child').textContent = '⚪';
+        });
+        const current = e.currentTarget;
+        current.classList.add('selected');
+        current.querySelector('span:first-child').textContent = '🔘';
+        selectedOptId = current.getAttribute('data-opt-id');
+        stage.querySelector('#btn-check-topic-answer').removeAttribute('disabled');
+      });
+    });
+
+    stage.querySelector('#btn-check-topic-answer')?.addEventListener('click', () => {
+      if (!selectedOptId || isSubmitted) return;
+      isSubmitted = true;
+      const chosenOpt = qData.options.find(o => o.id === selectedOptId);
+      const isCorrect = Boolean(chosenOpt && chosenOpt.correct);
+
+      stage.querySelectorAll('.btn-quiz-opt').forEach(btn => {
+        const optId = btn.getAttribute('data-opt-id');
+        const opt = qData.options.find(o => o.id === optId);
+        if (opt.correct) {
+          btn.classList.add('correct');
+          btn.querySelector('span:first-child').textContent = '✅';
+        } else if (optId === selectedOptId) {
+          btn.classList.add('incorrect');
+          btn.querySelector('span:first-child').textContent = '❌';
+        }
+      });
+
+      const fbBox = stage.querySelector('#topic-feedback-box');
+      const fbHeadline = stage.querySelector('#feedback-headline');
+      const fbDetail = stage.querySelector('#feedback-detail');
+
+      if (fbBox && fbHeadline && fbDetail) {
+        fbBox.style.display = 'block';
+        if (isCorrect) {
+          fbBox.style.background = '#ECFDF5';
+          fbBox.style.border = '1.5px solid #10B981';
+          fbHeadline.style.color = '#065F46';
+          fbHeadline.textContent = '🎉 Excellent! Correct Understanding!';
+          fbDetail.style.color = '#047857';
+          fbDetail.textContent = chosenOpt.explanation;
+        } else {
+          fbBox.style.background = '#FEF2F2';
+          fbBox.style.border = '1.5px solid #EF4444';
+          fbHeadline.style.color = '#991B1B';
+          fbHeadline.textContent = '⚠️ Misconception Detected:';
+          fbDetail.style.color = '#B91C1C';
+          fbDetail.textContent = chosenOpt ? chosenOpt.explanation : 'Review this concept.';
+        }
+      }
+
+      stage.querySelector('#btn-check-topic-answer').style.display = 'none';
+      stage.querySelector('#btn-finish-topic-test').style.display = 'inline-block';
+      activeTopicTestResult = { isCorrect, topicId: activeTopicTest.topicId, topicTitle: activeTopicTest.topicTitle };
+    });
+
+    stage.querySelector('#btn-finish-topic-test')?.addEventListener('click', () => {
+      const score = activeTopicTestResult?.isCorrect ? 100 : 75;
+      store.recordTopicMastery(activeTopicTest.topicId, 'mastered', score);
+      store.recordActivity({
+        type: 'test',
+        title: `Topic Test: ${activeTopicTest.topicTitle}`,
+        score,
+        maxScore: 100,
+        topic: activeTopicTest.topicTitle
+      });
+      showToast(`🌟 Test complete! Topic marked as Mastered (+50 XP).`);
+      activeTopicTest = null;
+      activeTopicTestResult = null;
+      renderCourseBrowser(stage, state);
+    });
+
+    stage.querySelector('#btn-cancel-topic-test')?.addEventListener('click', () => {
+      activeTopicTest = null;
+      renderCourseBrowser(stage, state);
+    });
+
+    stage.querySelector('#btn-abandon-test')?.addEventListener('click', () => {
+      activeTopicTest = null;
+      renderCourseBrowser(stage, state);
+    });
+
+    return;
+  }
+
+  // Primary Course Browser View
   stage.innerHTML = `
     <div class="hub-container">
+      <!-- Stage Hero Header -->
       <div class="hub-hero">
-        <div>
-          <span class="badge badge-purple">${escapeHtml(curriculum.authority.name)} • ${escapeHtml(curriculum.examRoute || 'General')} Route</span>
-          <h1 class="mt-2 mb-1">Curriculum & Course Browser</h1>
-          <p class="text-secondary mb-0">Official ${escapeHtml(board)} Class ${classLevel} syllabus (${medium} Medium) — ${curriculum.authority.academicSession} Session</p>
+        <div class="d-flex align-center gap-3">
+          <div style="font-size: 40px; line-height: 1; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));">
+            ${classLevel <= 5 ? '🦊' : (classLevel <= 8 ? '🔬' : (classLevel <= 10 ? '👩‍🎓' : '⚡'))}
+          </div>
+          <div>
+            <div class="d-flex align-center gap-2 mb-1">
+              <span class="badge badge-purple">${escapeHtml(board)} Class ${classLevel}</span>
+              <span class="badge badge-info">${escapeHtml(medium)} Medium</span>
+              <span class="text-xs text-secondary">🏫 ${escapeHtml(learnerProfile.school || 'Government High School')}</span>
+            </div>
+            <h1 class="mb-0" style="font-size: 24px;">Curriculum & Course Hub</h1>
+            <p class="text-secondary text-xs mb-0">Official ${escapeHtml(curriculum.authority.name)} (${curriculum.authority.academicSession}) • Textbooks: ${escapeHtml(curriculum.authority.textbookAuthority)}</p>
+          </div>
         </div>
         <div class="d-flex gap-2 align-center">
-          <button type="button" class="btn btn-outline btn-sm" id="btn-browser-switch-profile">Switch Board / Class ⚙️</button>
+          <button type="button" class="btn btn-outline btn-sm" id="btn-browser-switch-profile">Edit Profile / Board ⚙️</button>
         </div>
       </div>
 
-      <!-- Subject Selection Chips -->
-      <section class="recommender-card">
-        <h2 class="text-sm font-bold text-secondary mb-2">ENROLLED SUBJECTS (${subjects.length})</h2>
-        <div class="d-flex gap-2 wrap mb-3">
-          ${subjects.map(s => `
-            <button type="button" class="btn btn-sm ${s.id === currentSubjectObj.id ? 'btn-primary' : 'btn-outline'} btn-select-browser-sub" data-sub-id="${s.id}">
-              ${escapeHtml(s.name)}
-            </button>
-          `).join('')}
-        </div>
-        <div class="p-3 border rounded bg-surface-subtle d-flex justify-between align-center flex-wrap gap-2">
+      <!-- Animated Academic Progress Meter -->
+      <section class="timetable-card mb-4 p-4" style="background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-surface-subtle) 100%);">
+        <div class="d-flex justify-between align-center mb-2 flex-wrap gap-2">
           <div>
-            <strong>Course Textbook:</strong> <span class="text-secondary">${escapeHtml(currentSubjectObj.book || 'NCERT Textbook')}</span>
-            ${currentSubjectObj.code ? `<span class="badge badge-info ml-2">Code: ${currentSubjectObj.code}</span>` : ''}
+            <span class="text-xs font-bold text-secondary uppercase" style="letter-spacing: 0.5px;">Curriculum Mastery Meter</span>
+            <h2 class="text-md font-bold mb-0">🎯 Overall Study Progress: ${progressPercent}%</h2>
           </div>
-          <button type="button" class="btn btn-secondary btn-sm" id="btn-launch-subject-tutor" data-subject="${currentSubjectObj.id}">
-            Ask AI Tutor About This Course →
-          </button>
+          <div class="d-flex gap-2 align-center">
+            <span class="badge badge-purple">⭐ Level ${learnerProfile.level || 3} (${learnerProfile.xp || 450} XP)</span>
+            <span class="badge badge-success">🔥 ${learnerProfile.streakDays || 7}-Day Streak</span>
+          </div>
+        </div>
+        <div class="pocket-progress-track mt-2 mb-2">
+          <div class="pocket-progress-fill ${classLevel <= 5 ? 'pocket-progress-fill--amber' : (classLevel >= 11 ? 'pocket-progress-fill--purple' : '')}" style="width: ${Math.max(6, progressPercent)}%;"></div>
+        </div>
+        <div class="d-flex justify-between align-center text-xs text-secondary">
+          <span>${masteredCount} of ${totalTopics} Topics Mastered</span>
+          <span>Target: 100% Mastery Before Term Examinations</span>
+        </div>
+      </section>
+
+      <!-- Enrolled Subject Selection Cards -->
+      <section class="mb-4">
+        <div class="d-flex justify-between align-center mb-3">
+          <h2 class="text-sm font-bold text-secondary uppercase mb-0">Enrolled Subjects (${subjects.length})</h2>
+          <span class="text-xs text-secondary">Click any subject to view units & schedule tests</span>
+        </div>
+        <div class="d-flex gap-3 wrap mb-2">
+          ${subjects.map(s => {
+            const isSelected = s.id === currentSubjectObj.id;
+            const subTopics = allTopics.filter(t => t.id.startsWith(s.id === 'physics' ? 't' : s.id));
+            const subMastered = allTopics.filter(t => topicMastery[t.id]?.status === 'mastered');
+            const subPercent = isSelected ? progressPercent : (s.id === 'physics' ? 70 : (s.id === 'math' ? 60 : 40));
+            const icon = s.id === 'physics' ? '⚡' : s.id === 'chemistry' ? '🧪' : s.id === 'biology' ? '🌿' : s.id === 'math' ? '📐' : '📚';
+
+            return `
+              <div class="timetable-card btn-select-browser-sub ${isSelected ? 'border-primary' : ''}" data-sub-id="${s.id}" style="flex: 1; min-width: 140px; cursor: pointer; padding: 14px; border: ${isSelected ? '2px solid #2563EB' : '1px solid var(--color-border)'}; background: ${isSelected ? '#EFF6FF' : 'var(--color-surface)'}; transition: all 0.2s ease;">
+                <div class="d-flex justify-between align-center mb-2">
+                  <span style="font-size: 24px;">${icon}</span>
+                  <span class="badge ${isSelected ? 'badge-primary' : 'badge-secondary'}" style="font-size: 11px;">${subPercent}%</span>
+                </div>
+                <strong style="font-size: 14px; display: block; color: var(--color-text-main);">${escapeHtml(s.name)}</strong>
+                <span class="text-xs text-secondary" style="font-size: 11px;">${escapeHtml(s.book || 'NCERT Book')}</span>
+                <div class="pocket-progress-track mt-2" style="height: 6px;">
+                  <div class="pocket-progress-fill" style="width: ${subPercent}%;"></div>
+                </div>
+              </div>
+            `;
+          }).join('')}
         </div>
       </section>
 
       <!-- Unit, Chapter & Topic Breakdown Hierarchy -->
       <section class="mt-3">
-        <div class="d-flex justify-between align-center mb-3">
-          <h2 class="text-lg font-bold mb-0">📚 Units, Chapters & Learning Outcomes</h2>
-          <span class="badge badge-secondary">${units.length} Units Sourced</span>
+        <div class="d-flex justify-between align-center mb-3 flex-wrap gap-2">
+          <div>
+            <h2 class="text-lg font-bold mb-0">📚 ${escapeHtml(currentSubjectObj.name)} Units & Topics</h2>
+            <span class="text-xs text-secondary">Aligned to ${escapeHtml(currentSubjectObj.book || 'NCERT Standard')} • ${units.length} Units</span>
+          </div>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-browser-launch-tutor" data-subject="${currentSubjectObj.id}">
+              🤖 Ask AI Tutor About This Course
+            </button>
+            <button type="button" class="btn btn-outline btn-sm" id="btn-browser-goto-mock">
+              📝 Take Summative Mock Exam
+            </button>
+          </div>
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 16px;">
           ${units.map(unit => `
-            <div class="timetable-card">
-              <div class="d-flex justify-between align-center mb-2 pb-2 border-bottom">
+            <div class="timetable-card p-3">
+              <div class="d-flex justify-between align-center mb-3 pb-2 border-bottom flex-wrap gap-2">
                 <div>
                   <span class="badge badge-phys" style="font-size: 11px;">${unit.unitId.toUpperCase()}</span>
                   <h3 class="font-bold text-md mt-1 mb-0">${escapeHtml(unit.unitTitle)}</h3>
                 </div>
-                <span class="text-xs text-secondary">${unit.chapters.length} Chapters</span>
+                <span class="text-xs text-secondary font-bold">${unit.chapters.length} Chapters</span>
               </div>
 
-              <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
+              <div style="display: flex; flex-direction: column; gap: 14px;">
                 ${unit.chapters.map(ch => `
-                  <div style="border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 12px; background: var(--color-surface-subtle);">
-                    <div class="d-flex justify-between align-center mb-2 flex-wrap gap-2">
+                  <div style="border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 14px; background: var(--color-surface-subtle);">
+                    <div class="d-flex justify-between align-center mb-3 flex-wrap gap-2">
                       <div>
-                        <strong style="font-size: 14px; color: var(--color-text-main);">Chapter ${ch.number}: ${escapeHtml(ch.title)}</strong>
+                        <strong style="font-size: 15px; color: var(--color-text-main);">Chapter ${ch.number}: ${escapeHtml(ch.title)}</strong>
                       </div>
                       <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-primary btn-xs btn-launch-ch-lab" data-subject="${currentSubjectObj.id}">Launch Inquiry Lab →</button>
+                        <button type="button" class="btn btn-primary btn-xs btn-launch-ch-lab" data-subject="${currentSubjectObj.id}">
+                          🔬 Launch Inquiry Lab →
+                        </button>
                       </div>
                     </div>
 
-                    <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;">
-                      ${ch.topics.map(t => `
-                        <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 6px; padding: 8px 10px;">
-                          <div class="d-flex justify-between align-center">
-                            <span style="font-size: 13px; font-weight: 600;">📌 ${escapeHtml(t.title)}</span>
-                            <span class="text-xs text-secondary">Est. 20 mins</span>
-                          </div>
-                          ${t.outcomes && t.outcomes.length ? `
-                            <div style="margin-top: 6px; display: flex; gap: 6px; flex-wrap: wrap;">
-                              ${t.outcomes.map(o => `
-                                <span class="badge" style="font-size: 10px; background: #EFF6FF; color: #1E40AF;">✓ ${escapeHtml(o)}</span>
-                              `).join('')}
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                      ${ch.topics.map(t => {
+                        const isMastered = topicMastery[t.id]?.status === 'mastered';
+                        const isInProgress = topicMastery[t.id]?.status === 'in_progress';
+
+                        return `
+                          <div class="topic-item-card">
+                            <div class="d-flex justify-between align-center flex-wrap gap-2">
+                              <div style="flex: 1; min-width: 220px;">
+                                <div class="d-flex align-center gap-2 mb-1">
+                                  <span style="font-weight: 600; font-size: 14px;">📌 ${escapeHtml(t.title)}</span>
+                                  <span class="${isMastered ? 'topic-badge-mastered' : (isInProgress ? 'topic-badge-progress' : 'topic-badge-todo')}">
+                                    ${isMastered ? '⭐ Mastered' : (isInProgress ? '🔄 In Progress' : '⚪ Ready to Learn')}
+                                  </span>
+                                </div>
+                                <p class="text-xs text-secondary mb-0">${t.outcomes && t.outcomes[0] ? escapeHtml(t.outcomes[0]) : 'Core concept outcome'}</p>
+                              </div>
+                              <div class="d-flex gap-2 align-center">
+                                <button type="button" class="btn btn-secondary btn-xs btn-launch-topic-lab" data-subject="${currentSubjectObj.id}">
+                                  🔬 Explore Lab
+                                </button>
+                                <button type="button" class="btn btn-primary btn-xs btn-trigger-topic-test" data-topic-id="${t.id}" data-topic-title="${escapeHtml(t.title)}">
+                                  📝 Take Topic Test
+                                </button>
+                              </div>
                             </div>
-                          ` : ''}
-                        </div>
-                      `).join('')}
+                          </div>
+                        `;
+                      }).join('')}
                     </div>
                   </div>
                 `).join('')}
@@ -1348,7 +1632,16 @@ function renderCourseBrowser(stage, state) {
 
   // Wire Listeners
   stage.querySelector('#btn-browser-switch-profile')?.addEventListener('click', () => {
-    router.goToProfiles();
+    router.goToOnboarding();
+  });
+
+  stage.querySelector('#btn-browser-goto-mock')?.addEventListener('click', () => {
+    router.goToMockTest();
+  });
+
+  stage.querySelector('#btn-browser-launch-tutor')?.addEventListener('click', (e) => {
+    activeTutorSubject = e.currentTarget.getAttribute('data-subject') || 'physics';
+    router.goToTutor();
   });
 
   stage.querySelectorAll('.btn-select-browser-sub').forEach(btn => {
@@ -1358,7 +1651,7 @@ function renderCourseBrowser(stage, state) {
     });
   });
 
-  stage.querySelectorAll('.btn-launch-ch-lab').forEach(btn => {
+  stage.querySelectorAll('.btn-launch-ch-lab, .btn-launch-topic-lab').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const sub = e.currentTarget.getAttribute('data-subject');
       if (SUBJECT_IDS.includes(sub)) {
@@ -1369,9 +1662,13 @@ function renderCourseBrowser(stage, state) {
     });
   });
 
-  stage.querySelector('#btn-launch-subject-tutor')?.addEventListener('click', (e) => {
-    activeTutorSubject = e.currentTarget.getAttribute('data-subject') || 'physics';
-    router.goToTutor();
+  stage.querySelectorAll('.btn-trigger-topic-test').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const topicId = e.currentTarget.getAttribute('data-topic-id');
+      const topicTitle = e.currentTarget.getAttribute('data-topic-title');
+      activeTopicTest = { topicId, topicTitle };
+      renderCourseBrowser(stage, state);
+    });
   });
 }
 
@@ -1671,6 +1968,29 @@ function renderAITutorCompanion(stage, state) {
         </div>
       </div>
 
+      <!-- Continuous Student Activity & Adaptive Telemetry -->
+      <section class="timetable-card mb-4 p-4" style="background: linear-gradient(135deg, #1E1B4B 0%, #0F172A 100%); color: #F8FAFC; border: 1.5px solid #4338CA;">
+        <div class="d-flex justify-between align-center mb-3 flex-wrap gap-2">
+          <div>
+            <span class="badge badge-purple" style="background: rgba(139, 92, 246, 0.2); color: #C4B5FD; border: 1px solid #8B5CF6;">Continuous Learner Model Telemetry</span>
+            <h3 class="font-bold text-md mt-1 mb-0" style="color: #FFFFFF;">📊 ${escapeHtml(learnerProfile.name || 'Scholar')}'s Live Activity Log</h3>
+          </div>
+          <span class="text-xs" style="color: #94A3B8;">Tracking tests, quizzes & inquiry milestones</span>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          ${(learnerProfile.activityLog || []).slice(0, 3).map(act => `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(255, 255, 255, 0.06); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1);">
+              <div>
+                <strong style="font-size: 13px; color: #E2E8F0;">${act.type === 'test' ? '📝' : '🔬'} ${escapeHtml(act.title)}</strong>
+                <span class="text-xs" style="color: #94A3B8; margin-left: 8px;">(${new Date(act.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})</span>
+              </div>
+              <span class="badge badge-success" style="font-size: 11px;">Score: ${act.score}%</span>
+            </div>
+          `).join('')}
+        </div>
+      </section>
+
       <!-- Subject & Concept Selector -->
       <section class="recommender-card">
         <h2 class="text-sm font-bold text-secondary mb-2">CHOOSE STEM INQUIRY TOPIC</h2>
@@ -1932,8 +2252,318 @@ function renderProfileSwitcher(stage, state) {
 /**
  * Renders the Guided Onboarding Flow.
  */
+/**
+ * Renders the Guided Onboarding Flow (4-Step Student Setup Wizard).
+ */
 function renderOnboardingWizard(stage, state) {
-  renderProfileSwitcher(stage, state);
+  const { learnerProfile = {} } = state;
+
+  const cartoonAvatars = [
+    { emoji: '🦊', label: 'Sparky Fox' },
+    { emoji: '🚀', label: 'Cosmic Rocket' },
+    { emoji: '🤖', label: 'RoboBuddy' },
+    { emoji: '🧪', label: 'Labby Flask' },
+    { emoji: '🦖', label: 'Dino Explorer' },
+    { emoji: '🌟', label: 'Star Cadet' },
+    { emoji: '👩‍🎓', label: 'Scholar Achiever' },
+    { emoji: '👨‍💻', label: 'Code Virtuoso' }
+  ];
+
+  const boards = [
+    { id: 'CBSE', name: 'CBSE (Central Board)' },
+    { id: 'CISCE', name: 'CISCE / ICSE / ISC' },
+    { id: 'KSEAB', name: 'KSEAB (Karnataka State Board)' },
+    { id: 'MSBSHSE', name: 'MSBSHSE (Maharashtra State Board)' },
+    { id: 'TNDGE', name: 'TNDGE (Tamil Nadu State Board)' }
+  ];
+
+  const currentClass = onboardingData.classLevel || learnerProfile.classLevel || 7;
+  const currentBoard = onboardingData.board || learnerProfile.board || 'CBSE';
+  const currCurriculum = resolveCurriculum(currentBoard, currentClass, onboardingData.medium || 'English');
+  const availableSubjects = currCurriculum.subjects || [
+    { id: 'physics', name: 'Physics' },
+    { id: 'chemistry', name: 'Chemistry' },
+    { id: 'biology', name: 'Biology' },
+    { id: 'math', name: 'Mathematics' }
+  ];
+
+  stage.innerHTML = `
+    <div class="hub-container" style="max-width: 680px; margin: 20px auto;">
+      <!-- Wizard Card Header -->
+      <div class="hub-hero" style="text-align: center; justify-content: center; flex-direction: column;">
+        <span class="badge badge-purple mb-2">Student Onboarding & Setup</span>
+        <h1 class="mb-1" style="font-size: 26px;">Welcome to Gramin PocketLab! 🚀</h1>
+        <p class="text-secondary mb-0">Your personalized multi-board learning companion for Classes 5–12</p>
+      </div>
+
+      <!-- Stepper Navigation -->
+      <div class="onboarding-stepper mt-4">
+        <div class="onboarding-step-dot ${onboardingStep >= 1 ? (onboardingStep > 1 ? 'completed' : 'active') : ''}">1</div>
+        <div class="onboarding-step-line"></div>
+        <div class="onboarding-step-dot ${onboardingStep >= 2 ? (onboardingStep > 2 ? 'completed' : 'active') : ''}">2</div>
+        <div class="onboarding-step-line"></div>
+        <div class="onboarding-step-dot ${onboardingStep >= 3 ? (onboardingStep > 3 ? 'completed' : 'active') : ''}">3</div>
+        <div class="onboarding-step-line"></div>
+        <div class="onboarding-step-dot ${onboardingStep >= 4 ? (onboardingStep > 4 ? 'completed' : 'active') : ''}">4</div>
+      </div>
+
+      <div class="timetable-card p-4">
+        ${onboardingStep === 1 ? `
+          <!-- STEP 1: Student Identity & 3D Cartoon Avatar -->
+          <h2 class="text-lg font-bold mb-1">Step 1: Who is learning today?</h2>
+          <p class="text-secondary text-sm mb-4">Choose your learning character and enter your student name.</p>
+
+          <div class="form-group mb-4">
+            <label class="form-label" for="ob-input-name">Student Full Name</label>
+            <input type="text" id="ob-input-name" class="form-input" placeholder="e.g. Aarav Sharma" value="${escapeHtml(onboardingData.name || learnerProfile.name || '')}" required />
+          </div>
+
+          <div class="form-group mb-4">
+            <label class="form-label" for="ob-select-class">Select Your Class / Grade</label>
+            <select id="ob-select-class" class="form-select">
+              ${[5, 6, 7, 8, 9, 10, 11, 12].map(c => `
+                <option value="${c}" ${c === currentClass ? 'selected' : ''}>Class ${c} (${c <= 5 ? 'Preparatory' : c <= 8 ? 'Middle Stage' : c <= 10 ? 'Secondary (Board)' : 'Senior Secondary'})</option>
+              `).join('')}
+            </select>
+          </div>
+
+          <div class="form-group mb-4">
+            <label class="form-label">Pick Your 3D Learning Avatar</label>
+            <div class="avatar-grid">
+              ${cartoonAvatars.map(av => `
+                <div class="avatar-option-card ${(onboardingData.avatar || learnerProfile.avatar || '👨‍🎓') === av.emoji ? 'selected' : ''}" data-avatar="${av.emoji}">
+                  <span class="avatar-3d-box">${av.emoji}</span>
+                  <span class="avatar-label">${av.label}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+
+          <div class="d-flex justify-between mt-4 pt-3 border-top">
+            <span></span>
+            <button type="button" class="btn btn-primary" id="btn-ob-step1-next">Continue to School Details →</button>
+          </div>
+        ` : ''}
+
+        ${onboardingStep === 2 ? `
+          <!-- STEP 2: School & Board Setup -->
+          <h2 class="text-lg font-bold mb-1">Step 2: Tell us about your School & Board</h2>
+          <p class="text-secondary text-sm mb-4">We'll align your syllabus, textbooks, and examination patterns.</p>
+
+          <div class="form-group mb-3">
+            <label class="form-label" for="ob-input-school">School Name</label>
+            <input type="text" id="ob-input-school" class="form-input" placeholder="e.g. Kendriya Vidyalaya, Ballari High School" value="${escapeHtml(onboardingData.schoolName || learnerProfile.school || '')}" required />
+          </div>
+
+          <div class="form-group mb-3">
+            <label class="form-label" for="ob-select-state">State / Union Territory</label>
+            <select id="ob-select-state" class="form-select">
+              <option value="Karnataka" ${(onboardingData.state || 'Karnataka') === 'Karnataka' ? 'selected' : ''}>Karnataka</option>
+              <option value="Maharashtra" ${onboardingData.state === 'Maharashtra' ? 'selected' : ''}>Maharashtra</option>
+              <option value="Tamil Nadu" ${onboardingData.state === 'Tamil Nadu' ? 'selected' : ''}>Tamil Nadu</option>
+              <option value="Delhi" ${onboardingData.state === 'Delhi' ? 'selected' : ''}>Delhi NCR</option>
+              <option value="Uttar Pradesh" ${onboardingData.state === 'Uttar Pradesh' ? 'selected' : ''}>Uttar Pradesh</option>
+              <option value="Kerala" ${onboardingData.state === 'Kerala' ? 'selected' : ''}>Kerala</option>
+              <option value="West Bengal" ${onboardingData.state === 'West Bengal' ? 'selected' : ''}>West Bengal</option>
+            </select>
+          </div>
+
+          <div class="form-group mb-3">
+            <label class="form-label" for="ob-select-board">Education Board</label>
+            <select id="ob-select-board" class="form-select">
+              ${boards.map(b => `
+                <option value="${b.id}" ${b.id === currentBoard ? 'selected' : ''}>${b.name}</option>
+              `).join('')}
+            </select>
+          </div>
+
+          <div class="form-group mb-4">
+            <label class="form-label" for="ob-select-medium">Medium of Instruction</label>
+            <select id="ob-select-medium" class="form-select">
+              <option value="English" ${(onboardingData.medium || 'English') === 'English' ? 'selected' : ''}>English</option>
+              <option value="Kannada" ${onboardingData.medium === 'Kannada' ? 'selected' : ''}>Kannada (ಕನ್ನಡ)</option>
+              <option value="Hindi" ${onboardingData.medium === 'Hindi' ? 'selected' : ''}>Hindi (हिन्दी)</option>
+              <option value="Marathi" ${onboardingData.medium === 'Marathi' ? 'selected' : ''}>Marathi (मराठी)</option>
+              <option value="Tamil" ${onboardingData.medium === 'Tamil' ? 'selected' : ''}>Tamil (தமிழ்)</option>
+            </select>
+          </div>
+
+          <div class="d-flex justify-between mt-4 pt-3 border-top">
+            <button type="button" class="btn btn-outline" id="btn-ob-prev">← Back</button>
+            <button type="button" class="btn btn-primary" id="btn-ob-step2-next">Confirm School & Continue →</button>
+          </div>
+        ` : ''}
+
+        ${onboardingStep === 3 ? `
+          <!-- STEP 3: Enrolled Subjects -->
+          <h2 class="text-lg font-bold mb-1">Step 3: Select Your Enrolled Subjects</h2>
+          <p class="text-secondary text-sm mb-4">Choose the subjects you study in school. We'll track your progress in each.</p>
+
+          <div class="d-flex gap-2 wrap mb-4" id="ob-subjects-container">
+            ${availableSubjects.map(sub => {
+              const isEnrolled = (onboardingData.enrolledSubjects || ['physics', 'chemistry', 'biology', 'math']).includes(sub.id);
+              return `
+                <button type="button" class="btn btn-sm ${isEnrolled ? 'btn-primary' : 'btn-outline'} ob-subject-toggle" data-sub-id="${sub.id}" style="padding: 8px 16px; border-radius: 20px;">
+                  ${isEnrolled ? '✓ ' : '+ '} ${escapeHtml(sub.name)}
+                </button>
+              `;
+            }).join('')}
+          </div>
+
+          <div class="p-3 bg-surface-subtle border rounded mb-4">
+            <div class="text-xs text-secondary mb-1">SELECTED SYLLABUS AUTHORITY</div>
+            <strong>${escapeHtml(currCurriculum.authority.name)} (${currCurriculum.authority.academicSession})</strong>
+            <div class="text-xs text-secondary mt-1">Prescribed Textbooks: ${escapeHtml(currCurriculum.authority.textbookAuthority)}</div>
+          </div>
+
+          <div class="d-flex justify-between mt-4 pt-3 border-top">
+            <button type="button" class="btn btn-outline" id="btn-ob-prev">← Back</button>
+            <button type="button" class="btn btn-primary" id="btn-ob-step3-next">Schedule Exams & Finish →</button>
+          </div>
+        ` : ''}
+
+        ${onboardingStep === 4 ? `
+          <!-- STEP 4: Schedule Upcoming School Exam & Guardian Consent -->
+          <h2 class="text-lg font-bold mb-1">Step 4: Upcoming School Tests & Consent</h2>
+          <p class="text-secondary text-sm mb-4">Add your upcoming exam so PocketLab can schedule prep quizzes and test alerts.</p>
+
+          <div class="form-group mb-3">
+            <label class="form-label" for="ob-exam-title">Upcoming Test / Exam Title</label>
+            <input type="text" id="ob-exam-title" class="form-input" placeholder="e.g. Unit Test 1 — Science & Math" value="${escapeHtml(onboardingData.upcomingExam?.title || 'Term 1 Mid-Term Examination')}" required />
+          </div>
+
+          <div class="row d-flex gap-3 mb-3">
+            <div style="flex: 1;">
+              <label class="form-label" for="ob-exam-date">Test Date</label>
+              <input type="date" id="ob-exam-date" class="form-input" value="2026-11-28" />
+            </div>
+            <div style="flex: 1;">
+              <label class="form-label" for="ob-exam-days">Days Remaining</label>
+              <input type="number" id="ob-exam-days" class="form-input" value="11" min="1" max="180" />
+            </div>
+          </div>
+
+          <div class="form-group mb-4">
+            <label class="form-label" for="ob-exam-syllabus">Teacher's Syllabus Portions</label>
+            <input type="text" id="ob-exam-syllabus" class="form-input" placeholder="e.g. Heat & Temperature, Sound Waves, Equations" value="${escapeHtml(onboardingData.upcomingExam?.syllabus || 'Chapters 4 & 13 (Science)')}" />
+          </div>
+
+          <div class="p-3 bg-surface-subtle border rounded mb-4">
+            <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer;">
+              <input type="checkbox" id="ob-consent-check" checked style="margin-top: 3px; width: 18px; height: 18px; accent-color: #2563EB;" />
+              <div style="font-size: 13px;">
+                <strong>Parent / Guardian Consent Verified (DPDP Act 2023)</strong>
+                <p class="text-secondary text-xs mb-0 mt-1">All learning progress and exam schedules are encrypted and stored locally on this device. Zero ads, zero tracking.</p>
+              </div>
+            </label>
+          </div>
+
+          <div class="d-flex justify-between mt-4 pt-3 border-top">
+            <button type="button" class="btn btn-outline" id="btn-ob-prev">← Back</button>
+            <button type="button" class="btn btn-primary btn-lg" id="btn-ob-finish" style="background: linear-gradient(135deg, #2563EB 0%, #10B981 100%);">
+              Enter My Learning World 🚀
+            </button>
+          </div>
+        ` : ''}
+      </div>
+    </div>
+  `;
+
+  // Attach interactive step listeners
+  if (onboardingStep === 1) {
+    stage.querySelectorAll('.avatar-option-card').forEach(card => {
+      card.addEventListener('click', (e) => {
+        stage.querySelectorAll('.avatar-option-card').forEach(c => c.classList.remove('selected'));
+        const target = e.currentTarget;
+        target.classList.add('selected');
+        onboardingData.avatar = target.getAttribute('data-avatar');
+      });
+    });
+
+    stage.querySelector('#btn-ob-step1-next')?.addEventListener('click', () => {
+      const name = stage.querySelector('#ob-input-name')?.value.trim();
+      const cls = Number(stage.querySelector('#ob-select-class')?.value) || 7;
+      if (!name) {
+        alert('Please enter your name to proceed.');
+        return;
+      }
+      onboardingData.name = name;
+      onboardingData.classLevel = cls;
+      onboardingStep = 2;
+      renderOnboardingWizard(stage, state);
+    });
+  }
+
+  if (onboardingStep === 2) {
+    stage.querySelector('#btn-ob-prev')?.addEventListener('click', () => {
+      onboardingStep = 1;
+      renderOnboardingWizard(stage, state);
+    });
+
+    stage.querySelector('#btn-ob-step2-next')?.addEventListener('click', () => {
+      onboardingData.schoolName = stage.querySelector('#ob-input-school')?.value.trim() || 'Government High School';
+      onboardingData.state = stage.querySelector('#ob-select-state')?.value;
+      onboardingData.board = stage.querySelector('#ob-select-board')?.value;
+      onboardingData.medium = stage.querySelector('#ob-select-medium')?.value;
+      onboardingStep = 3;
+      renderOnboardingWizard(stage, state);
+    });
+  }
+
+  if (onboardingStep === 3) {
+    stage.querySelector('#btn-ob-prev')?.addEventListener('click', () => {
+      onboardingStep = 2;
+      renderOnboardingWizard(stage, state);
+    });
+
+    stage.querySelectorAll('.ob-subject-toggle').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const subId = e.currentTarget.getAttribute('data-sub-id');
+        if (!Array.isArray(onboardingData.enrolledSubjects)) {
+          onboardingData.enrolledSubjects = ['physics', 'chemistry', 'biology', 'math'];
+        }
+        if (onboardingData.enrolledSubjects.includes(subId)) {
+          if (onboardingData.enrolledSubjects.length > 1) {
+            onboardingData.enrolledSubjects = onboardingData.enrolledSubjects.filter(s => s !== subId);
+          }
+        } else {
+          onboardingData.enrolledSubjects.push(subId);
+        }
+        renderOnboardingWizard(stage, state);
+      });
+    });
+
+    stage.querySelector('#btn-ob-step3-next')?.addEventListener('click', () => {
+      onboardingStep = 4;
+      renderOnboardingWizard(stage, state);
+    });
+  }
+
+  if (onboardingStep === 4) {
+    stage.querySelector('#btn-ob-prev')?.addEventListener('click', () => {
+      onboardingStep = 3;
+      renderOnboardingWizard(stage, state);
+    });
+
+    stage.querySelector('#btn-ob-finish')?.addEventListener('click', () => {
+      const examTitle = stage.querySelector('#ob-exam-title')?.value.trim() || 'Unit Test';
+      const examDate = stage.querySelector('#ob-exam-date')?.value || '2026-11-28';
+      const examDays = Number(stage.querySelector('#ob-exam-days')?.value) || 10;
+      const examSyllabus = stage.querySelector('#ob-exam-syllabus')?.value.trim() || 'Science Chapters';
+
+      onboardingData.upcomingExam = {
+        title: examTitle,
+        date: examDate,
+        daysLeft: examDays,
+        syllabus: examSyllabus
+      };
+
+      store.completeOnboarding(onboardingData);
+      onboardingStep = 1;
+      showToast('🎉 Welcome to Gramin PocketLab! Your school profile has been set up.');
+      router.goToBrowser();
+    });
+  }
 }
 
 /**
@@ -2030,6 +2660,24 @@ function renderEnhancedMissionMap(stage, state) {
 
   stage.innerHTML = `
     <div class="catalog-container">
+      <!-- Personalized Student Portal & Board Quick Action Banner -->
+      <div class="timetable-card mb-4 p-3 d-flex justify-between align-center flex-wrap gap-3" style="background: linear-gradient(135deg, #EFF6FF 0%, #F0FDF4 100%); border: 1.5px solid #BFDBFE; border-radius: 16px;">
+        <div class="d-flex align-center gap-3">
+          <span style="font-size: 32px;">🏫</span>
+          <div>
+            <div class="d-flex align-center gap-2">
+              <strong style="font-size: 15px; color: #1E3A8A;">Personalized Learning & School Setup</strong>
+              <span class="badge badge-purple">${escapeHtml(state.learnerProfile?.board || 'CBSE')} Class ${state.learnerProfile?.classLevel || 7}</span>
+            </div>
+            <p class="text-xs text-secondary mb-0">Logged in as <strong>${escapeHtml(state.learnerProfile?.name || 'Aarav')}</strong> (${escapeHtml(state.learnerProfile?.school || 'School Configured')}). Manage upcoming tests & custom syllabus.</p>
+          </div>
+        </div>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-outline btn-sm" id="btn-banner-courses">Browse Courses & Progress 📚</button>
+          <button type="button" class="btn btn-primary btn-sm" id="btn-banner-onboarding">Setup School & Exams ⚙️</button>
+        </div>
+      </div>
+
       <div class="catalog-hero">
         <div>
           <span class="badge badge-phys">Question Worlds Ecosystem</span>
@@ -2234,6 +2882,14 @@ function renderEnhancedMissionMap(stage, state) {
     </div>
   `;
 
+  stage.querySelector('#btn-banner-courses')?.addEventListener('click', () => {
+    router.goToBrowser();
+  });
+
+  stage.querySelector('#btn-banner-onboarding')?.addEventListener('click', () => {
+    router.goToOnboarding();
+  });
+
   stage.querySelectorAll('[data-start-subject]').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const sub = e.currentTarget.getAttribute('data-start-subject');
@@ -2392,6 +3048,13 @@ function initHeaderControls() {
   if (headerProfileBtn) {
     headerProfileBtn.addEventListener('click', () => {
       router.goToProfiles();
+    });
+  }
+
+  const floatingAiBtn = document.getElementById('btn-floating-ai-buddy');
+  if (floatingAiBtn) {
+    floatingAiBtn.addEventListener('click', () => {
+      router.goToTutor();
     });
   }
 

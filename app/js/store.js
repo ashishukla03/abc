@@ -96,6 +96,7 @@ export function createDefaultState() {
     enrolledSubjects: ['physics', 'chemistry', 'biology', 'math'],
     avatar: '👨‍🎓',
     guardianConsent: { granted: true, timestamp: 1731600000000, relationship: 'parent_guardian' },
+    hasCompletedOnboarding: true,
     streakDays: 7,
     xp: 450,
     level: 3,
@@ -107,6 +108,15 @@ export function createDefaultState() {
       biology: 80,
       social: 70,
       computing: 85
+    },
+    activityLog: [
+      { id: 'act-1', timestamp: Date.now() - 3600000, type: 'test', title: 'CBSE Class 7 Science Diagnostic', score: 85, maxScore: 100, topic: 'Sound & Pitch' },
+      { id: 'act-2', timestamp: Date.now() - 7200000, type: 'lab', title: 'Interactive Frequency Lab', score: 100, maxScore: 100, topic: 'Acoustics' }
+    ],
+    topicMastery: {
+      't4-1': { status: 'mastered', score: 90, lastAttempt: Date.now() - 86400000 },
+      't4-2': { status: 'in_progress', score: 60, lastAttempt: Date.now() - 43200000 },
+      't13-1': { status: 'mastered', score: 95, lastAttempt: Date.now() - 20000000 }
     }
   };
 
@@ -760,6 +770,77 @@ class StateStore {
       classLevel: p.learnerProfile?.classLevel || 7,
       isActive: p.id === this._state.activeProfileId
     }));
+  }
+
+  recordActivity(activity) {
+    if (!activity || !activity.title) return;
+    const act = {
+      id: `act-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      timestamp: Date.now(),
+      type: activity.type || 'study',
+      title: String(activity.title),
+      subject: activity.subject || 'science',
+      score: Number(activity.score) || 0,
+      maxScore: Number(activity.maxScore) || 100,
+      topic: activity.topic || ''
+    };
+    if (!Array.isArray(this._state.learnerProfile.activityLog)) {
+      this._state.learnerProfile.activityLog = [];
+    }
+    this._state.learnerProfile.activityLog.unshift(act);
+    if (this._state.learnerProfile.activityLog.length > 50) {
+      this._state.learnerProfile.activityLog.length = 50;
+    }
+    this._notify('RECORD_ACTIVITY', act);
+  }
+
+  recordTopicMastery(topicId, status = 'mastered', score = 100) {
+    if (!topicId) return;
+    if (!this._state.learnerProfile.topicMastery) {
+      this._state.learnerProfile.topicMastery = {};
+    }
+    this._state.learnerProfile.topicMastery[topicId] = {
+      status,
+      score: Number(score) || 100,
+      lastAttempt: Date.now()
+    };
+    this.addXP(25);
+    this._notify('RECORD_TOPIC_MASTERY', { topicId, status, score });
+  }
+
+  completeOnboarding(data) {
+    if (!data || typeof data !== 'object') return;
+    this.updateSchoolInfo({
+      schoolName: data.schoolName,
+      board: data.board,
+      classLevel: data.classLevel,
+      section: data.section || 'A'
+    });
+    if (data.name) this._state.learnerProfile.name = String(data.name);
+    if (data.avatar) this._state.learnerProfile.avatar = String(data.avatar);
+    if (data.state) this._state.learnerProfile.state = String(data.state);
+    if (data.medium) this._state.learnerProfile.medium = String(data.medium);
+    if (Array.isArray(data.enrolledSubjects)) {
+      this.setEnrolledSubjects(data.enrolledSubjects);
+    }
+    if (data.upcomingExam && data.upcomingExam.title) {
+      this.addExamCountdown(data.upcomingExam);
+    }
+    this._state.learnerProfile.hasCompletedOnboarding = true;
+    this._state.learnerProfile.guardianConsent = {
+      granted: true,
+      timestamp: Date.now(),
+      relationship: 'parent_guardian'
+    };
+    this.addXP(100);
+    this.recordActivity({
+      type: 'onboarding',
+      title: 'Completed Student Onboarding & School Profile Setup',
+      score: 100,
+      maxScore: 100,
+      topic: 'Account Setup'
+    });
+    this._notify('COMPLETE_ONBOARDING', this._state.learnerProfile);
   }
 
   /**

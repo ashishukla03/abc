@@ -2053,4 +2053,270 @@ html[data-band="senior secondary"] .qw-card:hover {
   box-shadow: 0 12px 24px -6px rgba(139, 92, 246, 0.25);
 }
 
+/* ==========================================================================
+   16. Animated Progress Bars & Visual Learning Gauges
+   ========================================================================== */
+.pocket-progress-track {
+  width: 100%;
+  height: 12px;
+  background-color: rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  position: relative;
+}
+
+.pocket-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3B82F6 0%, #10B981 100%);
+  border-radius: var(--radius-full);
+  transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+}
+
+.pocket-progress-fill--amber {
+  background: linear-gradient(90deg, #F59E0B 0%, #D97706 100%);
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+}
+
+.pocket-progress-fill--purple {
+  background: linear-gradient(90deg, #8B5CF6 0%, #6366F1 100%);
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.4);
+}
+
+.pocket-progress-fill--teal {
+  background: linear-gradient(90deg, #0D9488 0%, #14B8A6 100%);
+  box-shadow: 0 0 12px rgba(13, 148, 136, 0.4);
+}
+
+/* ==========================================================================
+   17. 3D Cartoon Aesthetics & Age-Adaptive Avatars
+   ========================================================================== */
+.avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+  gap: 12px;
+  margin: 14px 0;
+}
+
+.avatar-option-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 8px;
+  border-radius: 16px;
+  border: 2px solid var(--color-border);
+  background: var(--color-surface);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.avatar-option-card:hover {
+  transform: translateY(-3px) scale(1.05);
+  border-color: var(--color-subject-accent);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.avatar-option-card.selected {
+  border-color: #2563EB;
+  background: #EFF6FF;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+}
+
+.avatar-3d-box {
+  font-size: 36px;
+  line-height: 1;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.15));
+  margin-bottom: 4px;
+}
+
+.avatar-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Class 5 Preparatory 3D Cartoon Specifics */
+html[data-band="preparatory"] .timetable-card,
+html[data-band="preparatory"] .hub-hero,
+html[data-band="preparatory"] .recommender-card {
+  border-radius: 20px;
+  border-width: 2px;
+  border-color: #FDE68A;
+}
+
+html[data-band="preparatory"] .btn-primary {
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+  border-radius: 14px;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.35);
+}
+
+/* ==========================================================================
+   18. Onboarding Stepper & Interactive Setup Modal
+   ========================================================================== */
+.onboarding-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.onboarding-step-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  background: var(--color-surface-subtle);
+  border: 2px solid var(--color-border);
+  color: var(--color-text-secondary);
+  transition: all 0.3s ease;
+}
+
+.onboarding-step-dot.active {
+  background: var(--color-subject-accent);
+  border-color: var(--color-subject-accent);
+  color: #FFFFFF;
+  box-shadow: 0 0 10px rgba(37, 99, 235, 0.4);
+}
+
+.onboarding-step-dot.completed {
+  background: #10B981;
+  border-color: #10B981;
+  color: #FFFFFF;
+}
+
+.onboarding-step-line {
+  flex: 1;
+  max-width: 40px;
+  height: 2px;
+  background: var(--color-border);
+}
+
+/* ==========================================================================
+   19. Topic Cards, Tests & Instant Diagnostic Feedback
+   ========================================================================== */
+.topic-item-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 14px;
+  transition: all 0.2s ease;
+}
+
+.topic-item-card:hover {
+  border-color: var(--color-subject-accent);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+}
+
+.topic-badge-mastered {
+  background: #ECFDF5;
+  color: #065F46;
+  border: 1px solid #A7F3D0;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.topic-badge-progress {
+  background: #EFF6FF;
+  color: #1E40AF;
+  border: 1px solid #BFDBFE;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.topic-badge-todo {
+  background: #F3F4F6;
+  color: #4B5563;
+  border: 1px solid #E5E7EB;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.quiz-option-button {
+  width: 100%;
+  text-align: left;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.quiz-option-button:hover {
+  background: #F8FAFC;
+  border-color: #94A3B8;
+}
+
+.quiz-option-button.selected {
+  border-color: #2563EB;
+  background: #EFF6FF;
+  font-weight: 600;
+}
+
+.quiz-option-button.correct {
+  border-color: #10B981 !important;
+  background: #ECFDF5 !important;
+  color: #065F46 !important;
+}
+
+.quiz-option-button.incorrect {
+  border-color: #EF4444 !important;
+  background: #FEF2F2 !important;
+  color: #991B1B !important;
+}
+
+/* Floating AI Buddy Badge */
+.ai-companion-pill {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 28px;
+  background: linear-gradient(135deg, #1E1B4B 0%, #312E81 100%);
+  color: #FFFFFF;
+  border: 1.5px solid #6366F1;
+  box-shadow: 0 8px 24px rgba(49, 46, 129, 0.4);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ai-companion-pill:hover {
+  transform: translateY(-4px) scale(1.04);
+  box-shadow: 0 12px 30px rgba(99, 102, 241, 0.5);
+}
+
+
 
