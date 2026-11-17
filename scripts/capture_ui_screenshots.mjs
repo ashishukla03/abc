@@ -158,6 +158,18 @@ async function main() {
     await new Promise(r => setTimeout(r, 1000));
     await client.captureScreenshot(path.join(SCREENSHOTS_DIR, '06_learner_model_tab.png'));
 
+    // 7. Onboarding & Registration Landing Page
+    console.log('7. Navigating to Onboarding & Registration Landing Page...');
+    await client.send('Page.navigate', { url: 'http://127.0.0.1:8000/#/onboarding' });
+    await new Promise(r => setTimeout(r, 1200));
+    await client.captureScreenshot(path.join(SCREENSHOTS_DIR, '07_onboarding_landing_page.png'));
+
+    // 8. Onboarding Scholar Sign-In Mode
+    console.log('8. Switching to Scholar Sign-In Mode...');
+    await client.evaluate(`document.querySelector('#btn-ob-mode-login')?.click()`);
+    await new Promise(r => setTimeout(r, 800));
+    await client.captureScreenshot(path.join(SCREENSHOTS_DIR, '08_onboarding_signin_page.png'));
+
     client.close();
     console.log('Screenshots captured successfully into audit/screenshots/');
   } finally {
