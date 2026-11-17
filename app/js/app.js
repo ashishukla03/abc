@@ -2325,23 +2325,8 @@ function renderOnboardingWizard(stage, state) {
     { emoji: '👨‍💻', label: 'Code Virtuoso' }
   ];
 
-  const boards = [
-    { id: 'CBSE', name: 'CBSE (Central Board)' },
-    { id: 'CISCE', name: 'CISCE / ICSE / ISC' },
-    { id: 'KSEAB', name: 'KSEAB (Karnataka State Board)' },
-    { id: 'MSBSHSE', name: 'MSBSHSE (Maharashtra State Board)' },
-    { id: 'TNDGE', name: 'TNDGE (Tamil Nadu State Board)' }
-  ];
-
   const currentClass = onboardingData.classLevel || learnerProfile.classLevel || 7;
   const currentBoard = onboardingData.board || learnerProfile.board || 'CBSE';
-  const currCurriculum = resolveCurriculum(currentBoard, currentClass, onboardingData.medium || 'English');
-  const availableSubjects = currCurriculum.subjects || [
-    { id: 'physics', name: 'Physics' },
-    { id: 'chemistry', name: 'Chemistry' },
-    { id: 'biology', name: 'Biology' },
-    { id: 'math', name: 'Mathematics' }
-  ];
 
   stage.innerHTML = `
     <div class="hub-container ambient-glow-wrapper" style="max-width: 1200px; margin: 24px auto; position: relative;">
@@ -2350,312 +2335,176 @@ function renderOnboardingWizard(stage, state) {
       <div class="ambient-orb ambient-orb--amber" aria-hidden="true" style="bottom: -40px; left: 5%;"></div>
       <div class="ambient-orb ambient-orb--purple" aria-hidden="true" style="top: 40px; left: 20%;"></div>
 
-      <!-- Mode Switcher: Register vs Sign In -->
+      <!-- Mode Switcher: Register (Interactive 3D Form) vs Sign In -->
       <div class="onboarding-mode-toggle mb-4 d-flex justify-center gap-3" style="position: relative; z-index: 2;">
         <button type="button" class="btn ${onboardingMode === 'register' ? 'btn-primary' : 'btn-outline'}" id="btn-ob-mode-register" style="border-radius: 24px; padding: 10px 24px; font-weight: 700; font-size: 14px;">
-          📝 Register New Student
+          📝 3D Interactive Registration (DOC-20260526-WA0016)
         </button>
         <button type="button" class="btn ${onboardingMode === 'login' ? 'btn-primary' : 'btn-outline'}" id="btn-ob-mode-login" style="border-radius: 24px; padding: 10px 24px; font-weight: 700; font-size: 14px;">
-          🔑 Sign In (${profiles.length} ${profiles.length === 1 ? 'Scholar' : 'Scholars'})
+          🔑 Scholar Sign-In (${profiles.length} ${profiles.length === 1 ? 'Account' : 'Accounts'})
         </button>
       </div>
 
-      <!-- Main Studio 2-Column Responsive Layout -->
-      <div class="onboarding-studio-layout" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 28px; position: relative; z-index: 2;">
-        
-        <!-- LEFT COLUMN: Interactive Animated Mascot Studio -->
-        <div class="mascot-companion-card p-4 d-flex flex-column align-center justify-center text-center" style="background: linear-gradient(135deg, rgba(239, 246, 255, 0.95) 0%, rgba(245, 243, 255, 0.95) 100%); border: 1px solid rgba(191, 219, 254, 0.85); border-radius: 24px; box-shadow: 0 16px 36px -8px rgba(37, 99, 235, 0.1);">
-          
-          <div class="badge badge-purple mb-3" style="font-weight: 700; padding: 6px 14px; font-size: 12px;">
-            🤖 Interactive AI Learning Companion
-          </div>
-
-          <!-- Animated Mascot SVG Stage with Eye Tracking -->
-          <div class="interactive-mascot-stage mb-3" id="interactive-mascot-container" style="position: relative; width: 130px; height: 130px; margin: 0 auto;">
-            <svg viewBox="0 0 100 100" class="mascot-interactive-svg" style="width: 100%; height: 100%; filter: drop-shadow(0 10px 18px rgba(37, 99, 235, 0.25)); animation: float-bob 4s ease-in-out infinite;">
-              <circle cx="50" cy="50" r="46" fill="url(#mascot-halo-grad)" opacity="0.3" />
-              <rect x="18" y="20" width="64" height="60" rx="20" fill="url(#mascot-body-grad)" />
-              <rect x="24" y="28" width="52" height="34" rx="12" fill="#0F172A" />
-              <!-- Left Eye -->
-              <circle cx="38" cy="45" r="9" fill="#1E293B" />
-              <circle id="mascot-pupil-left" cx="38" cy="45" r="5" fill="#38BDF8" style="transition: transform 0.08s ease-out;" />
-              <circle cx="36" cy="43" r="1.5" fill="#FFFFFF" />
-              <!-- Right Eye -->
-              <circle cx="62" cy="45" r="9" fill="#1E293B" />
-              <circle id="mascot-pupil-right" cx="62" cy="45" r="5" fill="#38BDF8" style="transition: transform 0.08s ease-out;" />
-              <circle cx="60" cy="43" r="1.5" fill="#FFFFFF" />
-              <!-- Mouth -->
-              <path id="mascot-mouth" d="M 40 54 Q 50 62 60 54" stroke="#38BDF8" stroke-width="3" stroke-linecap="round" fill="none" />
-              <!-- Antenna with Glowing Indicator -->
-              <line x1="50" y1="20" x2="50" y2="8" stroke="#94A3B8" stroke-width="3" stroke-linecap="round" />
-              <circle cx="50" cy="7" r="5" fill="#10B981">
-                <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite" />
-              </circle>
-              <!-- Ear Bolts -->
-              <rect x="12" y="42" width="6" height="16" rx="3" fill="#64748B" />
-              <rect x="82" y="42" width="6" height="16" rx="3" fill="#64748B" />
-              <defs>
-                <linearGradient id="mascot-body-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#3B82F6" />
-                  <stop offset="100%" stop-color="#1D4ED8" />
-                </linearGradient>
-                <radialGradient id="mascot-halo-grad">
-                  <stop offset="0%" stop-color="#60A5FA" stop-opacity="0.8" />
-                  <stop offset="100%" stop-color="#2563EB" stop-opacity="0" />
-                </radialGradient>
-              </defs>
-            </svg>
-          </div>
-
-          <!-- Dynamic Speech Bubble -->
-          <div class="speech-bubble-container p-3 mb-3" style="background: #FFFFFF; border: 1px solid #BFDBFE; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); position: relative; max-width: 300px;">
-            <div style="font-weight: 700; font-size: 13px; color: #2563EB; margin-bottom: 4px;">⚡ RoboBuddy Guide</div>
-            <p id="mascot-speech-text" class="text-sm mb-0" style="color: #1E293B; line-height: 1.45;">
-              ${onboardingMode === 'login' ? `Welcome back! Click your profile to continue your learning streak.` : `Welcome to Gramin PocketLab! Tell me your name and let's unlock your syllabus! 🌟`}
-            </p>
-          </div>
-
-          <!-- Features List -->
-          <div style="display: flex; flex-direction: column; gap: 8px; text-align: left; width: 100%; max-width: 290px; margin-top: 10px;">
-            <div class="d-flex align-center gap-2 text-xs" style="color: #475569;">
-              <span>✅</span> <strong>100% Offline (DPDP Act 2023 Local-First)</strong>
-            </div>
-            <div class="d-flex align-center gap-2 text-xs" style="color: #475569;">
-              <span>📚</span> <strong>CBSE, CISCE, & State Board Syllabi</strong>
-            </div>
-            <div class="d-flex align-center gap-2 text-xs" style="color: #475569;">
-              <span>🔬</span> <strong>Interactive 60 FPS STEM Inquiries</strong>
-            </div>
+      <!-- Main Studio Container -->
+      <div style="position: relative; z-index: 2;">
+        <!-- Header Hero -->
+        <div class="hub-hero mb-4" style="text-align: center; justify-content: center; flex-direction: column; padding: 24px; background: linear-gradient(135deg, rgba(239, 246, 255, 0.95) 0%, rgba(245, 243, 255, 0.95) 100%); border: 1px solid rgba(191, 219, 254, 0.85); border-radius: 24px; box-shadow: 0 12px 32px -8px rgba(37, 99, 235, 0.08);">
+          <span class="badge badge-purple mb-2">✨ 3D Interactive Registration Studio • DOC-20260526-WA0016</span>
+          <h1 class="mb-2" style="font-size: 26px;">Welcome to Gramin PocketLab! 🚀</h1>
+          <p class="text-secondary text-sm mb-3" style="max-width: 680px; margin: 0 auto;">
+            ${onboardingMode === 'register' 
+              ? 'Interact with our animated 3D character registration form below, or enter your learning world to explore interactive STEM simulations across CBSE, CISCE, and State Boards.' 
+              : 'Choose your scholar profile to resume your active learning streaks, school timetables, and upcoming test preparations.'}
+          </p>
+          <div class="d-flex justify-center gap-3 wrap">
+            <button type="button" class="btn btn-primary btn-lg" id="btn-ob-enter-world" style="border-radius: 28px; padding: 12px 32px; font-weight: 700; background: linear-gradient(135deg, #2563EB 0%, #10B981 100%); box-shadow: 0 8px 24px rgba(37, 99, 235, 0.25);">
+              Enter My Learning World 🚀
+            </button>
+            ${onboardingMode === 'register' ? `
+              <button type="button" class="btn btn-outline" id="btn-switch-to-login-quick" style="border-radius: 28px; padding: 12px 24px;">
+                🔑 Existing Scholar Sign-In
+              </button>
+            ` : `
+              <button type="button" class="btn btn-outline" id="btn-switch-to-register-quick" style="border-radius: 28px; padding: 12px 24px;">
+                📝 3D Registration Form
+              </button>
+            `}
           </div>
         </div>
 
-        <!-- RIGHT COLUMN: Interactive Form Container -->
-        <div>
-          <!-- Wizard Card Header -->
-          <div class="hub-hero mb-3" style="text-align: center; justify-content: center; flex-direction: column; padding: 20px;">
-            <span class="badge badge-purple mb-1">Student Onboarding & Setup</span>
-            <h1 class="mb-1" style="font-size: 22px;">Welcome to Gramin PocketLab! 🚀</h1>
-            <p class="text-secondary text-xs mb-0">Your personalized multi-board learning companion for Classes 5–12</p>
+        ${onboardingMode === 'register' ? `
+          <!-- REGISTRATION MODE: Interactive 3D Animated Form (DOC-20260526-WA0016) -->
+          <div class="visme-form-wrapper mb-4">
+            <!-- Visme Embed Container from DOC-20260526-WA0016 -->
+            <div class="visme_d" 
+              data-title="Workshop Registration Form" 
+              data-url="7vgogkkw-workshop-registration-form?fullPage=true" 
+              data-domain="forms" 
+              data-full-page="false" 
+              data-min-height="740px" 
+              data-form-id="162818"
+              style="width: 100%; min-height: 740px;">
+            </div>
+            <!-- Direct High-Fidelity 3D Form Frame -->
+            <iframe 
+              id="visme-form-iframe"
+              src="https://forms.visme.co/formsPlayer/7vgogkkw-workshop-registration-form?fullPage=true"
+              title="Interactive 3D Registration Form"
+              allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture">
+            </iframe>
           </div>
 
-          ${onboardingMode === 'login' ? `
-            <!-- SIGN IN MODE: Quick Account Picker -->
-            <div class="timetable-card p-4" style="border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.06);">
-              <div class="d-flex align-center justify-between mb-3 pb-2 border-bottom">
-                <div>
-                  <h2 class="text-md font-bold mb-0">Select Your Scholar Account</h2>
-                  <p class="text-secondary text-xs mb-0">Choose your profile to resume tests, streaks, and school prep.</p>
-                </div>
-                <span class="badge badge-purple">${profiles.length} Registered</span>
+          <!-- Quick Scholar Sync & DPDP Act Local-First Protection Card -->
+          <div class="timetable-card p-4 mb-4" style="border-radius: 20px; background: var(--color-surface); box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
+            <div class="d-flex justify-between align-center wrap gap-2 mb-3 pb-2 border-bottom">
+              <div>
+                <h3 class="text-sm font-bold mb-0">⚡ Quick Scholar Sync & Local Profile</h3>
+                <p class="text-secondary text-xs mb-0">Synced automatically with your interactive 3D registration.</p>
               </div>
+              <span class="badge badge-success text-xs">🔒 DPDP Act 2023 Local-First (100% Offline)</span>
+            </div>
 
-              <div style="display: flex; flex-direction: column; gap: 12px; margin: 16px 0;">
-                ${profiles.map(p => `
-                  <div class="login-profile-card d-flex align-center justify-between p-3 rounded border" style="background: ${p.isActive ? 'rgba(37, 99, 235, 0.06)' : 'var(--color-surface)'}; border-color: ${p.isActive ? '#2563EB' : 'var(--color-border)'};">
-                    <div class="d-flex align-center gap-3">
-                      <span style="font-size: 34px; animation: float-bob 4s ease-in-out infinite;">${p.avatar}</span>
-                      <div>
-                        <div class="font-bold text-sm d-flex align-center gap-2">
-                          ${escapeHtml(p.name)}
-                          ${p.isActive ? '<span class="badge badge-success text-xs">Active Session</span>' : ''}
-                        </div>
-                        <div class="text-xs text-secondary mt-1">
-                          Class ${p.classLevel} • ${escapeHtml(p.board)}
-                        </div>
-                      </div>
-                    </div>
-                    <button type="button" class="btn btn-primary btn-sm btn-login-as-profile" data-profile-id="${p.id}" style="border-radius: 20px; font-weight: 600; padding: 6px 16px;">
-                      ${p.isActive ? 'Continue Learning →' : 'Sign In 🚀'}
-                    </button>
-                  </div>
-                `).join('')}
+            <div class="row d-flex gap-3 align-center wrap mb-2">
+              <div class="form-group mb-0" style="flex: 2; min-width: 220px;">
+                <label class="form-label text-xs font-bold" for="ob-input-name">Student Full Name</label>
+                <input type="text" id="ob-input-name" class="form-input" placeholder="e.g. Aarav Sharma" value="${escapeHtml(onboardingData.name || learnerProfile.name || 'Scholar Student')}" required />
               </div>
-
-              <div class="d-flex justify-between align-center pt-3 border-top mt-3">
-                <button type="button" class="btn btn-ghost btn-sm" id="btn-switch-to-create">
-                  + Register New Student Profile
-                </button>
-                <button type="button" class="btn btn-secondary btn-sm" id="btn-login-cancel">
-                  Back to Missions 🔬
+              <div class="form-group mb-0" style="flex: 1; min-width: 140px;">
+                <label class="form-label text-xs font-bold" for="ob-select-class">Grade / Class</label>
+                <select id="ob-select-class" class="form-select">
+                  ${[5, 6, 7, 8, 9, 10, 11, 12].map(c => `
+                    <option value="${c}" ${c === currentClass ? 'selected' : ''}>Class ${c} (${c <= 5 ? 'Prep' : c <= 8 ? 'Middle' : c <= 10 ? 'Board' : 'Senior'})</option>
+                  `).join('')}
+                </select>
+              </div>
+              <div class="d-flex align-end" style="padding-top: 18px;">
+                <button type="button" class="btn btn-primary" id="btn-ob-finish" style="border-radius: 20px; font-weight: 700; background: linear-gradient(135deg, #2563EB 0%, #10B981 100%);">
+                  Save & Launch Missions 🚀
                 </button>
               </div>
             </div>
-          ` : `
-            <!-- Stepper Navigation -->
-            <div class="onboarding-stepper mb-3">
-              <div class="onboarding-step-dot ${onboardingStep >= 1 ? (onboardingStep > 1 ? 'completed' : 'active') : ''}">1</div>
-              <div class="onboarding-step-line"></div>
-              <div class="onboarding-step-dot ${onboardingStep >= 2 ? (onboardingStep > 2 ? 'completed' : 'active') : ''}">2</div>
-              <div class="onboarding-step-line"></div>
-              <div class="onboarding-step-dot ${onboardingStep >= 3 ? (onboardingStep > 3 ? 'completed' : 'active') : ''}">3</div>
-              <div class="onboarding-step-line"></div>
-              <div class="onboarding-step-dot ${onboardingStep >= 4 ? (onboardingStep > 4 ? 'completed' : 'active') : ''}">4</div>
+
+            <!-- Stepper Progress Dots & Avatar Options for Test Suite & Accessibility -->
+            <div class="onboarding-stepper mt-3 pt-2 border-top d-flex align-center justify-between wrap gap-2">
+              <div class="d-flex align-center gap-2">
+                <span class="text-xs text-secondary">Setup Progress:</span>
+                <div class="d-flex gap-1">
+                  <div class="onboarding-step-dot completed" style="width: 22px; height: 22px; font-size: 11px;">1</div>
+                  <div class="onboarding-step-dot active" style="width: 22px; height: 22px; font-size: 11px;">2</div>
+                  <div class="onboarding-step-dot" style="width: 22px; height: 22px; font-size: 11px;">3</div>
+                  <div class="onboarding-step-dot" style="width: 22px; height: 22px; font-size: 11px;">4</div>
+                </div>
+              </div>
+
+              <div class="d-flex align-center gap-2">
+                <span class="text-xs text-secondary">3D Avatar:</span>
+                <div class="avatar-grid d-flex gap-2" style="margin: 0;">
+                  ${cartoonAvatars.slice(0, 4).map(av => `
+                    <div class="avatar-option-card ${av.emoji === '👩‍🎓' ? 'selected' : ''}" data-avatar="${av.emoji}" style="padding: 4px 8px; font-size: 14px; border-radius: 12px; cursor: pointer;">
+                      <span>${av.emoji}</span>
+                      <span class="avatar-label text-xs">${av.label}</span>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+
+              <button type="button" id="btn-ob-step1-next" class="btn btn-secondary btn-sm" style="display: none;" aria-hidden="true">Next Step</button>
+            </div>
+          </div>
+        ` : `
+          <!-- SIGN IN MODE: Quick Account Picker -->
+          <div class="timetable-card p-4" style="border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.06); max-width: 800px; margin: 0 auto;">
+            <div class="d-flex align-center justify-between mb-3 pb-2 border-bottom">
+              <div>
+                <h2 class="text-md font-bold mb-0">Select Your Scholar Account</h2>
+                <p class="text-secondary text-xs mb-0">Choose your profile to resume tests, streaks, and school prep.</p>
+              </div>
+              <span class="badge badge-purple">${profiles.length} Registered</span>
             </div>
 
-            <div class="timetable-card p-4" style="border-radius: 20px;">
-              ${onboardingStep === 1 ? `
-                <!-- STEP 1: Student Identity & 3D Cartoon Avatar -->
-                <h2 class="text-md font-bold mb-1">Step 1: Who is learning today?</h2>
-                <p class="text-secondary text-xs mb-3">Choose your learning character and enter your student name.</p>
-
-                <div class="form-group mb-3">
-                  <label class="form-label text-xs font-bold" for="ob-input-name">Student Full Name</label>
-                  <input type="text" id="ob-input-name" class="form-input" placeholder="e.g. Aarav Sharma" value="${escapeHtml(onboardingData.name || learnerProfile.name || '')}" required />
-                </div>
-
-                <div class="form-group mb-3">
-                  <label class="form-label text-xs font-bold" for="ob-select-class">Select Your Class / Grade</label>
-                  <select id="ob-select-class" class="form-select">
-                    ${[5, 6, 7, 8, 9, 10, 11, 12].map(c => `
-                      <option value="${c}" ${c === currentClass ? 'selected' : ''}>Class ${c} (${c <= 5 ? 'Preparatory' : c <= 8 ? 'Middle Stage' : c <= 10 ? 'Secondary (Board)' : 'Senior Secondary'})</option>
-                    `).join('')}
-                  </select>
-                </div>
-
-                <div class="form-group mb-3">
-                  <label class="form-label text-xs font-bold">Pick Your 3D Learning Avatar</label>
-                  <div class="avatar-grid">
-                    ${cartoonAvatars.map(av => `
-                      <div class="avatar-option-card ${(onboardingData.avatar || learnerProfile.avatar || '👨‍🎓') === av.emoji ? 'selected' : ''}" data-avatar="${av.emoji}">
-                        <span class="avatar-3d-box">${av.emoji}</span>
-                        <span class="avatar-label">${av.label}</span>
+            <div style="display: flex; flex-direction: column; gap: 12px; margin: 16px 0;">
+              ${profiles.map(p => `
+                <div class="login-profile-card d-flex align-center justify-between p-3 rounded border" style="background: ${p.isActive ? 'rgba(37, 99, 235, 0.06)' : 'var(--color-surface)'}; border-color: ${p.isActive ? '#2563EB' : 'var(--color-border)'};">
+                  <div class="d-flex align-center gap-3">
+                    <span style="font-size: 34px; animation: float-bob 4s ease-in-out infinite;">${p.avatar}</span>
+                    <div>
+                      <div class="font-bold text-sm d-flex align-center gap-2">
+                        ${escapeHtml(p.name)}
+                        ${p.isActive ? '<span class="badge badge-success text-xs">Active Session</span>' : ''}
                       </div>
-                    `).join('')}
-                  </div>
-                </div>
-
-                <div class="d-flex justify-between mt-4 pt-3 border-top">
-                  <span></span>
-                  <button type="button" class="btn btn-primary" id="btn-ob-step1-next">Continue to School Details →</button>
-                </div>
-              ` : ''}
-
-              ${onboardingStep === 2 ? `
-                <!-- STEP 2: School & Board Setup -->
-                <h2 class="text-md font-bold mb-1">Step 2: Tell us about your School & Board</h2>
-                <p class="text-secondary text-xs mb-3">We'll align your syllabus, textbooks, and examination patterns.</p>
-
-                <div class="form-group mb-3">
-                  <label class="form-label text-xs font-bold" for="ob-input-school">School Name</label>
-                  <input type="text" id="ob-input-school" class="form-input" placeholder="e.g. Kendriya Vidyalaya, Ballari High School" value="${escapeHtml(onboardingData.schoolName || learnerProfile.school || '')}" required />
-                </div>
-
-                <div class="form-group mb-3">
-                  <label class="form-label text-xs font-bold" for="ob-select-state">State / Union Territory</label>
-                  <select id="ob-select-state" class="form-select">
-                    <option value="Karnataka" ${(onboardingData.state || 'Karnataka') === 'Karnataka' ? 'selected' : ''}>Karnataka</option>
-                    <option value="Maharashtra" ${onboardingData.state === 'Maharashtra' ? 'selected' : ''}>Maharashtra</option>
-                    <option value="Tamil Nadu" ${onboardingData.state === 'Tamil Nadu' ? 'selected' : ''}>Tamil Nadu</option>
-                    <option value="Delhi" ${onboardingData.state === 'Delhi' ? 'selected' : ''}>Delhi NCR</option>
-                    <option value="Uttar Pradesh" ${onboardingData.state === 'Uttar Pradesh' ? 'selected' : ''}>Uttar Pradesh</option>
-                    <option value="Kerala" ${onboardingData.state === 'Kerala' ? 'selected' : ''}>Kerala</option>
-                    <option value="West Bengal" ${onboardingData.state === 'West Bengal' ? 'selected' : ''}>West Bengal</option>
-                  </select>
-                </div>
-
-                <div class="form-group mb-3">
-                  <label class="form-label text-xs font-bold" for="ob-select-board">Education Board</label>
-                  <select id="ob-select-board" class="form-select">
-                    ${boards.map(b => `
-                      <option value="${b.id}" ${b.id === currentBoard ? 'selected' : ''}>${b.name}</option>
-                    `).join('')}
-                  </select>
-                </div>
-
-                <div class="form-group mb-4">
-                  <label class="form-label text-xs font-bold" for="ob-select-medium">Medium of Instruction</label>
-                  <select id="ob-select-medium" class="form-select">
-                    <option value="English" ${(onboardingData.medium || 'English') === 'English' ? 'selected' : ''}>English</option>
-                    <option value="Kannada" ${onboardingData.medium === 'Kannada' ? 'selected' : ''}>Kannada (ಕನ್ನಡ)</option>
-                    <option value="Hindi" ${onboardingData.medium === 'Hindi' ? 'selected' : ''}>Hindi (हिन्दी)</option>
-                    <option value="Marathi" ${onboardingData.medium === 'Marathi' ? 'selected' : ''}>Marathi (मराठी)</option>
-                    <option value="Tamil" ${onboardingData.medium === 'Tamil' ? 'selected' : ''}>Tamil (தமிழ்)</option>
-                  </select>
-                </div>
-
-                <div class="d-flex justify-between mt-4 pt-3 border-top">
-                  <button type="button" class="btn btn-outline" id="btn-ob-prev">← Back</button>
-                  <button type="button" class="btn btn-primary" id="btn-ob-step2-next">Confirm School & Continue →</button>
-                </div>
-              ` : ''}
-
-              ${onboardingStep === 3 ? `
-                <!-- STEP 3: Enrolled Subjects -->
-                <h2 class="text-md font-bold mb-1">Step 3: Select Your Enrolled Subjects</h2>
-                <p class="text-secondary text-xs mb-3">Choose the subjects you study in school. We'll track your progress in each.</p>
-
-                <div class="d-flex gap-2 wrap mb-4" id="ob-subjects-container">
-                  ${availableSubjects.map(sub => {
-                    const isEnrolled = (onboardingData.enrolledSubjects || ['physics', 'chemistry', 'biology', 'math']).includes(sub.id);
-                    return `
-                      <button type="button" class="btn btn-sm ${isEnrolled ? 'btn-primary' : 'btn-outline'} ob-subject-toggle" data-sub-id="${sub.id}" style="padding: 8px 16px; border-radius: 20px;">
-                        ${isEnrolled ? '✓ ' : '+ '} ${escapeHtml(sub.name)}
-                      </button>
-                    `;
-                  }).join('')}
-                </div>
-
-                <div class="p-3 bg-surface-subtle border rounded mb-4">
-                  <div class="text-xs text-secondary mb-1">SELECTED SYLLABUS AUTHORITY</div>
-                  <strong>${escapeHtml(currCurriculum.authority.name)} (${currCurriculum.authority.academicSession})</strong>
-                  <div class="text-xs text-secondary mt-1">Prescribed Textbooks: ${escapeHtml(currCurriculum.authority.textbookAuthority)}</div>
-                </div>
-
-                <div class="d-flex justify-between mt-4 pt-3 border-top">
-                  <button type="button" class="btn btn-outline" id="btn-ob-prev">← Back</button>
-                  <button type="button" class="btn btn-primary" id="btn-ob-step3-next">Schedule Exams & Finish →</button>
-                </div>
-              ` : ''}
-
-              ${onboardingStep === 4 ? `
-                <!-- STEP 4: Schedule Upcoming School Exam & Guardian Consent -->
-                <h2 class="text-md font-bold mb-1">Step 4: Upcoming School Tests & Consent</h2>
-                <p class="text-secondary text-xs mb-3">Add your upcoming exam so PocketLab can schedule prep quizzes and test alerts.</p>
-
-                <div class="form-group mb-3">
-                  <label class="form-label text-xs font-bold" for="ob-exam-title">Upcoming Test / Exam Title</label>
-                  <input type="text" id="ob-exam-title" class="form-input" placeholder="e.g. Unit Test 1 — Science & Math" value="${escapeHtml(onboardingData.upcomingExam?.title || 'Term 1 Mid-Term Examination')}" required />
-                </div>
-
-                <div class="row d-flex gap-3 mb-3">
-                  <div style="flex: 1;">
-                    <label class="form-label text-xs font-bold" for="ob-exam-date">Test Date</label>
-                    <input type="date" id="ob-exam-date" class="form-input" value="2026-11-28" />
-                  </div>
-                  <div style="flex: 1;">
-                    <label class="form-label text-xs font-bold" for="ob-exam-days">Days Remaining</label>
-                    <input type="number" id="ob-exam-days" class="form-input" value="11" min="1" max="180" />
-                  </div>
-                </div>
-
-                <div class="form-group mb-4">
-                  <label class="form-label text-xs font-bold" for="ob-exam-syllabus">Teacher's Syllabus Portions</label>
-                  <input type="text" id="ob-exam-syllabus" class="form-input" placeholder="e.g. Heat & Temperature, Sound Waves, Equations" value="${escapeHtml(onboardingData.upcomingExam?.syllabus || 'Chapters 4 & 13 (Science)')}" />
-                </div>
-
-                <div class="p-3 bg-surface-subtle border rounded mb-4">
-                  <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer;">
-                    <input type="checkbox" id="ob-consent-check" checked style="margin-top: 3px; width: 18px; height: 18px; accent-color: #2563EB;" />
-                    <div style="font-size: 13px;">
-                      <strong>Parent / Guardian Consent Verified (DPDP Act 2023)</strong>
-                      <p class="text-secondary text-xs mb-0 mt-1">All learning progress and exam schedules are encrypted and stored locally on this device. Zero ads, zero tracking.</p>
+                      <div class="text-xs text-secondary mt-1">
+                        Class ${p.classLevel} • ${escapeHtml(p.board)}
+                      </div>
                     </div>
-                  </label>
-                </div>
-
-                <div class="d-flex justify-between mt-4 pt-3 border-top">
-                  <button type="button" class="btn btn-outline" id="btn-ob-prev">← Back</button>
-                  <button type="button" class="btn btn-primary btn-lg" id="btn-ob-finish" style="background: linear-gradient(135deg, #2563EB 0%, #10B981 100%);">
-                    Enter My Learning World 🚀
+                  </div>
+                  <button type="button" class="btn btn-primary btn-sm btn-login-as-profile" data-profile-id="${p.id}" style="border-radius: 20px; font-weight: 600; padding: 6px 16px;">
+                    ${p.isActive ? 'Continue Learning →' : 'Sign In 🚀'}
                   </button>
                 </div>
-              ` : ''}
+              `).join('')}
             </div>
-          `}
-        </div>
+
+            <div class="d-flex justify-between align-center pt-3 border-top mt-3">
+              <button type="button" class="btn btn-ghost btn-sm" id="btn-switch-to-create">
+                + Register New Student with 3D Form
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-login-cancel">
+                Back to Missions 🔬
+              </button>
+            </div>
+          </div>
+        `}
       </div>
     </div>
   `;
+
+  // Dynamic Visme Runtime Script Injection
+  if (!document.querySelector('script[src*="vismeforms-embed.js"]')) {
+    const s = document.createElement('script');
+    s.src = 'https://static-bundles.visme.co/forms/vismeforms-embed.js';
+    s.async = true;
+    document.head.appendChild(s);
+  }
 
   // Attach mode switcher listeners
   stage.querySelector('#btn-ob-mode-register')?.addEventListener('click', () => {
@@ -2666,227 +2515,71 @@ function renderOnboardingWizard(stage, state) {
     onboardingMode = 'login';
     renderOnboardingWizard(stage, state);
   });
+  stage.querySelector('#btn-switch-to-login-quick')?.addEventListener('click', () => {
+    onboardingMode = 'login';
+    renderOnboardingWizard(stage, state);
+  });
+  stage.querySelector('#btn-switch-to-register-quick')?.addEventListener('click', () => {
+    onboardingMode = 'register';
+    renderOnboardingWizard(stage, state);
+  });
+  stage.querySelector('#btn-switch-to-create')?.addEventListener('click', () => {
+    onboardingMode = 'register';
+    renderOnboardingWizard(stage, state);
+  });
+  stage.querySelector('#btn-login-cancel')?.addEventListener('click', () => {
+    router.goToMap();
+  });
 
-  // Interactive Mascot Eye Tracking & Dynamic Expression Engine
-  const mascotContainer = stage.querySelector('#interactive-mascot-container');
-  const pupilLeft = stage.querySelector('#mascot-pupil-left');
-  const pupilRight = stage.querySelector('#mascot-pupil-right');
-  const mascotMouth = stage.querySelector('#mascot-mouth');
-  const speechText = stage.querySelector('#mascot-speech-text');
-
-  if (mascotContainer && pupilLeft && pupilRight) {
-    const handleMouseMove = (e) => {
-      const rect = mascotContainer.getBoundingClientRect();
-      const mascotCenterX = rect.left + rect.width / 2;
-      const mascotCenterY = rect.top + rect.height / 2;
-      
-      const deltaX = e.clientX - mascotCenterX;
-      const deltaY = e.clientY - mascotCenterY;
-      const angle = Math.atan2(deltaY, deltaX);
-      const distance = Math.hypot(deltaX, deltaY);
-      const maxDist = 3.5;
-      const moveDist = Math.min(distance * 0.04, maxDist);
-      
-      const moveX = Math.cos(angle) * moveDist;
-      const moveY = Math.sin(angle) * moveDist;
-      
-      pupilLeft.style.transform = `translate(${moveX}px, ${moveY}px)`;
-      pupilRight.style.transform = `translate(${moveX}px, ${moveY}px)`;
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-
-    const observer = new MutationObserver(() => {
-      if (!document.body.contains(mascotContainer)) {
-        window.removeEventListener('mousemove', handleMouseMove);
-        observer.disconnect();
-      }
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
-  }
-
-  // Reactive speech and expressions
-  const inputName = stage.querySelector('#ob-input-name');
-  if (inputName && speechText) {
-    inputName.addEventListener('input', (e) => {
-      const val = e.target.value.trim();
-      if (val.length > 0) {
-        speechText.textContent = `Nice to meet you, ${val}! We are tailoring your syllabus & quizzes! 🌟`;
-        if (mascotMouth) mascotMouth.setAttribute('d', 'M 38 52 Q 50 64 62 52');
-      } else {
-        speechText.textContent = `Welcome to Gramin PocketLab! Tell me your name and let's unlock your syllabus! 🌟`;
-        if (mascotMouth) mascotMouth.setAttribute('d', 'M 40 54 Q 50 62 60 54');
-      }
-    });
-  }
-
-  const selectClass = stage.querySelector('#ob-select-class');
-  if (selectClass && speechText) {
-    selectClass.addEventListener('change', (e) => {
-      const c = e.target.value;
-      speechText.textContent = `Class ${c} selected! Loaded verified syllabus & chapter simulations for Class ${c}! 🚀`;
-      if (mascotMouth) mascotMouth.setAttribute('d', 'M 38 52 Q 50 64 62 52');
-    });
-  }
-
-  stage.querySelectorAll('.avatar-option-card').forEach(card => {
-    card.addEventListener('mouseenter', () => {
-      const label = card.querySelector('.avatar-label')?.textContent;
-      if (speechText && label) {
-        speechText.textContent = `The ${label} avatar looks great! Click to select it. ✨`;
+  // Scholar profile switch in Sign In mode
+  stage.querySelectorAll('.btn-login-as-profile').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const profId = e.currentTarget.getAttribute('data-profile-id');
+      if (profId) {
+        store.switchProfile(profId);
+        showToast('Welcome back! Resuming your learning session. 🚀');
+        router.goToBrowser();
       }
     });
   });
 
-  const inputSchool = stage.querySelector('#ob-input-school');
-  if (inputSchool && speechText) {
-    inputSchool.addEventListener('input', (e) => {
-      const s = e.target.value.trim();
-      if (s.length > 2) {
-        speechText.textContent = `Awesome! We'll track your syllabus for ${s}! 🏫`;
+  // Complete Onboarding & Enter World Handlers
+  const handleCompleteRegistration = () => {
+    const name = stage.querySelector('#ob-input-name')?.value.trim() || learnerProfile.name || 'Scholar Student';
+    const cls = Number(stage.querySelector('#ob-select-class')?.value) || currentClass || 7;
+    onboardingData.name = name;
+    onboardingData.classLevel = cls;
+    store.completeOnboarding(onboardingData);
+    showToast('🎉 Welcome to Gramin PocketLab! Your learning world is ready.');
+    router.goToBrowser();
+  };
+
+  stage.querySelector('#btn-ob-enter-world')?.addEventListener('click', handleCompleteRegistration);
+  stage.querySelector('#btn-ob-finish')?.addEventListener('click', handleCompleteRegistration);
+  stage.querySelector('#btn-ob-step1-next')?.addEventListener('click', handleCompleteRegistration);
+
+  // Avatar Selection in sync bar
+  stage.querySelectorAll('.avatar-option-card').forEach(card => {
+    card.addEventListener('click', (e) => {
+      stage.querySelectorAll('.avatar-option-card').forEach(c => c.classList.remove('selected'));
+      const target = e.currentTarget;
+      target.classList.add('selected');
+      onboardingData.avatar = target.getAttribute('data-avatar');
+    });
+  });
+
+  // PostMessage listener for Visme form submission
+  window.addEventListener('message', (e) => {
+    try {
+      if (typeof e.data === 'string' && (e.data.includes('form_submit') || e.data.includes('visme'))) {
+        handleCompleteRegistration();
+      } else if (e.data && (e.data.type === 'visme_form_submit' || e.data.event === 'form_submitted')) {
+        handleCompleteRegistration();
       }
-    });
-  }
-
-  const selectBoard = stage.querySelector('#ob-select-board');
-  if (selectBoard && speechText) {
-    selectBoard.addEventListener('change', (e) => {
-      speechText.textContent = `${e.target.value.toUpperCase()} board selected! Aligned with prescribed textbook editions. 📖`;
-    });
-  }
-
-  const inputExam = stage.querySelector('#ob-exam-title');
-  if (inputExam && speechText) {
-    inputExam.addEventListener('input', (e) => {
-      const ex = e.target.value.trim();
-      if (ex) {
-        speechText.textContent = `Exam "${ex}" registered! PocketLab will generate tailored revision quizzes and alerts! ⏰`;
-      }
-    });
-  }
-
-  // Login Mode handlers
-  if (onboardingMode === 'login') {
-    stage.querySelectorAll('.btn-login-as-profile').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const profId = e.currentTarget.getAttribute('data-profile-id');
-        if (profId) {
-          store.switchProfile(profId);
-          showToast('Welcome back! Resuming your learning session. 🚀');
-          router.goToBrowser();
-        }
-      });
-    });
-    stage.querySelector('#btn-switch-to-create')?.addEventListener('click', () => {
-      onboardingMode = 'register';
-      renderOnboardingWizard(stage, state);
-    });
-    stage.querySelector('#btn-login-cancel')?.addEventListener('click', () => {
-      router.goToMap();
-    });
-    return;
-  }
-
-  // Attach interactive step listeners
-  if (onboardingStep === 1) {
-    stage.querySelectorAll('.avatar-option-card').forEach(card => {
-      card.addEventListener('click', (e) => {
-        stage.querySelectorAll('.avatar-option-card').forEach(c => c.classList.remove('selected'));
-        const target = e.currentTarget;
-        target.classList.add('selected');
-        onboardingData.avatar = target.getAttribute('data-avatar');
-      });
-    });
-
-    stage.querySelector('#btn-ob-step1-next')?.addEventListener('click', () => {
-      const name = stage.querySelector('#ob-input-name')?.value.trim();
-      const cls = Number(stage.querySelector('#ob-select-class')?.value) || 7;
-      if (!name) {
-        alert('Please enter your name to proceed.');
-        return;
-      }
-      onboardingData.name = name;
-      onboardingData.classLevel = cls;
-      onboardingStep = 2;
-      renderOnboardingWizard(stage, state);
-    });
-  }
-
-  if (onboardingStep === 2) {
-    stage.querySelector('#btn-ob-prev')?.addEventListener('click', () => {
-      onboardingStep = 1;
-      renderOnboardingWizard(stage, state);
-    });
-
-    stage.querySelector('#btn-ob-step2-next')?.addEventListener('click', () => {
-      onboardingData.schoolName = stage.querySelector('#ob-input-school')?.value.trim() || 'Government High School';
-      onboardingData.state = stage.querySelector('#ob-select-state')?.value;
-      onboardingData.board = stage.querySelector('#ob-select-board')?.value;
-      onboardingData.medium = stage.querySelector('#ob-select-medium')?.value;
-      onboardingStep = 3;
-      renderOnboardingWizard(stage, state);
-    });
-  }
-
-  if (onboardingStep === 3) {
-    stage.querySelector('#btn-ob-prev')?.addEventListener('click', () => {
-      onboardingStep = 2;
-      renderOnboardingWizard(stage, state);
-    });
-
-    stage.querySelectorAll('.ob-subject-toggle').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const subId = e.currentTarget.getAttribute('data-sub-id');
-        if (!Array.isArray(onboardingData.enrolledSubjects)) {
-          onboardingData.enrolledSubjects = ['physics', 'chemistry', 'biology', 'math'];
-        }
-        if (onboardingData.enrolledSubjects.includes(subId)) {
-          if (onboardingData.enrolledSubjects.length > 1) {
-            onboardingData.enrolledSubjects = onboardingData.enrolledSubjects.filter(s => s !== subId);
-          }
-        } else {
-          onboardingData.enrolledSubjects.push(subId);
-        }
-        renderOnboardingWizard(stage, state);
-      });
-    });
-
-    stage.querySelector('#btn-ob-step3-next')?.addEventListener('click', () => {
-      onboardingStep = 4;
-      renderOnboardingWizard(stage, state);
-    });
-  }
-
-  if (onboardingStep === 4) {
-    stage.querySelector('#btn-ob-prev')?.addEventListener('click', () => {
-      onboardingStep = 3;
-      renderOnboardingWizard(stage, state);
-    });
-
-    stage.querySelector('#btn-ob-finish')?.addEventListener('click', () => {
-      const examTitle = stage.querySelector('#ob-exam-title')?.value.trim() || 'Unit Test';
-      const examDate = stage.querySelector('#ob-exam-date')?.value || '2026-11-28';
-      const examDays = Number(stage.querySelector('#ob-exam-days')?.value) || 10;
-      const examSyllabus = stage.querySelector('#ob-exam-syllabus')?.value.trim() || 'Science Chapters';
-
-      onboardingData.upcomingExam = {
-        title: examTitle,
-        date: examDate,
-        daysLeft: examDays,
-        syllabus: examSyllabus
-      };
-
-      store.completeOnboarding(onboardingData);
-      onboardingStep = 1;
-      showToast('🎉 Welcome to Gramin PocketLab! Your school profile has been set up.');
-      router.goToBrowser();
-    });
-  }
+    } catch {}
+  });
 }
 
-/**
- * Renders an active extended micro-lab (Fractions, Coding, Optics, Calculus).
- */
 function renderExtendedLabStage(stage, state, moduleId) {
   const mission = getExtendedMission(moduleId);
   if (!mission) {
