@@ -9,7 +9,7 @@ const chrome = spawn('C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe
   '--remote-debugging-port=9223',
   '--remote-debugging-address=127.0.0.1',
   '--user-data-dir=C:\\Users\\priya\\Downloads\\STEM\\cdp_test_profile',
-  'http://127.0.0.1:8000/#/onboarding'
+  'http://127.0.0.1:8000/#/browser'
 ]);
 
 setTimeout(async () => {
@@ -27,9 +27,11 @@ setTimeout(async () => {
           expression: `JSON.stringify({
             title: document.title,
             hero: document.querySelector('.hub-hero h1')?.textContent,
-            stepTitle: document.querySelector('.timetable-card h2')?.textContent,
-            avatars: Array.from(document.querySelectorAll('.avatar-option-card .avatar-label')).map(el => el.textContent),
-            dotsCount: document.querySelectorAll('.onboarding-step-dot').length
+            mascotDialogue: document.querySelector('.mascot-bubble p')?.textContent?.trim(),
+            progressHeading: document.querySelector('.timetable-card h2')?.textContent,
+            skillMarkersCount: document.querySelectorAll('.skill-node-marker').length,
+            aiCompanionPill: Boolean(document.querySelector('#btn-floating-ai-buddy')),
+            topicTestButtons: document.querySelectorAll('.btn-trigger-topic-test').length
           })`
         }
       }));
@@ -37,7 +39,7 @@ setTimeout(async () => {
     ws.onmessage = (e) => {
       const msg = JSON.parse(e.data);
       if (msg.id === 1) {
-        console.log('Onboarding DOM Result:', JSON.parse(msg.result?.result?.value));
+        console.log('Browser View DOM Result:', JSON.parse(msg.result?.result?.value));
         ws.close();
         chrome.kill();
         process.exit(0);

@@ -2318,5 +2318,194 @@ html[data-band="preparatory"] .btn-primary {
   box-shadow: 0 12px 30px rgba(99, 102, 241, 0.5);
 }
 
+/* ==========================================================================
+   20. Interactive 3D Cartoon Mascot & Speech Bubble Engine
+   ========================================================================== */
+.mascot-companion-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+  border: 2px solid #FDE68A;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.12);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.mascot-companion-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.2);
+}
+
+.mascot-avatar-3d {
+  font-size: 48px;
+  line-height: 1;
+  filter: drop-shadow(0 6px 10px rgba(217, 119, 6, 0.3));
+  animation: float-bob 3s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes float-bob {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(3deg);
+  }
+}
+
+.mascot-bubble {
+  position: relative;
+  background: #FFFFFF;
+  border: 1.5px solid #FDE68A;
+  border-radius: 16px;
+  padding: 12px 16px;
+  flex: 1;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.mascot-bubble::before {
+  content: '';
+  position: absolute;
+  left: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-right: 8px solid #FFFFFF;
+}
+
+/* ==========================================================================
+   21. Skill Tree & Visual Quest Progression Nodes
+   ========================================================================== */
+.skill-tree-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+}
+
+.skill-tree-path {
+  position: absolute;
+  left: 28px;
+  top: 20px;
+  bottom: 20px;
+  width: 3px;
+  background: repeating-linear-gradient(to bottom, #CBD5E1 0, #CBD5E1 6px, transparent 6px, transparent 12px);
+  z-index: 1;
+}
+
+.skill-node-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  position: relative;
+  z-index: 2;
+}
+
+.skill-node-marker {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--color-surface);
+  border: 3px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.skill-node-marker.mastered {
+  border-color: #10B981;
+  background: #ECFDF5;
+  color: #065F46;
+  box-shadow: 0 0 14px rgba(16, 185, 129, 0.35);
+}
+
+.skill-node-marker.current {
+  border-color: #2563EB;
+  background: #EFF6FF;
+  animation: pulse-ring 2s infinite;
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(37, 99, 235, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0);
+  }
+}
+
+.skill-node-content {
+  flex: 1;
+  border-radius: 14px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  padding: 14px 16px;
+  transition: all 0.2s ease;
+}
+
+.skill-node-content:hover {
+  border-color: var(--color-subject-accent);
+  transform: translateX(4px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+}
+
+/* ==========================================================================
+   22. Celebration Particles & Achievement Feedback
+   ========================================================================== */
+.celebration-burst-banner {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  color: #FFFFFF;
+  border-radius: 16px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+  animation: bounce-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+}
+
+@keyframes bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.9) translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.streak-flame-icon {
+  display: inline-block;
+  animation: flame-flicker 1.8s ease-in-out infinite alternate;
+}
+
+@keyframes flame-flicker {
+  0% {
+    transform: scale(1) rotate(-2deg);
+  }
+  50% {
+    transform: scale(1.15) rotate(3deg);
+  }
+  100% {
+    transform: scale(1) rotate(-1deg);
+  }
+}
+
+
 
 

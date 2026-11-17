@@ -1453,6 +1453,29 @@ function renderCourseBrowser(stage, state) {
         maxScore: 100,
         topic: activeTopicTest.topicTitle
       });
+
+      // Play joyful harmonic success chime
+      try {
+        if (!store.getState().audioMuted) {
+          const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.type = 'triangle';
+          const now = audioCtx.currentTime;
+          osc.frequency.setValueAtTime(523.25, now); // C5
+          osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+          osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+          gain.gain.setValueAtTime(0.15, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+          osc.start(now);
+          osc.stop(now + 0.5);
+        }
+      } catch (e) {
+        // Audio fallback
+      }
+
       showToast(`🌟 Test complete! Topic marked as Mastered (+50 XP).`);
       activeTopicTest = null;
       activeTopicTestResult = null;
@@ -1496,6 +1519,29 @@ function renderCourseBrowser(stage, state) {
         </div>
       </div>
 
+      <!-- Interactive 3D Cartoon Mascot & Motivational Companion -->
+      <div class="mascot-companion-card">
+        <div class="mascot-avatar-3d">
+          ${classLevel <= 5 ? '🦊' : (classLevel <= 8 ? '🤖' : (classLevel <= 10 ? '👩‍🎓' : '⚡'))}
+        </div>
+        <div class="mascot-bubble">
+          <div class="d-flex justify-between align-center mb-1">
+            <strong style="color: #92400E; font-size: 13px;">
+              ${classLevel <= 5 ? 'Sparky Fox (Curriculum Guide)' : (classLevel <= 8 ? 'RoboBuddy AI Coach' : 'Board Exam Strategist')}
+            </strong>
+            <span class="badge badge-success" style="font-size: 10px;">⚡ Active Quest</span>
+          </div>
+          <p class="mb-0 text-sm" style="color: #451A03; line-height: 1.4;">
+            ${classLevel <= 5 
+              ? `Hey ${escapeHtml(learnerProfile.name || 'Explorer')}! 🌟 Complete each topic below to unlock star badges and advance your Science Quest tree!`
+              : (classLevel <= 8 
+                ? `Welcome back, ${escapeHtml(learnerProfile.name || 'Scholar')}! You have a <span class="streak-flame-icon">🔥</span> 7-day learning streak. Take a 5-minute topic test to master ${escapeHtml(currentSubjectObj.name)}!`
+                : `Targeted syllabus preparation active for ${escapeHtml(board)} Class ${classLevel} Term Examinations. Master the topics and verify your diagnostic feedback.`
+              )}
+          </p>
+        </div>
+      </div>
+
       <!-- Animated Academic Progress Meter -->
       <section class="timetable-card mb-4 p-4" style="background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-surface-subtle) 100%);">
         <div class="d-flex justify-between align-center mb-2 flex-wrap gap-2">
@@ -1505,7 +1551,7 @@ function renderCourseBrowser(stage, state) {
           </div>
           <div class="d-flex gap-2 align-center">
             <span class="badge badge-purple">⭐ Level ${learnerProfile.level || 3} (${learnerProfile.xp || 450} XP)</span>
-            <span class="badge badge-success">🔥 ${learnerProfile.streakDays || 7}-Day Streak</span>
+            <span class="badge badge-success"><span class="streak-flame-icon">🔥</span> ${learnerProfile.streakDays || 7}-Day Streak</span>
           </div>
         </div>
         <div class="pocket-progress-track mt-2 mb-2">
@@ -1590,30 +1636,38 @@ function renderCourseBrowser(stage, state) {
                       </div>
                     </div>
 
-                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <div class="skill-tree-container mt-2">
+                      <div class="skill-tree-path"></div>
                       ${ch.topics.map(t => {
                         const isMastered = topicMastery[t.id]?.status === 'mastered';
                         const isInProgress = topicMastery[t.id]?.status === 'in_progress';
+                        const markerClass = isMastered ? 'mastered' : (isInProgress ? 'current' : '');
+                        const markerIcon = isMastered ? '⭐' : (isInProgress ? '🔬' : '⚪');
 
                         return `
-                          <div class="topic-item-card">
-                            <div class="d-flex justify-between align-center flex-wrap gap-2">
-                              <div style="flex: 1; min-width: 220px;">
-                                <div class="d-flex align-center gap-2 mb-1">
-                                  <span style="font-weight: 600; font-size: 14px;">📌 ${escapeHtml(t.title)}</span>
-                                  <span class="${isMastered ? 'topic-badge-mastered' : (isInProgress ? 'topic-badge-progress' : 'topic-badge-todo')}">
-                                    ${isMastered ? '⭐ Mastered' : (isInProgress ? '🔄 In Progress' : '⚪ Ready to Learn')}
-                                  </span>
+                          <div class="skill-node-wrapper">
+                            <div class="skill-node-marker ${markerClass}">
+                              ${markerIcon}
+                            </div>
+                            <div class="skill-node-content">
+                              <div class="d-flex justify-between align-center flex-wrap gap-2">
+                                <div style="flex: 1; min-width: 200px;">
+                                  <div class="d-flex align-center gap-2 mb-1">
+                                    <span style="font-weight: 600; font-size: 14px; color: var(--color-text-main);">${escapeHtml(t.title)}</span>
+                                    <span class="${isMastered ? 'topic-badge-mastered' : (isInProgress ? 'topic-badge-progress' : 'topic-badge-todo')}">
+                                      ${isMastered ? '⭐ Mastered' : (isInProgress ? '🔄 In Progress' : '⚪ Ready to Learn')}
+                                    </span>
+                                  </div>
+                                  <p class="text-xs text-secondary mb-0">${t.outcomes && t.outcomes[0] ? escapeHtml(t.outcomes[0]) : 'Core concept outcome'}</p>
                                 </div>
-                                <p class="text-xs text-secondary mb-0">${t.outcomes && t.outcomes[0] ? escapeHtml(t.outcomes[0]) : 'Core concept outcome'}</p>
-                              </div>
-                              <div class="d-flex gap-2 align-center">
-                                <button type="button" class="btn btn-secondary btn-xs btn-launch-topic-lab" data-subject="${currentSubjectObj.id}">
-                                  🔬 Explore Lab
-                                </button>
-                                <button type="button" class="btn btn-primary btn-xs btn-trigger-topic-test" data-topic-id="${t.id}" data-topic-title="${escapeHtml(t.title)}">
-                                  📝 Take Topic Test
-                                </button>
+                                <div class="d-flex gap-2 align-center">
+                                  <button type="button" class="btn btn-secondary btn-xs btn-launch-topic-lab" data-subject="${currentSubjectObj.id}">
+                                    🔬 Explore Lab
+                                  </button>
+                                  <button type="button" class="btn btn-primary btn-xs btn-trigger-topic-test" data-topic-id="${t.id}" data-topic-title="${escapeHtml(t.title)}">
+                                    📝 Take Topic Test
+                                  </button>
+                                </div>
                               </div>
                             </div>
                           </div>
