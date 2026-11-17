@@ -356,7 +356,7 @@ export class LearningRunner {
             <span>⏱ ${mission.estimatedDurationMinutes} mins</span>
             <span>📚 ${mission.curriculumStandard}</span>
           </div>
-          <button type="button" class="btn btn-primary btn-select-subject" data-subject="${subjectId}" style="width: 100%; min-height: 48px; margin-top: 8px;">
+          <button type="button" class="btn btn-primary btn-select-subject btn-subject-${subjectId}" data-subject="${subjectId}" style="width: 100%; min-height: 48px; margin-top: 8px;">
             ${ctaLabel}
           </button>
         </article>

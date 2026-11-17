@@ -1,5 +1,4 @@
-cdp_browser_profile/
-cdp_test_profile/
+cdp_*/
 .DS_Store
 Thumbs.db
 

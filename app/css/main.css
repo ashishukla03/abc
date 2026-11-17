@@ -619,10 +619,71 @@ p.lead {
   background-color: var(--card-accent, var(--color-phys));
 }
 
-.mission-card[data-subject="math"] { --card-accent: var(--color-math); }
-.mission-card[data-subject="bio"]  { --card-accent: var(--color-bio); }
-.mission-card[data-subject="chem"] { --card-accent: var(--card-accent, var(--color-chem)); }
-.mission-card[data-subject="phys"] { --card-accent: var(--card-accent, var(--color-phys)); }
+.mission-card[data-subject="math"] { --card-accent: #2563EB; }
+.mission-card[data-subject="biology"], .mission-card[data-subject="bio"]  { --card-accent: #059669; }
+.mission-card[data-subject="chemistry"], .mission-card[data-subject="chem"] { --card-accent: #9333EA; }
+.mission-card[data-subject="physics"], .mission-card[data-subject="phys"] { --card-accent: #0D9488; }
+
+/* Subject-Specific Elevated Launch Buttons with Tactile Depth */
+.btn-subject-physics,
+.mission-card[data-subject="physics"] .btn-select-subject {
+  background: linear-gradient(135deg, #0D9488 0%, #0F766E 100%) !important;
+  border: 1px solid #0F766E !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 14px rgba(13, 148, 136, 0.35) !important;
+  font-weight: 600 !important;
+}
+.btn-subject-physics:hover,
+.mission-card[data-subject="physics"] .btn-select-subject:hover {
+  filter: brightness(1.08) !important;
+  box-shadow: 0 6px 20px rgba(13, 148, 136, 0.5) !important;
+  transform: translateY(-2px) !important;
+}
+
+.btn-subject-math,
+.mission-card[data-subject="math"] .btn-select-subject {
+  background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%) !important;
+  border: 1px solid #1D4ED8 !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35) !important;
+  font-weight: 600 !important;
+}
+.btn-subject-math:hover,
+.mission-card[data-subject="math"] .btn-select-subject:hover {
+  filter: brightness(1.08) !important;
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5) !important;
+  transform: translateY(-2px) !important;
+}
+
+.btn-subject-biology,
+.mission-card[data-subject="biology"] .btn-select-subject {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+  border: 1px solid #047857 !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.35) !important;
+  font-weight: 600 !important;
+}
+.btn-subject-biology:hover,
+.mission-card[data-subject="biology"] .btn-select-subject:hover {
+  filter: brightness(1.08) !important;
+  box-shadow: 0 6px 20px rgba(5, 150, 105, 0.5) !important;
+  transform: translateY(-2px) !important;
+}
+
+.btn-subject-chemistry,
+.mission-card[data-subject="chemistry"] .btn-select-subject {
+  background: linear-gradient(135deg, #9333EA 0%, #7E22CE 100%) !important;
+  border: 1px solid #7E22CE !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 14px rgba(147, 51, 234, 0.35) !important;
+  font-weight: 600 !important;
+}
+.btn-subject-chemistry:hover,
+.mission-card[data-subject="chemistry"] .btn-select-subject:hover {
+  filter: brightness(1.08) !important;
+  box-shadow: 0 6px 20px rgba(147, 51, 234, 0.5) !important;
+  transform: translateY(-2px) !important;
+}
 
 .card-top {
   display: flex;
@@ -1851,30 +1912,36 @@ input[type="range"].accessible-slider:focus-visible::-moz-range-thumb {
   box-shadow: var(--shadow-sm);
 }
 
-/* Urgent Test Preparation Alert Banner */
+/* Urgent Test Preparation Alert Banner (Exam Readiness Command Center) */
 .test-alert-banner {
-  background: linear-gradient(135deg, #FEF2F2 0%, #FFFBEB 100%);
-  border: 2px solid #FCA5A5;
+  background: linear-gradient(135deg, #F0F4FF 0%, #EEF2FF 50%, #FAF5FF 100%);
+  border: 1.5px solid #C7D2FE;
   border-radius: var(--radius-lg);
-  padding: var(--space-4) var(--space-5);
+  padding: 18px 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
   gap: var(--space-4);
-  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.12);
-  animation: pulseSubtle 3s infinite ease-in-out;
+  box-shadow: 0 8px 24px -4px rgba(99, 102, 241, 0.12), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.test-alert-banner::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 5px;
+  height: 100%;
+  background: linear-gradient(180deg, #6366F1 0%, #3B82F6 100%);
 }
 
 .test-alert-banner.urgent {
-  border-color: #EF4444;
-  box-shadow: 0 4px 18px rgba(239, 68, 68, 0.22);
-}
-
-@keyframes pulseSubtle {
-  0% { border-color: #FCA5A5; }
-  50% { border-color: #EF4444; }
-  100% { border-color: #FCA5A5; }
+  border-color: #A5B4FC;
+  box-shadow: 0 8px 28px -4px rgba(99, 102, 241, 0.2);
 }
 
 .test-alert-content {
@@ -1913,15 +1980,19 @@ input[type="range"].accessible-slider:focus-visible::-moz-range-thumb {
 
 .test-alert-portions {
   font-size: var(--font-size-xs);
-  color: #78350F;
-  background: rgba(254, 243, 199, 0.6);
-  padding: 4px 8px;
-  border-radius: 4px;
-  border-left: 3px solid #F59E0B;
+  color: #1E3A8A;
+  background: rgba(219, 234, 254, 0.6);
+  padding: 6px 12px;
+  border-radius: 6px;
+  border-left: 3px solid #2563EB;
 }
 
 .test-alert-strategy {
   font-size: var(--font-size-xs);
+  color: #334155;
+  line-height: 1.5;
+  margin-top: 4px;
+}
   color: #1E293B;
   margin-top: 2px;
 }
@@ -2219,7 +2290,8 @@ html[data-band="preparatory"] .recommender-card {
   border-color: #FDE68A;
 }
 
-html[data-band="preparatory"] .btn-primary {
+/* Preparatory playful theme touches (scoped to prep elements only, preserving subject colors) */
+html[data-band="preparatory"] .prep-accent-btn {
   background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
   border-radius: 14px;
   font-weight: 700;
@@ -2366,7 +2438,7 @@ html[data-band="preparatory"] .btn-primary {
   color: #991B1B !important;
 }
 
-/* Floating AI Buddy Badge */
+/* Floating AI Buddy Badge with Ambient Glow */
 .ai-companion-pill {
   position: fixed;
   bottom: 24px;
@@ -2374,20 +2446,43 @@ html[data-band="preparatory"] .btn-primary {
   z-index: 100;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   padding: 10px 18px;
-  border-radius: 28px;
-  background: linear-gradient(135deg, #1E1B4B 0%, #312E81 100%);
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 50%, #2563EB 100%);
   color: #FFFFFF;
-  border: 1.5px solid #6366F1;
-  box-shadow: 0 8px 24px rgba(49, 46, 129, 0.4);
+  border: 1.5px solid rgba(147, 197, 253, 0.5);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.1);
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: floatBuddy 4s ease-in-out infinite;
 }
 
 .ai-companion-pill:hover {
-  transform: translateY(-4px) scale(1.04);
-  box-shadow: 0 12px 30px rgba(99, 102, 241, 0.5);
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 0 14px 36px rgba(37, 99, 235, 0.5), 0 0 16px rgba(96, 165, 250, 0.6);
+  border-color: #93C5FD;
+}
+
+@keyframes floatBuddy {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.ai-companion-pill .status-pill-dot {
+  background: #10B981;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #10B981, 0 0 20px #10B981;
+  animation: pulseDot 2s infinite ease-in-out;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.85); }
 }
 
 /* ==========================================================================

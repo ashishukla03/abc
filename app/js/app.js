@@ -573,21 +573,22 @@ function renderStudyHub(stage, state) {
         </section>
       ` : ''}
 
-      <!-- Prominent Test / Exam Preparation Alert Banner -->
+      <!-- Prominent Test / Exam Preparation Alert Banner (Exam Readiness Command Center) -->
       ${nearestExam ? `
         <section class="test-alert-banner ${Number(nearestExam.daysLeft) <= 7 ? 'urgent' : ''}">
           <div class="test-alert-content">
-            <div class="test-alert-icon">${Number(nearestExam.daysLeft) <= 3 ? '🚨' : '⏰'}</div>
+            <div class="test-alert-icon" style="background: rgba(99, 102, 241, 0.1); width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+              ${Number(nearestExam.daysLeft) <= 3 ? '🚨' : '⏰'}
+            </div>
             <div class="test-alert-text">
-              <div class="test-alert-header">
-                <strong>${Number(nearestExam.daysLeft) <= 3 ? 'CRITICAL TEST PREPARATION ALERT' : 'UPCOMING TEST PREPARATION ALERT'}:</strong>
-                <span class="test-alert-title">${escapeHtml(nearestExam.title)}</span>
-                <span class="badge ${Number(nearestExam.daysLeft) <= 7 ? 'badge-danger' : 'badge-warning'}">
-                  ${nearestExam.daysLeft} DAYS LEFT (${escapeHtml(nearestExam.date)})
+              <div class="d-flex align-center gap-2 flex-wrap mb-1">
+                <span class="badge ${Number(nearestExam.daysLeft) <= 7 ? 'badge-danger' : 'badge-primary'}" style="font-size: 11px; font-weight: 700; padding: 4px 10px;">
+                  ⏰ ${nearestExam.daysLeft} DAYS LEFT (${escapeHtml(nearestExam.date)})
                 </span>
+                <strong style="color: #1E3A8A; font-size: 15px;">${escapeHtml(nearestExam.title)}</strong>
               </div>
-              <div class="test-alert-portions">
-                <strong>📖 School Exam Syllabus:</strong> ${escapeHtml(nearestExam.syllabus || 'All chapters')}
+              <div class="test-alert-portions mb-1">
+                <strong>📖 School Exam Syllabus:</strong> ${escapeHtml(nearestExam.portions || nearestExam.syllabus || 'Sound, Acids & Bases, Ecosystems')}
               </div>
               <div class="test-alert-strategy">
                 💡 <strong>PocketLab Prep Strategy:</strong> Review <em>${escapeHtml(topRec?.title || 'Key Scientific Invariants')}</em> today. Master the experimental concepts to ensure 100% exam readiness.
@@ -595,7 +596,7 @@ function renderStudyHub(stage, state) {
             </div>
           </div>
           <div class="test-alert-actions">
-            <button type="button" class="btn btn-primary btn-sm btn-study-alert" data-subject="${topRecSubject}">Start Targeted Prep →</button>
+            <button type="button" class="btn btn-primary btn-sm btn-study-alert" data-subject="${topRecSubject}" style="padding: 10px 18px; font-weight: 700; box-shadow: 0 4px 14px rgba(37,99,235,0.35);">Start Targeted Prep 🚀</button>
           </div>
         </section>
       ` : ''}
@@ -1019,14 +1020,20 @@ function renderLearnerProfile(stage, state) {
   const cy = 150;
   const maxR = 100;
 
+  const vertexCoords = [];
   const points = axes.map((ax, idx) => {
     const angle = (idx * (Math.PI * 2) / 6) - (Math.PI / 2);
     const score = Number(radar[ax.key]) || 50;
     const r = (score / 100) * maxR;
     const x = cx + r * Math.cos(angle);
     const y = cy + r * Math.sin(angle);
+    vertexCoords.push({ x: x.toFixed(1), y: y.toFixed(1), score, label: ax.label });
     return `${x.toFixed(1)},${y.toFixed(1)}`;
   }).join(' ');
+
+  const vertexCircles = vertexCoords.map(v => 
+    `<circle cx="${v.x}" cy="${v.y}" r="4.5" fill="#2563EB" stroke="#FFFFFF" stroke-width="2"><title>${v.label}: ${v.score}%</title></circle>`
+  ).join('');
 
   const gridRings = [0.25, 0.50, 0.75, 1.0].map(pct => {
     const r = maxR * pct;
@@ -1131,11 +1138,18 @@ function renderLearnerProfile(stage, state) {
             <span class="badge badge-phys">Dynamic SVG</span>
           </div>
 
-          <div class="radar-wrapper">
-            <svg class="radar-svg" width="320" height="300" viewBox="0 0 320 300">
+          <div class="radar-wrapper" style="display: flex; justify-content: center; align-items: center; padding: 12px 0;">
+            <svg class="radar-svg" width="320" height="300" viewBox="0 0 320 300" style="overflow: visible;">
+              <defs>
+                <radialGradient id="radarGrad" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="#3B82F6" stop-opacity="0.45"/>
+                  <stop offset="100%" stop-color="#1D4ED8" stop-opacity="0.12"/>
+                </radialGradient>
+              </defs>
               ${gridRings}
               ${axisLines}
-              <polygon class="radar-polygon" points="${points}" />
+              <polygon class="radar-polygon" points="${points}" fill="url(#radarGrad)" stroke="#2563EB" stroke-width="2.5" />
+              ${vertexCircles}
             </svg>
           </div>
         </section>
@@ -1570,24 +1584,31 @@ function renderCourseBrowser(stage, state) {
           <h2 class="text-sm font-bold text-secondary uppercase mb-0">Enrolled Subjects (${subjects.length})</h2>
           <span class="text-xs text-secondary">Click any subject to view units & schedule tests</span>
         </div>
-        <div class="d-flex gap-3 wrap mb-2">
+        <div class="enrolled-subjects-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; margin-bottom: 24px;">
           ${subjects.map(s => {
             const isSelected = s.id === currentSubjectObj.id;
             const subTopics = allTopics.filter(t => t.id.startsWith(s.id === 'physics' ? 't' : s.id));
             const subMastered = allTopics.filter(t => topicMastery[t.id]?.status === 'mastered');
-            const subPercent = isSelected ? progressPercent : (s.id === 'physics' ? 70 : (s.id === 'math' ? 60 : 40));
+            const subPercent = isSelected ? progressPercent : (s.id === 'physics' ? 70 : (s.id === 'math' ? 60 : (s.id === 'chemistry' ? 45 : 40)));
             const icon = s.id === 'physics' ? '⚡' : s.id === 'chemistry' ? '🧪' : s.id === 'biology' ? '🌿' : s.id === 'math' ? '📐' : '📚';
+            const accentColor = s.id === 'physics' ? '#0D9488' : s.id === 'chemistry' ? '#9333EA' : s.id === 'biology' ? '#059669' : s.id === 'math' ? '#2563EB' : '#4F46E5';
 
             return `
-              <div class="timetable-card btn-select-browser-sub ${isSelected ? 'border-primary' : ''}" data-sub-id="${s.id}" style="flex: 1; min-width: 140px; cursor: pointer; padding: 14px; border: ${isSelected ? '2px solid #2563EB' : '1px solid var(--color-border)'}; background: ${isSelected ? '#EFF6FF' : 'var(--color-surface)'}; transition: all 0.2s ease;">
+              <div class="timetable-card btn-select-browser-sub ${isSelected ? 'border-primary' : ''}" data-sub-id="${s.id}" tabindex="0" role="button" aria-label="Select ${escapeHtml(s.name)}" style="cursor: pointer; padding: 16px; border: ${isSelected ? '2px solid ' + accentColor : '1px solid var(--color-border)'}; background: ${isSelected ? 'linear-gradient(135deg, #F8FAFC 0%, #EFF6FF 100%)' : 'var(--color-surface)'}; border-radius: 16px; box-shadow: ${isSelected ? '0 8px 24px -4px rgba(37,99,235,0.18)' : '0 2px 6px rgba(0,0,0,0.03)'}; transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);">
                 <div class="d-flex justify-between align-center mb-2">
-                  <span style="font-size: 24px;">${icon}</span>
-                  <span class="badge ${isSelected ? 'badge-primary' : 'badge-secondary'}" style="font-size: 11px;">${subPercent}%</span>
+                  <div style="width: 42px; height: 42px; border-radius: 12px; background: ${isSelected ? accentColor : '#F1F5F9'}; color: ${isSelected ? '#FFFFFF' : accentColor}; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: ${isSelected ? '0 4px 12px ' + accentColor + '40' : 'none'};">
+                    ${icon}
+                  </div>
+                  <span class="badge ${isSelected ? 'badge-primary' : 'badge-secondary'}" style="font-size: 11px; font-weight: 700; padding: 4px 10px;">${subPercent}% Mastered</span>
                 </div>
-                <strong style="font-size: 14px; display: block; color: var(--color-text-main);">${escapeHtml(s.name)}</strong>
-                <span class="text-xs text-secondary" style="font-size: 11px;">${escapeHtml(s.book || 'NCERT Book')}</span>
-                <div class="pocket-progress-track mt-2" style="height: 6px;">
-                  <div class="pocket-progress-fill" style="width: ${subPercent}%;"></div>
+                <strong style="font-size: 15px; display: block; color: var(--color-text-main); margin-bottom: 2px;">${escapeHtml(s.name)}</strong>
+                <span class="text-xs text-secondary" style="font-size: 11px;">📖 ${escapeHtml(s.book || 'NCERT Book')}</span>
+                <div class="pocket-progress-track mt-3" style="height: 6px; background: #E2E8F0; border-radius: 4px; overflow: hidden;">
+                  <div class="pocket-progress-fill" style="width: ${subPercent}%; height: 100%; background: ${accentColor}; transition: width 0.4s ease;"></div>
+                </div>
+                <div class="d-flex justify-between align-center mt-3 pt-2" style="border-top: 1px solid rgba(226, 232, 240, 0.6); font-size: 11px;">
+                  <span style="color: ${isSelected ? accentColor : 'var(--color-text-secondary)'}; font-weight: 700;">${isSelected ? '● Active Course' : 'Click to View Units'}</span>
+                  <span style="font-weight: 600; color: #2563EB;">View Syllabus →</span>
                 </div>
               </div>
             `;
@@ -1614,7 +1635,7 @@ function renderCourseBrowser(stage, state) {
 
         <div style="display: flex; flex-direction: column; gap: 16px;">
           ${units.map(unit => `
-            <div class="timetable-card p-3">
+            <div class="timetable-card p-3" style="border-radius: 16px; border: 1px solid var(--color-border); box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
               <div class="d-flex justify-between align-center mb-3 pb-2 border-bottom flex-wrap gap-2">
                 <div>
                   <span class="badge badge-phys" style="font-size: 11px;">${unit.unitId.toUpperCase()}</span>
@@ -1625,13 +1646,14 @@ function renderCourseBrowser(stage, state) {
 
               <div style="display: flex; flex-direction: column; gap: 14px;">
                 ${unit.chapters.map(ch => `
-                  <div style="border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 14px; background: var(--color-surface-subtle);">
-                    <div class="d-flex justify-between align-center mb-3 flex-wrap gap-2">
+                  <div style="border: 1px solid var(--color-border); border-radius: 14px; padding: 16px; background: var(--color-surface-subtle);">
+                    <div class="d-flex justify-between align-center mb-3 flex-wrap gap-2" style="background: var(--color-surface); padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(226, 232, 240, 0.8);">
                       <div>
                         <strong style="font-size: 15px; color: var(--color-text-main);">Chapter ${ch.number}: ${escapeHtml(ch.title)}</strong>
+                        <span class="text-xs text-secondary ml-2">(${ch.topics.length} topics)</span>
                       </div>
                       <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-primary btn-xs btn-launch-ch-lab" data-subject="${currentSubjectObj.id}">
+                        <button type="button" class="btn btn-primary btn-xs btn-launch-ch-lab" data-subject="${currentSubjectObj.id}" style="padding: 6px 14px; font-weight: 600;">
                           🔬 Launch Inquiry Lab →
                         </button>
                       </div>
@@ -1646,26 +1668,27 @@ function renderCourseBrowser(stage, state) {
                         const markerIcon = isMastered ? '⭐' : (isInProgress ? '🔬' : '⚪');
 
                         return `
-                          <div class="skill-node-wrapper">
+                          <div class="skill-node-wrapper" style="margin-bottom: 10px;">
                             <div class="skill-node-marker ${markerClass}">
                               ${markerIcon}
                             </div>
-                            <div class="skill-node-content">
+                            <div class="skill-node-content" style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 12px; padding: 12px 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.2s ease;">
                               <div class="d-flex justify-between align-center flex-wrap gap-2">
                                 <div style="flex: 1; min-width: 200px;">
-                                  <div class="d-flex align-center gap-2 mb-1">
-                                    <span style="font-weight: 600; font-size: 14px; color: var(--color-text-main);">${escapeHtml(t.title)}</span>
+                                  <div class="d-flex align-center gap-2 mb-1 flex-wrap">
+                                    <span style="font-weight: 700; font-size: 14px; color: var(--color-text-main);">${escapeHtml(t.title)}</span>
                                     <span class="${isMastered ? 'topic-badge-mastered' : (isInProgress ? 'topic-badge-progress' : 'topic-badge-todo')}">
                                       ${isMastered ? '⭐ Mastered' : (isInProgress ? '🔄 In Progress' : '⚪ Ready to Learn')}
                                     </span>
+                                    <span class="badge badge-secondary" style="font-size: 10px; padding: 2px 6px;">⏱️ 5 mins</span>
                                   </div>
-                                  <p class="text-xs text-secondary mb-0">${t.outcomes && t.outcomes[0] ? escapeHtml(t.outcomes[0]) : 'Core concept outcome'}</p>
+                                  <p class="text-xs text-secondary mb-0" style="line-height: 1.4;">${t.outcomes && t.outcomes[0] ? escapeHtml(t.outcomes[0]) : 'Core concept outcome'}</p>
                                 </div>
                                 <div class="d-flex gap-2 align-center">
-                                  <button type="button" class="btn btn-secondary btn-xs btn-launch-topic-lab" data-subject="${currentSubjectObj.id}">
+                                  <button type="button" class="btn btn-secondary btn-xs btn-launch-topic-lab" data-subject="${currentSubjectObj.id}" style="padding: 6px 12px; font-weight: 600;">
                                     🔬 Explore Lab
                                   </button>
-                                  <button type="button" class="btn btn-primary btn-xs btn-trigger-topic-test" data-topic-id="${t.id}" data-topic-title="${escapeHtml(t.title)}">
+                                  <button type="button" class="btn btn-primary btn-xs btn-trigger-topic-test" data-topic-id="${t.id}" data-topic-title="${escapeHtml(t.title)}" style="padding: 6px 14px; font-weight: 700;">
                                     📝 Take Topic Test
                                   </button>
                                 </div>
@@ -1943,43 +1966,118 @@ function renderMockExamExperience(stage, state) {
           <p class="text-secondary mb-0">Board-aligned full mock examinations with calibrated blueprints, timing, and explanations.</p>
         </div>
         <div class="countdown-badge">
-          <span class="countdown-days">30</span>
-          <span class="countdown-label">Minutes Per Test</span>
+          <span class="countdown-days">4</span>
+          <span class="countdown-label">Mocks Available</span>
         </div>
       </div>
 
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-4);">
+      <!-- Quick Exam Filter Chips -->
+      <div class="d-flex gap-2 wrap mb-4 align-center">
+        <span class="text-xs font-bold text-secondary uppercase" style="letter-spacing: 0.5px;">Filter By Board:</span>
+        <span class="badge badge-primary" style="cursor: pointer;">All Mocks (4)</span>
+        <span class="badge badge-secondary" style="cursor: pointer;">CBSE Blueprint (2)</span>
+        <span class="badge badge-info" style="cursor: pointer;">CISCE / ICSE (1)</span>
+        <span class="badge badge-success" style="cursor: pointer;">State Board (1)</span>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
         <!-- Exam Card 1: CBSE Class 7 Term 1 -->
-        <article class="qw-card" style="border-left: 4px solid #275DDB;">
+        <article class="qw-card" style="border-left: 5px solid #275DDB; background: var(--color-surface); border-radius: 16px; padding: 20px; box-shadow: 0 4px 16px rgba(39,93,219,0.08); transition: all 0.25s ease;">
           <div class="qw-card-top">
             <div>
-              <span class="badge badge-success">Verified CBSE Blueprint</span>
-              <h3 class="font-bold text-md mt-1 mb-0">Class 7 Science Term 1 Summative Mock</h3>
+              <div class="d-flex gap-2 align-center mb-1">
+                <span class="badge badge-success">Verified CBSE Blueprint</span>
+                <span class="badge badge-purple">Class 7</span>
+              </div>
+              <h3 class="font-bold text-md mt-1 mb-0" style="font-size: 16px;">Class 7 Science Term 1 Summative Mock</h3>
               <span class="text-xs text-secondary">Covers Physics, Chemistry, Biology & Ratios</span>
             </div>
-            <span style="font-size: 28px;">⏱️</span>
+            <span style="font-size: 32px;">⏱️</span>
           </div>
-          <p class="text-xs text-secondary my-2">Sectioned mock test featuring 5 questions (10 objective + 15 reasoning marks). Includes instant diagnostic scoring and remediation.</p>
-          <div class="d-flex justify-between align-center text-xs text-secondary mt-2 pt-2 border-top">
-            <span>Duration: 30 Mins • Max: 25 Marks</span>
+          <p class="text-xs text-secondary my-2" style="line-height: 1.5;">Sectioned mock test featuring 5 questions (10 objective + 15 reasoning marks). Includes instant diagnostic scoring and remediation.</p>
+          <div class="d-flex gap-2 wrap my-2">
+            <span class="badge badge-secondary" style="font-size: 10px;">⏱️ 30 Mins</span>
+            <span class="badge badge-secondary" style="font-size: 10px;">🎯 25 Marks</span>
+            <span class="badge badge-secondary" style="font-size: 10px;">📝 5 Questions</span>
+          </div>
+          <div class="d-flex justify-between align-center text-xs text-secondary mt-3 pt-3 border-top">
+            <button type="button" class="btn btn-outline btn-sm btn-practice-mock" data-exam-id="cbse-7-science-term1">Practice Mode 📖</button>
             <button type="button" class="btn btn-primary btn-sm" id="btn-start-mock-t1">Start Timed Mock →</button>
           </div>
         </article>
 
         <!-- Exam Card 2: ICSE Class 10 Physics Mock -->
-        <article class="qw-card" style="border-left: 4px solid #087E79;">
+        <article class="qw-card" style="border-left: 5px solid #087E79; background: var(--color-surface); border-radius: 16px; padding: 20px; box-shadow: 0 4px 16px rgba(8,126,121,0.08); transition: all 0.25s ease;">
           <div class="qw-card-top">
             <div>
-              <span class="badge badge-info">ICSE Route Blueprint</span>
-              <h3 class="font-bold text-md mt-1 mb-0">ICSE Class 10 Light & Ray Optics Mock</h3>
+              <div class="d-flex gap-2 align-center mb-1">
+                <span class="badge badge-info">ICSE Route Blueprint</span>
+                <span class="badge badge-purple">Class 10</span>
+              </div>
+              <h3 class="font-bold text-md mt-1 mb-0" style="font-size: 16px;">ICSE Class 10 Light & Ray Optics Mock</h3>
               <span class="text-xs text-secondary">Snell's Law, Critical Angle & Refraction</span>
             </div>
-            <span style="font-size: 28px;">🔦</span>
+            <span style="font-size: 32px;">🔦</span>
           </div>
-          <p class="text-xs text-secondary my-2">Calculated numericals on refractive index and lens ray tracing with step-by-step mark breakdown.</p>
-          <div class="d-flex justify-between align-center text-xs text-secondary mt-2 pt-2 border-top">
-            <span>Duration: 45 Mins • Max: 40 Marks</span>
+          <p class="text-xs text-secondary my-2" style="line-height: 1.5;">Calculated numericals on refractive index and lens ray tracing with step-by-step mark breakdown.</p>
+          <div class="d-flex gap-2 wrap my-2">
+            <span class="badge badge-secondary" style="font-size: 10px;">⏱️ 45 Mins</span>
+            <span class="badge badge-secondary" style="font-size: 10px;">🎯 40 Marks</span>
+            <span class="badge badge-secondary" style="font-size: 10px;">📝 8 Questions</span>
+          </div>
+          <div class="d-flex justify-between align-center text-xs text-secondary mt-3 pt-3 border-top">
             <button type="button" class="btn btn-outline btn-sm" id="btn-start-mock-icse">Practice Mock →</button>
+            <button type="button" class="btn btn-primary btn-sm btn-timed-mock-icse">Start Timed Mock →</button>
+          </div>
+        </article>
+
+        <!-- Exam Card 3: Class 8 Computing & Logic -->
+        <article class="qw-card" style="border-left: 5px solid #8B5CF6; background: var(--color-surface); border-radius: 16px; padding: 20px; box-shadow: 0 4px 16px rgba(139,92,246,0.08); transition: all 0.25s ease;">
+          <div class="qw-card-top">
+            <div>
+              <div class="d-flex gap-2 align-center mb-1">
+                <span class="badge badge-purple">State / CBSE Standard</span>
+                <span class="badge badge-info">Class 8</span>
+              </div>
+              <h3 class="font-bold text-md mt-1 mb-0" style="font-size: 16px;">Class 8 Computing & Algorithm Studio Mock</h3>
+              <span class="text-xs text-secondary">Sequence Execution, Loop Invariants & Maze Pathing</span>
+            </div>
+            <span style="font-size: 32px;">🤖</span>
+          </div>
+          <p class="text-xs text-secondary my-2" style="line-height: 1.5;">Computational problem-solving assessment testing loop termination invariants and state tracing.</p>
+          <div class="d-flex gap-2 wrap my-2">
+            <span class="badge badge-secondary" style="font-size: 10px;">⏱️ 25 Mins</span>
+            <span class="badge badge-secondary" style="font-size: 10px;">🎯 20 Marks</span>
+            <span class="badge badge-secondary" style="font-size: 10px;">📝 4 Questions</span>
+          </div>
+          <div class="d-flex justify-between align-center text-xs text-secondary mt-3 pt-3 border-top">
+            <button type="button" class="btn btn-outline btn-sm btn-practice-mock" data-exam-id="cbse-7-science-term1">Practice Mode 📖</button>
+            <button type="button" class="btn btn-primary btn-sm btn-start-mock-generic" data-exam-id="cbse-7-science-term1">Start Timed Mock →</button>
+          </div>
+        </article>
+
+        <!-- Exam Card 4: Class 6 Math Proportions -->
+        <article class="qw-card" style="border-left: 5px solid #F59E0B; background: var(--color-surface); border-radius: 16px; padding: 20px; box-shadow: 0 4px 16px rgba(245,158,11,0.08); transition: all 0.25s ease;">
+          <div class="qw-card-top">
+            <div>
+              <div class="d-flex gap-2 align-center mb-1">
+                <span class="badge badge-warning">NCERT Baseline</span>
+                <span class="badge badge-secondary">Class 6</span>
+              </div>
+              <h3 class="font-bold text-md mt-1 mb-0" style="font-size: 16px;">Class 6 Proportional Water Sharing Mock</h3>
+              <span class="text-xs text-secondary">Unitary Method, Ratios & Part-Whole Fractions</span>
+            </div>
+            <span style="font-size: 32px;">📐</span>
+          </div>
+          <p class="text-xs text-secondary my-2" style="line-height: 1.5;">Foundational mathematical ratios and proportional division applied to community village water sharing.</p>
+          <div class="d-flex gap-2 wrap my-2">
+            <span class="badge badge-secondary" style="font-size: 10px;">⏱️ 20 Mins</span>
+            <span class="badge badge-secondary" style="font-size: 10px;">🎯 15 Marks</span>
+            <span class="badge badge-secondary" style="font-size: 10px;">📝 5 Questions</span>
+          </div>
+          <div class="d-flex justify-between align-center text-xs text-secondary mt-3 pt-3 border-top">
+            <button type="button" class="btn btn-outline btn-sm btn-practice-mock" data-exam-id="cbse-7-science-term1">Practice Mode 📖</button>
+            <button type="button" class="btn btn-primary btn-sm btn-start-mock-generic" data-exam-id="cbse-7-science-term1">Start Timed Mock →</button>
           </div>
         </article>
       </div>
@@ -1996,6 +2094,14 @@ function renderMockExamExperience(stage, state) {
     activeMockExam = createExamSession('cbse-7-science-term1');
     examEvalResult = null;
     renderMockExamExperience(stage, state);
+  });
+
+  stage.querySelectorAll('.btn-timed-mock-icse, .btn-start-mock-generic, .btn-practice-mock').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeMockExam = createExamSession('cbse-7-science-term1');
+      examEvalResult = null;
+      renderMockExamExperience(stage, state);
+    });
   });
 }
 
@@ -2024,18 +2130,18 @@ function renderAITutorCompanion(stage, state) {
       </div>
 
       <!-- Continuous Student Activity & Adaptive Telemetry -->
-      <section class="timetable-card mb-4 p-4" style="background: linear-gradient(135deg, #1E1B4B 0%, #0F172A 100%); color: #F8FAFC; border: 1.5px solid #4338CA;">
+      <section class="timetable-card mb-4 p-4" style="background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); color: #F8FAFC; border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 18px; box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.2);">
         <div class="d-flex justify-between align-center mb-3 flex-wrap gap-2">
           <div>
-            <span class="badge badge-purple" style="background: rgba(139, 92, 246, 0.2); color: #C4B5FD; border: 1px solid #8B5CF6;">Continuous Learner Model Telemetry</span>
-            <h3 class="font-bold text-md mt-1 mb-0" style="color: #FFFFFF;">📊 ${escapeHtml(learnerProfile.name || 'Scholar')}'s Live Activity Log</h3>
+            <span class="badge" style="background: rgba(99, 102, 241, 0.25); color: #A5B4FC; border: 1px solid rgba(165, 180, 252, 0.4); font-size: 11px;">Continuous Learner Model Telemetry</span>
+            <h3 class="font-bold text-md mt-1 mb-0" style="color: #FFFFFF; font-size: 16px;">📊 ${escapeHtml(learnerProfile.name || 'Scholar')}'s Live Activity Log</h3>
           </div>
           <span class="text-xs" style="color: #94A3B8;">Tracking tests, quizzes & inquiry milestones</span>
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 8px;">
           ${(learnerProfile.activityLog || []).slice(0, 3).map(act => `
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(255, 255, 255, 0.06); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1);">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: rgba(255, 255, 255, 0.07); border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.1);">
               <div>
                 <strong style="font-size: 13px; color: #E2E8F0;">${act.type === 'test' ? '📝' : '🔬'} ${escapeHtml(act.title)}</strong>
                 <span class="text-xs" style="color: #94A3B8; margin-left: 8px;">(${new Date(act.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})</span>
@@ -2050,10 +2156,10 @@ function renderAITutorCompanion(stage, state) {
       <section class="recommender-card">
         <h2 class="text-sm font-bold text-secondary mb-2">CHOOSE STEM INQUIRY TOPIC</h2>
         <div class="d-flex gap-2 wrap mb-3">
-          <button type="button" class="btn btn-sm ${activeTutorSubject === 'physics' ? 'btn-primary' : 'btn-outline'} btn-tutor-sub" data-sub="physics" data-topic="sound_waves">Physics: Sound & Pitch</button>
-          <button type="button" class="btn btn-sm ${activeTutorSubject === 'chemistry' ? 'btn-primary' : 'btn-outline'} btn-tutor-sub" data-sub="chemistry" data-topic="acids_bases">Chemistry: pH Indicators</button>
-          <button type="button" class="btn btn-sm ${activeTutorSubject === 'mathematics' ? 'btn-primary' : 'btn-outline'} btn-tutor-sub" data-sub="mathematics" data-topic="ratios">Math: Water Ratios</button>
-          <button type="button" class="btn btn-sm ${activeTutorSubject === 'biology' ? 'btn-primary' : 'btn-outline'} btn-tutor-sub" data-sub="biology" data-topic="food_webs">Biology: Food Webs</button>
+          <button type="button" class="btn btn-sm ${activeTutorSubject === 'physics' ? 'btn-primary' : 'btn-outline'} btn-tutor-sub" data-sub="physics" data-topic="sound_waves">⚡ Physics: Sound & Pitch</button>
+          <button type="button" class="btn btn-sm ${activeTutorSubject === 'chemistry' ? 'btn-primary' : 'btn-outline'} btn-tutor-sub" data-sub="chemistry" data-topic="acids_bases">🧪 Chemistry: pH Indicators</button>
+          <button type="button" class="btn btn-sm ${activeTutorSubject === 'mathematics' ? 'btn-primary' : 'btn-outline'} btn-tutor-sub" data-sub="mathematics" data-topic="ratios">📐 Math: Water Ratios</button>
+          <button type="button" class="btn btn-sm ${activeTutorSubject === 'biology' ? 'btn-primary' : 'btn-outline'} btn-tutor-sub" data-sub="biology" data-topic="food_webs">🌿 Biology: Food Webs</button>
         </div>
 
         <div class="p-3 border rounded bg-surface-subtle">
