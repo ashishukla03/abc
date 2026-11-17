@@ -58,21 +58,46 @@ export function announce(message) {
 }
 
 /**
- * Updates online/offline status pill badge based on browser network telemetry.
+ * Updates online/offline status pill badge based on browser network telemetry and Service Worker cache state.
+ * Truthful status: Does NOT report 'Offline Ready' merely because navigator.onLine is true.
  */
-function updateNetworkStatus() {
+export function updateNetworkStatus(opts = null) {
   const badge = document.getElementById('network-status-badge');
   const text = document.getElementById('network-status-text');
   if (!badge || !text) return;
 
-  if (navigator.onLine) {
-    badge.className = 'status-pill status-pill--offline'; // Still indicates offline capability
-    text.textContent = 'Offline Ready';
-    badge.setAttribute('title', 'Connected to network. Local cache verified and active.');
+  const isOnline = (opts && typeof opts.onLine === 'boolean')
+    ? opts.onLine
+    : (typeof navigator !== 'undefined' ? navigator.onLine : true);
+
+  const hasActiveSw = (opts && typeof opts.hasActiveSw === 'boolean')
+    ? opts.hasActiveSw
+    : Boolean(
+        typeof navigator !== 'undefined' &&
+        navigator.serviceWorker &&
+        navigator.serviceWorker.controller
+      );
+
+  if (!isOnline) {
+    if (hasActiveSw) {
+      badge.className = 'status-pill status-pill--offline';
+      text.textContent = 'Offline Mode';
+      badge.setAttribute('title', 'Network disconnected. Operating 100% from verified local cache.');
+    } else {
+      badge.className = 'status-pill status-pill--alert';
+      text.textContent = 'Offline (Uncached)';
+      badge.setAttribute('title', 'Network disconnected. Application was not pre-cached on this device.');
+    }
   } else {
-    badge.className = 'status-pill status-pill--offline';
-    text.textContent = 'Offline Mode';
-    badge.setAttribute('title', 'Network disconnected. Operating 100% from local cache.');
+    if (hasActiveSw) {
+      badge.className = 'status-pill status-pill--offline';
+      text.textContent = 'Offline Ready';
+      badge.setAttribute('title', 'Connected to network. Local cache verified and active for offline use.');
+    } else {
+      badge.className = 'status-pill status-pill--caching';
+      text.textContent = 'Online (Caching)';
+      badge.setAttribute('title', 'Connected to network. Initial Service Worker asset caching in progress.');
+    }
   }
 }
 
@@ -486,10 +511,29 @@ function initServiceWorker() {
         .register('./sw.js')
         .then((reg) => {
           console.log('[Gramin PocketLab] Service Worker registered. Scope:', reg.scope);
+          if (reg.active) {
+            updateNetworkStatus();
+          }
+          reg.addEventListener('updatefound', () => {
+            const installing = reg.installing;
+            if (installing) {
+              installing.addEventListener('statechange', () => {
+                if (installing.state === 'activated') {
+                  updateNetworkStatus();
+                }
+              });
+            }
+          });
         })
         .catch((err) => {
           console.warn('[Gramin PocketLab] Service Worker registration skipped:', err.message);
+          updateNetworkStatus();
         });
+    });
+
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      console.log('[Gramin PocketLab] Service Worker controller changed; now controlling page.');
+      updateNetworkStatus();
     });
   }
 }
@@ -529,9 +573,11 @@ function bootstrap() {
   delegateRender(initialState);
 }
 
-// Launch on DOM ready
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', bootstrap);
-} else {
-  bootstrap();
+// Launch on DOM ready when running in browser environment
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootstrap);
+  } else {
+    bootstrap();
+  }
 }

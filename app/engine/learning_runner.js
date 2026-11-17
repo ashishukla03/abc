@@ -722,14 +722,31 @@ export class LearningRunner {
       } catch (err) {
         console.error('[LearningRunner] Failed to mount interaction handler:', err);
         mountContainer.innerHTML = `
-          <div class="callout callout-error">
-            <p>Interactive widget failed to load. You may still continue the inquiry.</p>
+          <div class="callout callout-error" role="alert" style="margin: 16px 0;">
+            <div class="callout-header" style="font-weight: 700; color: var(--color-incorrect-text);">
+              <span>⚠️ Experiment Loading Error</span>
+            </div>
+            <div class="callout-body">
+              <p style="margin: 8px 0;">The interactive laboratory module encountered an error during initialization: ${err.message || 'Initialization error'}.</p>
+              <p style="margin: 8px 0; font-size: 0.9rem;">To maintain scientific integrity, you must complete the observation before proceeding.</p>
+              <button type="button" id="btn-s3-retry-mount" class="btn btn-secondary" style="margin-top: 12px; min-height: 48px;">
+                ↺ Retry Initializing Lab
+              </button>
+            </div>
           </div>
         `;
-        updateAdvanceButton(true);
+        mountContainer.querySelector('#btn-s3-retry-mount')?.addEventListener('click', () => {
+          this.render();
+        });
+        updateAdvanceButton(false);
       }
     } else {
-      updateAdvanceButton(true);
+      mountContainer.innerHTML = `
+        <div class="callout callout-error" role="alert">
+          <p><strong>Interactive Module Missing:</strong> No interactive handler registered for ${subjectId}.</p>
+        </div>
+      `;
+      updateAdvanceButton(false);
     }
 
     // Attach navigation listeners

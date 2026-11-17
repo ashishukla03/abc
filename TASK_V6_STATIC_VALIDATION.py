@@ -355,8 +355,9 @@ def validate_document_statuses_and_archive():
     source_archive = "../STEM(3)(1)(3).zip"
     archive_exists = os.path.exists(source_archive)
     if not archive_exists:
-        print("[BLOCKER RECORDED] Source baseline archive STEM(3)(1)(3).zip is NOT available in workspace.")
-        print("                  Original hashes marked 'not verifiable — source archive unavailable'.")
+        print("[FAIL - EVIDENCE INCOMPLETE] Source baseline archive STEM(3)(1)(3).zip is missing from workspace.")
+        print("                             Original member-level baseline hash verification CANNOT be completed.")
+        return False
     else:
         with open(source_archive, 'rb') as fp:
             archive_hash = hashlib.sha256(fp.read()).hexdigest()
@@ -372,10 +373,13 @@ def validate_document_statuses_and_archive():
 # ------------------------------------------------------------------------------
 def run_portable_node_tests():
     log_section("7. RUNTIME AUTOMATED TESTS (PORTABLE NODE.JS SUITES)")
-    test_files = sorted(glob.glob('tests/test_*.mjs'))
-    if not test_files:
-        print("[FAIL] No test files found in tests/")
-        return False
+    test_files = [
+        'tests/test_content_and_i18n.mjs',
+        'tests/test_learning_runner.mjs',
+        'tests/test_physics_module.mjs',
+        'tests/test_service_worker_contract.mjs',
+        'tests/test_store_and_router.mjs'
+    ]
 
     total_passed = 0
     total_failed = 0

@@ -12,9 +12,50 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
+const APP_DIR = path.resolve(ROOT_DIR, 'app');
 const CHROME_PATH = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
 const CDP_PROFILE_DIR = path.resolve(ROOT_DIR, 'cdp_browser_profile');
-const BASE_URL = 'http://localhost:8000/';
+const BASE_URL = 'http://127.0.0.1:8000/';
+
+const mimeTypes = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'application/javascript; charset=utf-8',
+  '.mjs': 'application/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.svg': 'image/svg+xml',
+  '.png': 'image/png',
+  '.webmanifest': 'application/manifest+json; charset=utf-8'
+};
+
+function startStaticServer(dir, port = 8000) {
+  const server = http.createServer((req, res) => {
+    let reqPath = decodeURI(req.url.split('?')[0]);
+    if (reqPath === '/' || reqPath === '') reqPath = '/index.html';
+    const filePath = path.join(dir, reqPath);
+    if (!filePath.startsWith(dir)) {
+      res.writeHead(403);
+      return res.end('Forbidden');
+    }
+    fs.readFile(filePath, (err, data) => {
+      if (err) {
+        res.writeHead(404);
+        return res.end('Not Found: ' + reqPath);
+      }
+      const ext = path.extname(filePath).toLowerCase();
+      const contentType = mimeTypes[ext] || 'application/octet-stream';
+      res.writeHead(200, {
+        'Content-Type': contentType,
+        'Service-Worker-Allowed': '/'
+      });
+      res.end(data);
+    });
+  });
+  return new Promise((resolve, reject) => {
+    server.listen(port, '127.0.0.1', () => resolve(server));
+    server.on('error', reject);
+  });
+}
 
 class CDPClient {
   constructor(wsUrl) {
@@ -99,22 +140,28 @@ async function run() {
     consoleErrors: []
   };
 
-  if (!fs.existsSync(CDP_PROFILE_DIR)) fs.mkdirSync(CDP_PROFILE_DIR, { recursive: true });
-
-  const chromeProc = spawn(CHROME_PATH, [
-    '--headless=new',
-    '--no-sandbox',
-    '--autoplay-policy=no-user-gesture-required',
-    '--remote-debugging-port=9222',
-    '--remote-debugging-address=127.0.0.1',
-    `--user-data-dir=${CDP_PROFILE_DIR}`,
-    BASE_URL
-  ], { stdio: 'ignore' });
-
-  await new Promise(r => setTimeout(r, 2000));
-
+  let server = null;
+  let chromeProc = null;
   let client = null;
+
   try {
+    console.log('Starting local static HTTP server on port 8000...');
+    server = await startStaticServer(APP_DIR, 8000);
+
+    if (!fs.existsSync(CDP_PROFILE_DIR)) fs.mkdirSync(CDP_PROFILE_DIR, { recursive: true });
+
+    chromeProc = spawn(CHROME_PATH, [
+      '--headless=new',
+      '--no-sandbox',
+      '--disable-gpu',
+      '--autoplay-policy=no-user-gesture-required',
+      '--remote-debugging-port=9222',
+      '--remote-debugging-address=127.0.0.1',
+      `--user-data-dir=${CDP_PROFILE_DIR}`,
+      BASE_URL
+    ], { stdio: 'ignore' });
+
+    await new Promise(r => setTimeout(r, 2000));
     const targets = await fetchJson('http://127.0.0.1:9222/json/list');
     const pageTarget = targets.find(t => t.type === 'page');
     if (!pageTarget) throw new Error('No page target found in Chrome');
@@ -395,7 +442,10 @@ async function run() {
     console.error('Test Execution Error:', err);
   } finally {
     if (client) client.close();
-    chromeProc.kill();
+    if (chromeProc) chromeProc.kill();
+    if (server) {
+      await new Promise(r => server.close(r));
+    }
     try { fs.rmSync(CDP_PROFILE_DIR, { recursive: true, force: true }); } catch (_) {}
   }
 
