@@ -76,3 +76,4 @@ export const SchoolHubView: React.FC = () => {
     </div>
   );
 };
+

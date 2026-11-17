@@ -158,3 +158,4 @@ export const SubjectTimelineView: React.FC = () => {
     </div>
   );
 };
+

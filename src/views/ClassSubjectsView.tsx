@@ -113,3 +113,4 @@ export const ClassSubjectsView: React.FC = () => {
     </div>
   );
 };
+

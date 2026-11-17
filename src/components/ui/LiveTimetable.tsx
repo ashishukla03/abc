@@ -70,3 +70,4 @@ export const LiveTimetable: React.FC = () => {
     </div>
   );
 };
+

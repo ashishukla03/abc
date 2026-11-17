@@ -153,3 +153,4 @@ export const CompetencyRadar: React.FC<CompetencyRadarProps> = ({ scores, size =
     </div>
   );
 };
+

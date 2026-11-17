@@ -162,3 +162,4 @@ export const MockExamsView: React.FC = () => {
     </div>
   );
 };
+
