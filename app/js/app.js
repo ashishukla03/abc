@@ -24,6 +24,8 @@ import {
   evaluateExamSession,
   MOCK_EXAM_BLUEPRINTS
 } from '../engine/mock_exam_engine.js';
+import { renderIcon, badgeIcon } from './icons.js';
+import { renderCircularRing, renderLiveSineWaveSvg, animateCounter } from './motion_engine.js';
 
 /**
  * Subject display metadata.
@@ -513,7 +515,7 @@ function renderStudyHub(stage, state) {
       <!-- School Identity Banner & Settings Trigger -->
       <section class="school-banner">
         <div class="school-banner-content">
-          <div class="school-icon">🏫</div>
+          <div class="school-icon">${badgeIcon('School', { variant: 'bot', size: 28, iconSize: 24 })}</div>
           <div class="school-details">
             <div class="d-flex align-center gap-2 flex-wrap">
               <h2 class="text-md font-bold mb-0">${escapeHtml(learnerProfile.school || 'Zilla Parishad High School, Ballari')}</h2>
@@ -524,8 +526,8 @@ function renderStudyHub(stage, state) {
             <p class="text-xs text-secondary mb-0 mt-1">Configured school timetable, local test portions, and personalized NCERT curriculum alignment.</p>
           </div>
         </div>
-        <button type="button" class="btn btn-secondary btn-sm" id="btn-toggle-edit-school">
-          ${isEditingSchool ? '✕ Close School Settings' : '✏️ Configure School & Class'}
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-toggle-edit-school" style="display: inline-flex; align-items: center; gap: 6px;">
+          ${isEditingSchool ? '✕ Close School Settings' : renderIcon('Settings', { size: 14, color: '#4F46E5' }) + ' Configure School & Class'}
         </button>
       </section>
 
@@ -580,13 +582,13 @@ function renderStudyHub(stage, state) {
       ${nearestExam ? `
         <section class="test-alert-banner ${Number(nearestExam.daysLeft) <= 7 ? 'urgent' : ''}">
           <div class="test-alert-content">
-            <div class="test-alert-icon" style="background: rgba(99, 102, 241, 0.1); width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">
-              ${Number(nearestExam.daysLeft) <= 3 ? '🚨' : '⏰'}
+            <div class="test-alert-icon" style="flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+              ${renderCircularRing({ value: Math.max(1, 30 - Number(nearestExam.daysLeft)), max: 30, size: 52, strokeWidth: 5, color: Number(nearestExam.daysLeft) <= 7 ? '#EF4444' : '#2563EB' })}
             </div>
             <div class="test-alert-text">
               <div class="d-flex align-center gap-2 flex-wrap mb-1">
-                <span class="badge ${Number(nearestExam.daysLeft) <= 7 ? 'badge-danger' : 'badge-primary'}" style="font-size: 11px; font-weight: 700; padding: 4px 10px;">
-                  ⏰ ${nearestExam.daysLeft} DAYS LEFT (${escapeHtml(nearestExam.date)})
+                <span class="badge ${Number(nearestExam.daysLeft) <= 7 ? 'badge-danger' : 'badge-primary'}" style="font-size: 11px; font-weight: 700; padding: 4px 10px; display: inline-flex; align-items: center; gap: 4px;">
+                  ${renderIcon('Clock', { size: 12 })} ${nearestExam.daysLeft} DAYS LEFT (${escapeHtml(nearestExam.date)})
                 </span>
                 <strong style="color: #1E3A8A; font-size: 15px;">${escapeHtml(nearestExam.title)}</strong>
               </div>
@@ -599,7 +601,9 @@ function renderStudyHub(stage, state) {
             </div>
           </div>
           <div class="test-alert-actions">
-            <button type="button" class="btn btn-primary btn-sm btn-study-alert" data-subject="${topRecSubject}" style="padding: 10px 18px; font-weight: 700; box-shadow: 0 4px 14px rgba(37,99,235,0.35);">Start Targeted Prep 🚀</button>
+            <button type="button" class="btn btn-primary btn-sm btn-study-alert" data-subject="${topRecSubject}" style="padding: 10px 18px; font-weight: 700; box-shadow: 0 4px 14px rgba(37,99,235,0.35); display: inline-flex; align-items: center; gap: 6px;">
+              Start Targeted Prep ${renderIcon('ArrowRight', { size: 14, color: '#FFFFFF' })}
+            </button>
           </div>
         </section>
       ` : ''}
@@ -621,9 +625,12 @@ function renderStudyHub(stage, state) {
       <!-- Priority Recommender Engine (40/30/20/10) -->
       <section class="recommender-card">
         <div class="d-flex justify-between align-center mb-2">
-          <div>
-            <h2 class="text-lg font-bold mb-0">🎯 Adaptive Priority Recommendation Engine</h2>
-            <p class="text-sm text-secondary mb-0">Mathematically weighted concept ranking based on board exam urgency and retention gaps.</p>
+          <div class="d-flex align-center gap-2">
+            ${badgeIcon('Sliders', { variant: 'bot', size: 22, iconSize: 18 })}
+            <div>
+              <h2 class="text-lg font-bold mb-0">Adaptive Priority Recommendation Engine</h2>
+              <p class="text-sm text-secondary mb-0">Mathematically weighted concept ranking based on board exam urgency and retention gaps.</p>
+            </div>
           </div>
           <span class="badge badge-info">Authoritative Formula</span>
         </div>
@@ -634,9 +641,9 @@ function renderStudyHub(stage, state) {
 
         <div class="rec-list" style="display: flex; flex-direction: column; gap: 10px; margin-top: 14px;">
           ${recommendations.map((rec, idx) => `
-            <div style="background: var(--color-surface-subtle); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 12px 16px; display: flex; justify-content: space-between; align-center; flex-wrap: wrap; gap: 10px;">
+            <div style="background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.9); border-radius: 14px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
               <div style="display: flex; align-items: center; gap: 12px;">
-                <span style="font-size: 18px; font-weight: 800; color: var(--color-subject-accent); min-width: 28px;">#${idx + 1}</span>
+                <span style="font-size: 16px; font-weight: 800; color: #2563EB; min-width: 28px; width: 28px; height: 28px; border-radius: 8px; background: rgba(37, 99, 235, 0.1); display: inline-flex; align-items: center; justify-content: center;">#${idx + 1}</span>
                 <div>
                   <div style="display: flex; align-items: center; gap: 8px;">
                     <strong style="color: var(--color-text-main); font-size: 15px;">${escapeHtml(rec.title)}</strong>
@@ -648,9 +655,9 @@ function renderStudyHub(stage, state) {
               <div style="display: flex; align-items: center; gap: 12px;">
                 <div style="text-align: right;">
                   <span style="font-size: 11px; text-transform: uppercase; color: var(--color-text-secondary); font-weight: 700;">Score:</span>
-                  <strong style="font-size: 16px; color: #10B981; margin-left: 4px;">${rec.priorityScore}</strong>
+                  <strong style="font-size: 16px; color: #10B981; margin-left: 4px; font-family: ui-monospace, monospace;">${rec.priorityScore}</strong>
                 </div>
-                <button type="button" class="btn btn-primary btn-sm btn-study-rec" data-subject="${rec.subject.toLowerCase() === 'mathematics' ? 'math' : rec.subject.toLowerCase()}">Study Now →</button>
+                <button type="button" class="btn btn-primary btn-sm btn-study-rec" data-subject="${rec.subject.toLowerCase() === 'mathematics' ? 'math' : rec.subject.toLowerCase()}" style="display: inline-flex; align-items: center; gap: 4px;">Study Now →</button>
               </div>
             </div>
           `).join('')}
@@ -718,7 +725,7 @@ function renderStudyHub(stage, state) {
 
           <div class="timetable-grid" style="grid-template-columns: 1fr;">
             ${timetable.map((p, idx) => `
-              <div class="period-item ${p.active ? 'active-period' : ''}">
+              <div class="period-item ${p.active ? 'active-period' : ''}" style="${p.active ? 'border-color: #10B981; box-shadow: 0 0 16px rgba(16, 185, 129, 0.2);' : ''}">
                 <div class="d-flex justify-between align-center">
                   <div>
                     <span class="text-xs font-bold text-secondary">Period ${p.period} (${escapeHtml(p.time)})</span>
@@ -726,8 +733,10 @@ function renderStudyHub(stage, state) {
                     <span class="text-xs text-secondary">${escapeHtml(p.room)} • ${escapeHtml(p.teacher)}</span>
                   </div>
                   <div class="d-flex align-center gap-2">
-                    ${p.active ? '<span class="badge badge-success text-xs">Active Now</span>' : ''}
-                    <button type="button" class="btn-icon-danger btn-delete-period" data-period-idx="${idx}" title="Remove period" aria-label="Remove period ${p.period}">🗑️</button>
+                    ${p.active ? '<span class="badge badge-success text-xs" style="display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 0 10px rgba(16, 185, 129, 0.35);"><span class="active-pulse"></span> Active Now</span>' : ''}
+                    <button type="button" class="btn-icon-danger btn-delete-period" data-period-idx="${idx}" title="Remove period" aria-label="Remove period ${p.period}" style="background: transparent; border: none; cursor: pointer; padding: 6px; border-radius: 6px; color: #94A3B8; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s;">
+                      ${renderIcon('Trash2', { size: 14, color: '#94A3B8' })}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -787,7 +796,9 @@ function renderStudyHub(stage, state) {
                         <span class="countdown-days">${ex.daysLeft}</span>
                         <span class="countdown-label">Days</span>
                       </div>
-                      <button type="button" class="btn-icon-danger btn-delete-exam" data-exam-id="${ex.id}" title="Remove test" aria-label="Remove test">🗑️</button>
+                      <button type="button" class="btn-icon-danger btn-delete-exam" data-exam-id="${ex.id}" title="Remove test" aria-label="Remove test" style="background: transparent; border: none; cursor: pointer; padding: 6px; border-radius: 6px; color: #94A3B8; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s;">
+                        ${renderIcon('Trash2', { size: 14, color: '#94A3B8' })}
+                      </button>
                     </div>
                   </div>
                   <div class="exam-syllabus-box">
@@ -842,12 +853,14 @@ function renderStudyHub(stage, state) {
             </div>
             <div style="display: flex; flex-direction: column; gap: 8px;">
               ${checklist.map(item => `
-                <div style="display: flex; align-items: center; justify-content: space-between; padding: 4px 6px; border-radius: 4px; transition: background 0.15s ease;">
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; border-radius: 8px; transition: background 0.15s ease; background: rgba(255,255,255,0.6);">
                   <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; flex: 1;">
                     <input type="checkbox" class="chk-syllabus" data-item-id="${item.id}" ${item.completed ? 'checked' : ''} style="width: 16px; height: 16px; accent-color: #10B981;" />
                     <span style="${item.completed ? 'text-decoration: line-through; color: var(--color-text-secondary);' : 'font-weight: 600;'}">${escapeHtml(item.chapter)}</span>
                   </label>
-                  <button type="button" class="btn-icon-danger btn-delete-chapter" data-chapter-id="${item.id}" title="Remove topic" aria-label="Remove topic">✕</button>
+                  <button type="button" class="btn-icon-danger btn-delete-chapter" data-chapter-id="${item.id}" title="Remove topic" aria-label="Remove topic" style="background: transparent; border: none; cursor: pointer; padding: 4px; border-radius: 4px; color: #94A3B8; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s;">
+                    ${renderIcon('Trash2', { size: 13, color: '#94A3B8' })}
+                  </button>
                 </div>
               `).join('')}
             </div>
@@ -1065,8 +1078,11 @@ function renderLearnerProfile(stage, state) {
       <!-- Identity Hero -->
       <div class="profile-hero">
         <div style="display: flex; align-items: center; gap: 16px;">
-          <div style="width: 72px; height: 72px; border-radius: 50%; background: #EFF6FF; border: 3px solid #275DDB; display: flex; align-items: center; justify-content: center; font-size: 36px; box-shadow: 0 4px 12px rgba(39, 93, 219, 0.2);">
-            ${p.avatar || '👨‍🎓'}
+          <div style="position: relative; width: 84px; height: 84px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            ${renderCircularRing({ value: p.xp || 450, max: 600, size: 84, strokeWidth: 5, color: '#8B5CF6' })}
+            <div style="position: absolute; width: 64px; height: 64px; border-radius: 50%; background: #EFF6FF; border: 2px solid #8B5CF6; display: flex; align-items: center; justify-content: center; font-size: 32px; box-shadow: 0 4px 14px rgba(139, 92, 246, 0.25);">
+              ${p.avatar || '👨‍🎓'}
+            </div>
           </div>
           <div>
             <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
@@ -1082,22 +1098,22 @@ function renderLearnerProfile(stage, state) {
         </div>
 
         <div style="display: flex; gap: 14px; align-items: center; flex-wrap: wrap;">
-          <div class="d-flex align-center gap-2" style="background: #FFF7ED; border: 1px solid #FFEDD5; border-radius: var(--radius-md); padding: 8px 14px;">
-            <span class="streak-flame">🔥</span>
+          <div class="d-flex align-center gap-2" style="background: rgba(254, 243, 199, 0.7); border: 1px solid rgba(245, 158, 11, 0.4); border-radius: 16px; padding: 10px 16px; backdrop-filter: blur(12px); box-shadow: 0 4px 14px rgba(245, 158, 11, 0.15);">
+            ${badgeIcon('Flame', { variant: 'flame', size: 22, iconSize: 18 })}
             <div>
-              <strong style="font-size: 18px; color: #EA580C; display: block; line-height: 1;">${p.streakDays || 7} Days</strong>
-              <span style="font-size: 11px; text-transform: uppercase; color: #9A3412; font-weight: 700;">Daily Study Streak</span>
+              <strong style="font-size: 18px; color: #D97706; display: block; line-height: 1;">${p.streakDays || 7} Days</strong>
+              <span style="font-size: 11px; text-transform: uppercase; color: #B45309; font-weight: 700;">Daily Study Streak</span>
             </div>
           </div>
-          <div class="d-flex align-center gap-2" style="background: #F0FDF4; border: 1px solid #DCFCE7; border-radius: var(--radius-md); padding: 8px 14px;">
-            <span style="font-size: 28px;">🌟</span>
+          <div class="d-flex align-center gap-2" style="background: rgba(236, 253, 245, 0.7); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 16px; padding: 10px 16px; backdrop-filter: blur(12px); box-shadow: 0 4px 14px rgba(16, 185, 129, 0.15);">
+            ${badgeIcon('Sparkles', { variant: 'gold', size: 22, iconSize: 18 })}
             <div>
-              <strong style="font-size: 18px; color: #16A34A; display: block; line-height: 1;">Level ${p.level || 1}</strong>
-              <span style="font-size: 11px; text-transform: uppercase; color: #15803D; font-weight: 700;">${p.xp || 0} / 600 XP</span>
+              <strong style="font-size: 18px; color: #059669; display: block; line-height: 1;">Level ${p.level || 1}</strong>
+              <span style="font-size: 11px; text-transform: uppercase; color: #047857; font-weight: 700;">${p.xp || 0} / 600 XP</span>
             </div>
           </div>
-          <button type="button" class="btn btn-secondary btn-sm" id="btn-toggle-edit-profile">
-            ${isEditingProfile ? '✕ Close' : '✏️ Edit Profile'}
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-toggle-edit-profile" style="display: inline-flex; align-items: center; gap: 6px;">
+            ${isEditingProfile ? '✕ Close' : renderIcon('Settings', { size: 14, color: '#4F46E5' }) + ' Edit Profile'}
           </button>
         </div>
       </div>
@@ -1178,23 +1194,28 @@ function renderLearnerProfile(stage, state) {
           <section class="badges-card">
             <h3 class="text-md font-bold mb-3">🏆 Badges & Achievement Vault</h3>
             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px;">
-              <div style="background: var(--color-surface-subtle); border: 1px solid var(--color-border); border-radius: 8px; padding: 10px; text-align: center;">
-                <div style="font-size: 24px; margin-bottom: 4px;">🎵</div>
+              <div style="background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.9); border-radius: 12px; padding: 12px; text-align: center;">
+                <div style="margin-bottom: 6px;">${badgeIcon('Zap', { variant: 'phys', size: 24, iconSize: 20 })}</div>
                 <strong style="font-size: 12px; display: block;">Dhwani Shodha</strong>
                 <span style="font-size: 10px; color: var(--color-text-secondary);">Sound Detective</span>
               </div>
-              <div style="background: var(--color-surface-subtle); border: 1px solid var(--color-border); border-radius: 8px; padding: 10px; text-align: center;">
-                <div style="font-size: 24px; margin-bottom: 4px;">💧</div>
+              <div style="background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.9); border-radius: 12px; padding: 12px; text-align: center;">
+                <div style="margin-bottom: 6px;">${badgeIcon('Ruler', { variant: 'math', size: 24, iconSize: 20 })}</div>
                 <strong style="font-size: 12px; display: block;">Bhaga Vidwan</strong>
                 <span style="font-size: 10px; color: var(--color-text-secondary);">Water Ratio</span>
               </div>
-              <div style="background: var(--color-surface-subtle); border: 1px solid var(--color-border); border-radius: 8px; padding: 10px; text-align: center;">
-                <div style="font-size: 24px; margin-bottom: 4px;">🌱</div>
+              <div style="background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.9); border-radius: 12px; padding: 12px; text-align: center;">
+                <div style="margin-bottom: 6px;">${badgeIcon('Sprout', { variant: 'bio', size: 24, iconSize: 20 })}</div>
                 <strong style="font-size: 12px; display: block;">Jeeva Vyuha</strong>
                 <span style="font-size: 10px; color: var(--color-text-secondary);">Food Web</span>
               </div>
-              <div style="background: var(--color-surface-subtle); border: 1px solid var(--color-border); border-radius: 8px; padding: 10px; text-align: center;">
-                <div style="font-size: 24px; margin-bottom: 4px;">🧪</div>
+              <div style="background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.9); border-radius: 12px; padding: 12px; text-align: center;">
+                <div style="margin-bottom: 6px;">${badgeIcon('FlaskConical', { variant: 'chem', size: 24, iconSize: 20 })}</div>
+                <strong style="font-size: 12px; display: block;">Amla Kshara</strong>
+                <span style="font-size: 10px; color: var(--color-text-secondary);">pH Indicators</span>
+              </div>
+            </div>
+          </section>
                 <strong style="font-size: 12px; display: block;">Rasayana Shodha</strong>
                 <span style="font-size: 10px; color: var(--color-text-secondary);">pH Indicator</span>
               </div>
@@ -1581,37 +1602,54 @@ function renderCourseBrowser(stage, state) {
         </div>
       </section>
 
-      <!-- Enrolled Subject Selection Cards -->
+      <!-- Enrolled Subject Selection Cards (2-Column Responsive Bento Grid) -->
       <section class="mb-4">
         <div class="d-flex justify-between align-center mb-3">
           <h2 class="text-sm font-bold text-secondary uppercase mb-0">Enrolled Subjects (${subjects.length})</h2>
           <span class="text-xs text-secondary">Click any subject to view units & schedule tests</span>
         </div>
-        <div class="enrolled-subjects-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; margin-bottom: 24px;">
+        <div class="enrolled-subjects-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; margin-bottom: 24px;">
           ${subjects.map(s => {
             const isSelected = s.id === currentSubjectObj.id;
             const subTopics = allTopics.filter(t => t.id.startsWith(s.id === 'physics' ? 't' : s.id));
             const subMastered = allTopics.filter(t => topicMastery[t.id]?.status === 'mastered');
             const subPercent = isSelected ? progressPercent : (s.id === 'physics' ? 70 : (s.id === 'math' ? 60 : (s.id === 'chemistry' ? 45 : 40)));
-            const icon = s.id === 'physics' ? '⚡' : s.id === 'chemistry' ? '🧪' : s.id === 'biology' ? '🌿' : s.id === 'math' ? '📐' : '📚';
-            const accentColor = s.id === 'physics' ? '#0D9488' : s.id === 'chemistry' ? '#9333EA' : s.id === 'biology' ? '#059669' : s.id === 'math' ? '#2563EB' : '#4F46E5';
+            const iconData = {
+              physics: { name: 'Zap', variant: 'phys' },
+              chemistry: { name: 'FlaskConical', variant: 'chem' },
+              biology: { name: 'Sprout', variant: 'bio' },
+              mathematics: { name: 'Ruler', variant: 'math' },
+              math: { name: 'Ruler', variant: 'math' },
+              social: { name: 'BookOpen', variant: 'bot' }
+            };
+            const subIconInfo = iconData[s.id] || { name: 'BookOpen', variant: 'bot' };
+            const accentColor = s.id === 'physics' ? '#0D9488' : (s.id === 'chemistry' ? '#9333EA' : (s.id === 'biology' ? '#059669' : (s.id === 'math' || s.id === 'mathematics' ? '#2563EB' : '#4F46E5')));
 
             return `
-              <div class="timetable-card btn-select-browser-sub ${isSelected ? 'border-primary' : ''}" data-sub-id="${s.id}" tabindex="0" role="button" aria-label="Select ${escapeHtml(s.name)}" style="cursor: pointer; padding: 18px; border: ${isSelected ? '2px solid ' + accentColor : '1px solid rgba(255,255,255,0.85)'}; background: ${isSelected ? 'linear-gradient(135deg, rgba(255,255,255,0.92) 0%, ' + accentColor + '18 100%)' : 'rgba(255, 255, 255, 0.78)'}; backdrop-filter: blur(16px) saturate(180%); -webkit-backdrop-filter: blur(16px) saturate(180%); border-radius: 18px; box-shadow: ${isSelected ? '0 12px 32px -4px ' + accentColor + '30, inset 0 1px 0 rgba(255,255,255,1)' : '0 4px 16px rgba(31,38,135,0.05), inset 0 1px 0 rgba(255,255,255,0.95)'}; transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);">
+              <div class="timetable-card btn-select-browser-sub ${isSelected ? 'border-primary' : ''}" data-sub-id="${s.id}" tabindex="0" role="button" aria-label="Select ${escapeHtml(s.name)}" style="cursor: pointer; padding: 20px; border: ${isSelected ? '2px solid ' + accentColor : '1px solid rgba(255,255,255,0.85)'}; background: ${isSelected ? 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, ' + accentColor + '15 100%)' : 'rgba(255, 255, 255, 0.78)'}; backdrop-filter: blur(16px) saturate(180%); -webkit-backdrop-filter: blur(16px) saturate(180%); border-radius: 20px; box-shadow: ${isSelected ? '0 12px 32px -4px ' + accentColor + '30, inset 0 1px 0 rgba(255,255,255,1)' : '0 4px 16px rgba(31,38,135,0.05), inset 0 1px 0 rgba(255,255,255,0.95)'}; transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);">
                 <div class="d-flex justify-between align-center mb-2">
-                  <div style="width: 44px; height: 44px; border-radius: 12px; background: ${isSelected ? accentColor : 'rgba(255,255,255,0.8)'}; color: ${isSelected ? '#FFFFFF' : accentColor}; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: ${isSelected ? '0 4px 14px ' + accentColor + '40' : '0 2px 6px rgba(0,0,0,0.04)'};">
-                    ${icon}
+                  <div class="d-flex align-center gap-2">
+                    ${badgeIcon(subIconInfo.name, { variant: subIconInfo.variant, size: 24, iconSize: 20 })}
+                    <div>
+                      <strong style="font-size: 15px; display: block; color: var(--color-text-main); line-height: 1.2;">${escapeHtml(s.name)}</strong>
+                      <span class="text-xs text-secondary" style="font-size: 11px;">${escapeHtml(s.book || 'NCERT Book')}</span>
+                    </div>
                   </div>
-                  <span class="badge ${isSelected ? 'badge-primary' : 'badge-secondary'}" style="font-size: 11px; font-weight: 700; padding: 4px 10px;">${subPercent}% Mastered</span>
+                  <div>
+                    ${renderCircularRing({ value: subPercent, max: 100, size: 44, strokeWidth: 4, color: accentColor })}
+                  </div>
                 </div>
-                <strong style="font-size: 15px; display: block; color: var(--color-text-main); margin-bottom: 2px;">${escapeHtml(s.name)}</strong>
-                <span class="text-xs text-secondary" style="font-size: 11px;">📖 ${escapeHtml(s.book || 'NCERT Book')}</span>
                 <div class="pocket-progress-track mt-3" style="height: 6px; background: rgba(0,0,0,0.06); border-radius: 4px; overflow: hidden;">
                   <div class="pocket-progress-fill" style="width: ${subPercent}%; height: 100%; background: ${accentColor}; transition: width 0.4s ease;"></div>
                 </div>
                 <div class="d-flex justify-between align-center mt-3 pt-2" style="border-top: 1px solid rgba(226, 232, 240, 0.6); font-size: 11px;">
-                  <span style="color: ${isSelected ? accentColor : 'var(--color-text-secondary)'}; font-weight: 700;">${isSelected ? '● Active Course' : 'Click to View Units'}</span>
-                  <span style="font-weight: 600; color: #2563EB;">View Syllabus →</span>
+                  <span style="color: ${isSelected ? accentColor : 'var(--color-text-secondary)'}; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+                    <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: ${isSelected ? accentColor : '#94A3B8'};"></span>
+                    ${isSelected ? 'Active Course' : 'Click to View Units'}
+                  </span>
+                  <span style="font-weight: 600; color: #2563EB; display: inline-flex; align-items: center; gap: 2px;">
+                    View Syllabus →
+                  </span>
                 </div>
               </div>
             `;
@@ -1627,14 +1665,20 @@ function renderCourseBrowser(stage, state) {
             <span class="text-xs text-secondary">Aligned to ${escapeHtml(currentSubjectObj.book || 'NCERT Standard')} • ${units.length} Units</span>
           </div>
           <div class="d-flex gap-2">
-            <button type="button" class="btn btn-secondary btn-sm" id="btn-browser-launch-tutor" data-subject="${currentSubjectObj.id}">
-              🤖 Ask AI Tutor About This Course
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-browser-launch-tutor" data-subject="${currentSubjectObj.id}" style="display: inline-flex; align-items: center; gap: 6px;">
+              ${renderIcon('Bot', { size: 14, color: '#4F46E5' })} Ask AI Tutor About This Course
             </button>
-            <button type="button" class="btn btn-outline btn-sm" id="btn-browser-goto-mock">
-              📝 Take Summative Mock Exam
+            <button type="button" class="btn btn-outline btn-sm" id="btn-browser-goto-mock" style="display: inline-flex; align-items: center; gap: 6px;">
+              ${renderIcon('FileText', { size: 14, color: '#2563EB' })} Take Summative Mock Exam
             </button>
           </div>
         </div>
+
+        ${currentSubjectObj.id === 'physics' ? `
+          <div style="margin-bottom: 20px;">
+            ${renderLiveSineWaveSvg({ id: 'phys-course-wave', frequency: 440, amplitude: 22, height: 60, strokeColor: '#0D9488' })}
+          </div>
+        ` : ''}
 
         <div style="display: flex; flex-direction: column; gap: 20px;">
           ${units.map(unit => `
@@ -1656,8 +1700,8 @@ function renderCourseBrowser(stage, state) {
                         <span class="text-xs text-secondary ml-2">(${ch.topics.length} topics)</span>
                       </div>
                       <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-primary btn-xs btn-launch-ch-lab" data-subject="${currentSubjectObj.id}" style="padding: 6px 14px; font-weight: 600;">
-                          🔬 Launch Inquiry Lab →
+                        <button type="button" class="btn btn-primary btn-xs btn-launch-ch-lab" data-subject="${currentSubjectObj.id}" style="padding: 6px 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+                          ${renderIcon('Sparkles', { size: 14, color: '#FFFFFF' })} Launch Inquiry Lab →
                         </button>
                       </div>
                     </div>
@@ -1668,11 +1712,15 @@ function renderCourseBrowser(stage, state) {
                         const isMastered = topicMastery[t.id]?.status === 'mastered';
                         const isInProgress = topicMastery[t.id]?.status === 'in_progress';
                         const markerClass = isMastered ? 'mastered' : (isInProgress ? 'current' : '');
-                        const markerIcon = isMastered ? '⭐' : (isInProgress ? '🔬' : '⚪');
+                        const markerIcon = isMastered 
+                          ? renderIcon('Star', { size: 14, color: '#D97706', fill: '#F59E0B' }) 
+                          : (isInProgress 
+                            ? renderIcon('Clock', { size: 14, color: '#2563EB' }) 
+                            : '<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#94A3B8;"></span>');
 
                         return `
                           <div class="skill-node-wrapper" style="margin-bottom: 10px;">
-                            <div class="skill-node-marker ${markerClass}">
+                            <div class="skill-node-marker ${markerClass}" style="display: flex; align-items: center; justify-content: center;">
                               ${markerIcon}
                             </div>
                             <div class="skill-node-content" style="background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid rgba(255, 255, 255, 0.9); border-radius: 14px; padding: 14px 18px; box-shadow: 0 4px 14px rgba(31, 38, 135, 0.04); transition: all 0.25s ease;">
@@ -1688,11 +1736,11 @@ function renderCourseBrowser(stage, state) {
                                   <p class="text-xs text-secondary mb-0" style="line-height: 1.4;">${t.outcomes && t.outcomes[0] ? escapeHtml(t.outcomes[0]) : 'Core concept outcome'}</p>
                                 </div>
                                 <div class="d-flex gap-2 align-center">
-                                  <button type="button" class="btn btn-secondary btn-xs btn-launch-topic-lab" data-subject="${currentSubjectObj.id}" style="padding: 6px 12px; font-weight: 600;">
-                                    🔬 Explore Lab
+                                  <button type="button" class="btn btn-secondary btn-xs btn-launch-topic-lab" data-subject="${currentSubjectObj.id}" style="padding: 6px 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 5px;">
+                                    ${renderIcon('FlaskConical', { size: 13, color: '#2563EB' })} Explore Lab
                                   </button>
-                                  <button type="button" class="btn btn-primary btn-xs btn-trigger-topic-test" data-topic-id="${t.id}" data-topic-title="${escapeHtml(t.title)}" style="padding: 6px 14px; font-weight: 700;">
-                                    📝 Take Topic Test
+                                  <button type="button" class="btn btn-primary btn-xs btn-trigger-topic-test" data-topic-id="${t.id}" data-topic-title="${escapeHtml(t.title)}" style="padding: 6px 14px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">
+                                    ${renderIcon('FileText', { size: 13, color: '#FFFFFF' })} Take Topic Test
                                   </button>
                                 </div>
                               </div>
@@ -1985,7 +2033,7 @@ function renderMockExamExperience(stage, state) {
 
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
         <!-- Exam Card 1: CBSE Class 7 Term 1 -->
-        <article class="qw-card" style="border-left: 5px solid #275DDB; background: var(--color-surface); border-radius: 16px; padding: 20px; box-shadow: 0 4px 16px rgba(39,93,219,0.08); transition: all 0.25s ease;">
+        <article class="qw-card" style="border-left: 5px solid #275DDB; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); border-radius: 20px; padding: 22px; box-shadow: 0 8px 30px rgba(39,93,219,0.08); transition: all 0.25s ease;">
           <div class="qw-card-top">
             <div>
               <div class="d-flex gap-2 align-center mb-1">
@@ -1995,13 +2043,13 @@ function renderMockExamExperience(stage, state) {
               <h3 class="font-bold text-md mt-1 mb-0" style="font-size: 16px;">Class 7 Science Term 1 Summative Mock</h3>
               <span class="text-xs text-secondary">Covers Physics, Chemistry, Biology & Ratios</span>
             </div>
-            <span style="font-size: 32px;">⏱️</span>
+            ${badgeIcon('Clock', { variant: 'bot', size: 28, iconSize: 22 })}
           </div>
           <p class="text-xs text-secondary my-2" style="line-height: 1.5;">Sectioned mock test featuring 5 questions (10 objective + 15 reasoning marks). Includes instant diagnostic scoring and remediation.</p>
           <div class="d-flex gap-2 wrap my-2">
-            <span class="badge badge-secondary" style="font-size: 10px;">⏱️ 30 Mins</span>
-            <span class="badge badge-secondary" style="font-size: 10px;">🎯 25 Marks</span>
-            <span class="badge badge-secondary" style="font-size: 10px;">📝 5 Questions</span>
+            <span class="badge badge-secondary" style="font-size: 10px; display: inline-flex; align-items: center; gap: 4px;">${renderIcon('Clock', { size: 12 })} 30 Mins</span>
+            <span class="badge badge-secondary" style="font-size: 10px; display: inline-flex; align-items: center; gap: 4px;">${renderIcon('Target', { size: 12 })} 25 Marks</span>
+            <span class="badge badge-secondary" style="font-size: 10px; display: inline-flex; align-items: center; gap: 4px;">${renderIcon('FileText', { size: 12 })} 5 Questions</span>
           </div>
           <div class="d-flex justify-between align-center text-xs text-secondary mt-3 pt-3 border-top">
             <button type="button" class="btn btn-outline btn-sm btn-practice-mock" data-exam-id="cbse-7-science-term1">Practice Mode 📖</button>
@@ -2010,7 +2058,7 @@ function renderMockExamExperience(stage, state) {
         </article>
 
         <!-- Exam Card 2: ICSE Class 10 Physics Mock -->
-        <article class="qw-card" style="border-left: 5px solid #087E79; background: var(--color-surface); border-radius: 16px; padding: 20px; box-shadow: 0 4px 16px rgba(8,126,121,0.08); transition: all 0.25s ease;">
+        <article class="qw-card" style="border-left: 5px solid #087E79; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); border-radius: 20px; padding: 22px; box-shadow: 0 8px 30px rgba(8,126,121,0.08); transition: all 0.25s ease;">
           <div class="qw-card-top">
             <div>
               <div class="d-flex gap-2 align-center mb-1">
@@ -2020,13 +2068,13 @@ function renderMockExamExperience(stage, state) {
               <h3 class="font-bold text-md mt-1 mb-0" style="font-size: 16px;">ICSE Class 10 Light & Ray Optics Mock</h3>
               <span class="text-xs text-secondary">Snell's Law, Critical Angle & Refraction</span>
             </div>
-            <span style="font-size: 32px;">🔦</span>
+            ${badgeIcon('Lightbulb', { variant: 'phys', size: 28, iconSize: 22 })}
           </div>
           <p class="text-xs text-secondary my-2" style="line-height: 1.5;">Calculated numericals on refractive index and lens ray tracing with step-by-step mark breakdown.</p>
           <div class="d-flex gap-2 wrap my-2">
-            <span class="badge badge-secondary" style="font-size: 10px;">⏱️ 45 Mins</span>
-            <span class="badge badge-secondary" style="font-size: 10px;">🎯 40 Marks</span>
-            <span class="badge badge-secondary" style="font-size: 10px;">📝 8 Questions</span>
+            <span class="badge badge-secondary" style="font-size: 10px; display: inline-flex; align-items: center; gap: 4px;">${renderIcon('Clock', { size: 12 })} 45 Mins</span>
+            <span class="badge badge-secondary" style="font-size: 10px; display: inline-flex; align-items: center; gap: 4px;">${renderIcon('Target', { size: 12 })} 40 Marks</span>
+            <span class="badge badge-secondary" style="font-size: 10px; display: inline-flex; align-items: center; gap: 4px;">${renderIcon('FileText', { size: 12 })} 8 Questions</span>
           </div>
           <div class="d-flex justify-between align-center text-xs text-secondary mt-3 pt-3 border-top">
             <button type="button" class="btn btn-outline btn-sm" id="btn-start-mock-icse">Practice Mock →</button>
@@ -2035,7 +2083,7 @@ function renderMockExamExperience(stage, state) {
         </article>
 
         <!-- Exam Card 3: Class 8 Computing & Logic -->
-        <article class="qw-card" style="border-left: 5px solid #8B5CF6; background: var(--color-surface); border-radius: 16px; padding: 20px; box-shadow: 0 4px 16px rgba(139,92,246,0.08); transition: all 0.25s ease;">
+        <article class="qw-card" style="border-left: 5px solid #8B5CF6; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); border-radius: 20px; padding: 22px; box-shadow: 0 8px 30px rgba(139,92,246,0.08); transition: all 0.25s ease;">
           <div class="qw-card-top">
             <div>
               <div class="d-flex gap-2 align-center mb-1">
@@ -2045,13 +2093,13 @@ function renderMockExamExperience(stage, state) {
               <h3 class="font-bold text-md mt-1 mb-0" style="font-size: 16px;">Class 8 Computing & Algorithm Studio Mock</h3>
               <span class="text-xs text-secondary">Sequence Execution, Loop Invariants & Maze Pathing</span>
             </div>
-            <span style="font-size: 32px;">🤖</span>
+            ${badgeIcon('Bot', { variant: 'bot', size: 28, iconSize: 22 })}
           </div>
           <p class="text-xs text-secondary my-2" style="line-height: 1.5;">Computational problem-solving assessment testing loop termination invariants and state tracing.</p>
           <div class="d-flex gap-2 wrap my-2">
-            <span class="badge badge-secondary" style="font-size: 10px;">⏱️ 25 Mins</span>
-            <span class="badge badge-secondary" style="font-size: 10px;">🎯 20 Marks</span>
-            <span class="badge badge-secondary" style="font-size: 10px;">📝 4 Questions</span>
+            <span class="badge badge-secondary" style="font-size: 10px; display: inline-flex; align-items: center; gap: 4px;">${renderIcon('Clock', { size: 12 })} 25 Mins</span>
+            <span class="badge badge-secondary" style="font-size: 10px; display: inline-flex; align-items: center; gap: 4px;">${renderIcon('Target', { size: 12 })} 20 Marks</span>
+            <span class="badge badge-secondary" style="font-size: 10px; display: inline-flex; align-items: center; gap: 4px;">${renderIcon('FileText', { size: 12 })} 4 Questions</span>
           </div>
           <div class="d-flex justify-between align-center text-xs text-secondary mt-3 pt-3 border-top">
             <button type="button" class="btn btn-outline btn-sm btn-practice-mock" data-exam-id="cbse-7-science-term1">Practice Mode 📖</button>
@@ -2060,7 +2108,7 @@ function renderMockExamExperience(stage, state) {
         </article>
 
         <!-- Exam Card 4: Class 6 Math Proportions -->
-        <article class="qw-card" style="border-left: 5px solid #F59E0B; background: var(--color-surface); border-radius: 16px; padding: 20px; box-shadow: 0 4px 16px rgba(245,158,11,0.08); transition: all 0.25s ease;">
+        <article class="qw-card" style="border-left: 5px solid #F59E0B; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); border-radius: 20px; padding: 22px; box-shadow: 0 8px 30px rgba(245,158,11,0.08); transition: all 0.25s ease;">
           <div class="qw-card-top">
             <div>
               <div class="d-flex gap-2 align-center mb-1">
@@ -2070,13 +2118,13 @@ function renderMockExamExperience(stage, state) {
               <h3 class="font-bold text-md mt-1 mb-0" style="font-size: 16px;">Class 6 Proportional Water Sharing Mock</h3>
               <span class="text-xs text-secondary">Unitary Method, Ratios & Part-Whole Fractions</span>
             </div>
-            <span style="font-size: 32px;">📐</span>
+            ${badgeIcon('Ruler', { variant: 'math', size: 28, iconSize: 22 })}
           </div>
           <p class="text-xs text-secondary my-2" style="line-height: 1.5;">Foundational mathematical ratios and proportional division applied to community village water sharing.</p>
           <div class="d-flex gap-2 wrap my-2">
-            <span class="badge badge-secondary" style="font-size: 10px;">⏱️ 20 Mins</span>
-            <span class="badge badge-secondary" style="font-size: 10px;">🎯 15 Marks</span>
-            <span class="badge badge-secondary" style="font-size: 10px;">📝 5 Questions</span>
+            <span class="badge badge-secondary" style="font-size: 10px; display: inline-flex; align-items: center; gap: 4px;">${renderIcon('Clock', { size: 12 })} 20 Mins</span>
+            <span class="badge badge-secondary" style="font-size: 10px; display: inline-flex; align-items: center; gap: 4px;">${renderIcon('Target', { size: 12 })} 15 Marks</span>
+            <span class="badge badge-secondary" style="font-size: 10px; display: inline-flex; align-items: center; gap: 4px;">${renderIcon('FileText', { size: 12 })} 5 Questions</span>
           </div>
           <div class="d-flex justify-between align-center text-xs text-secondary mt-3 pt-3 border-top">
             <button type="button" class="btn btn-outline btn-sm btn-practice-mock" data-exam-id="cbse-7-science-term1">Practice Mode 📖</button>
@@ -2132,24 +2180,24 @@ function renderAITutorCompanion(stage, state) {
         </div>
       </div>
 
-      <!-- Continuous Student Activity & Adaptive Telemetry -->
-      <section class="timetable-card mb-4 p-4" style="background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); color: #F8FAFC; border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 18px; box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.2);">
+      <!-- Continuous Student Activity & Adaptive Telemetry (Sleek Dark Slate Glass Card) -->
+      <section class="timetable-card dark-slate-card mb-4 p-4">
         <div class="d-flex justify-between align-center mb-3 flex-wrap gap-2">
           <div>
             <span class="badge" style="background: rgba(99, 102, 241, 0.25); color: #A5B4FC; border: 1px solid rgba(165, 180, 252, 0.4); font-size: 11px;">Continuous Learner Model Telemetry</span>
-            <h3 class="font-bold text-md mt-1 mb-0" style="color: #FFFFFF; font-size: 16px;">📊 ${escapeHtml(learnerProfile.name || 'Scholar')}'s Live Activity Log</h3>
+            <h3 class="font-bold text-md mt-1 mb-0" style="color: #FFFFFF; font-size: 16px;">${renderIcon('Activity', { size: 16, color: '#38BDF8' })} ${escapeHtml(learnerProfile.name || 'Scholar')}'s Live Activity Log</h3>
           </div>
           <span class="text-xs" style="color: #94A3B8;">Tracking tests, quizzes & inquiry milestones</span>
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 8px;">
           ${(learnerProfile.activityLog || []).slice(0, 3).map(act => `
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: rgba(255, 255, 255, 0.07); border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.1);">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: rgba(255, 255, 255, 0.06); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.08);">
               <div>
-                <strong style="font-size: 13px; color: #E2E8F0;">${act.type === 'test' ? '📝' : '🔬'} ${escapeHtml(act.title)}</strong>
+                <strong style="font-size: 13px; color: #E2E8F0;">${act.type === 'test' ? renderIcon('FileText', { size: 14, color: '#38BDF8' }) : renderIcon('FlaskConical', { size: 14, color: '#34D399' })} ${escapeHtml(act.title)}</strong>
                 <span class="text-xs" style="color: #94A3B8; margin-left: 8px;">(${new Date(act.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})</span>
               </div>
-              <span class="badge badge-success" style="font-size: 11px;">Score: ${act.score}%</span>
+              <span class="badge" style="background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.5); color: #34D399; box-shadow: 0 0 12px rgba(16, 185, 129, 0.3); font-weight: 800; font-family: ui-monospace, monospace; font-size: 11px;">Score: ${act.score}%</span>
             </div>
           `).join('')}
         </div>
@@ -2159,13 +2207,21 @@ function renderAITutorCompanion(stage, state) {
       <section class="recommender-card">
         <h2 class="text-sm font-bold text-secondary mb-2">CHOOSE STEM INQUIRY TOPIC</h2>
         <div class="d-flex gap-2 wrap mb-3">
-          <button type="button" class="btn btn-sm ${activeTutorSubject === 'physics' ? 'btn-primary' : 'btn-outline'} btn-tutor-sub" data-sub="physics" data-topic="sound_waves">⚡ Physics: Sound & Pitch</button>
-          <button type="button" class="btn btn-sm ${activeTutorSubject === 'chemistry' ? 'btn-primary' : 'btn-outline'} btn-tutor-sub" data-sub="chemistry" data-topic="acids_bases">🧪 Chemistry: pH Indicators</button>
-          <button type="button" class="btn btn-sm ${activeTutorSubject === 'mathematics' ? 'btn-primary' : 'btn-outline'} btn-tutor-sub" data-sub="mathematics" data-topic="ratios">📐 Math: Water Ratios</button>
-          <button type="button" class="btn btn-sm ${activeTutorSubject === 'biology' ? 'btn-primary' : 'btn-outline'} btn-tutor-sub" data-sub="biology" data-topic="food_webs">🌿 Biology: Food Webs</button>
+          <button type="button" class="btn btn-sm ${activeTutorSubject === 'physics' ? 'btn-primary' : 'btn-outline'} btn-tutor-sub" data-sub="physics" data-topic="sound_waves" style="display: inline-flex; align-items: center; gap: 6px;">
+            ${renderIcon('Zap', { size: 14, color: activeTutorSubject === 'physics' ? '#FFFFFF' : '#0D9488' })} Physics: Sound & Pitch
+          </button>
+          <button type="button" class="btn btn-sm ${activeTutorSubject === 'chemistry' ? 'btn-primary' : 'btn-outline'} btn-tutor-sub" data-sub="chemistry" data-topic="acids_bases" style="display: inline-flex; align-items: center; gap: 6px;">
+            ${renderIcon('FlaskConical', { size: 14, color: activeTutorSubject === 'chemistry' ? '#FFFFFF' : '#9333EA' })} Chemistry: pH Indicators
+          </button>
+          <button type="button" class="btn btn-sm ${activeTutorSubject === 'mathematics' ? 'btn-primary' : 'btn-outline'} btn-tutor-sub" data-sub="mathematics" data-topic="ratios" style="display: inline-flex; align-items: center; gap: 6px;">
+            ${renderIcon('Ruler', { size: 14, color: activeTutorSubject === 'mathematics' ? '#FFFFFF' : '#2563EB' })} Math: Water Ratios
+          </button>
+          <button type="button" class="btn btn-sm ${activeTutorSubject === 'biology' ? 'btn-primary' : 'btn-outline'} btn-tutor-sub" data-sub="biology" data-topic="food_webs" style="display: inline-flex; align-items: center; gap: 6px;">
+            ${renderIcon('Sprout', { size: 14, color: activeTutorSubject === 'biology' ? '#FFFFFF' : '#059669' })} Biology: Food Webs
+          </button>
         </div>
 
-        <div class="p-3 border rounded bg-surface-subtle">
+        <div class="p-3 border rounded bg-surface-subtle" style="border-radius: 12px; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px);">
           <strong>Verified Curriculum Citation:</strong>
           <span class="text-secondary ml-1">${escapeHtml(tutorData.groundedSource.citation)}</span>
         </div>
@@ -2182,19 +2238,28 @@ function renderAITutorCompanion(stage, state) {
           </div>
         </div>
 
-        <div class="p-3 border rounded bg-surface mb-3" style="font-size: 14px; line-height: 1.6;">
+        <div class="p-3 border rounded bg-surface mb-3" style="font-size: 14px; line-height: 1.6; border-radius: 14px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px);">
           ${activeTutorExplanationMode === 'step_by_step' ? `<p class="mb-0">${escapeHtml(tutorData.explanation)}</p>` : ''}
           ${activeTutorExplanationMode === 'simpler' ? `<p class="mb-0"><strong>In Everyday Terms:</strong> ${escapeHtml(tutorData.simplerLanguage)}</p>` : ''}
           ${activeTutorExplanationMode === 'analogy' ? `<p class="mb-0"><strong>Practical Analogy:</strong> ${escapeHtml(tutorData.analogy)}</p>` : ''}
         </div>
 
         <!-- 3-Tier Graduated Hint Scaffolding -->
-        <div class="p-3 border rounded" style="background: #FFFBEB; border-color: #FDE68A;">
-          <div class="d-flex justify-between align-center mb-2">
-            <strong>🧩 Graduated Hint (Level ${tutorData.hintLevel} of ${tutorData.maxHintLevel}):</strong>
+        <div class="p-3 border rounded" style="background: rgba(254, 243, 199, 0.7); border-color: rgba(245, 158, 11, 0.4); border-radius: 14px; backdrop-filter: blur(12px);">
+          <div class="d-flex justify-between align-center mb-2 flex-wrap gap-2">
+            <div class="d-flex align-center gap-2">
+              <strong>🧩 Graduated Hint:</strong>
+              <div class="d-flex align-center gap-1">
+                ${[1, 2, 3].map(lvl => `
+                  <span style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; font-size: 11px; font-weight: 800; background: ${lvl <= tutorData.hintLevel ? '#D97706' : 'rgba(0,0,0,0.08)'}; color: ${lvl <= tutorData.hintLevel ? '#FFFFFF' : '#94A3B8'};">
+                    ${lvl <= tutorData.hintLevel ? '✓' : lvl}
+                  </span>
+                `).join('')}
+              </div>
+            </div>
             <button type="button" class="btn btn-xs btn-outline" id="btn-next-hint">Next Tier Hint →</button>
           </div>
-          <p class="text-xs mb-0 text-secondary" style="color: #92400E;">${escapeHtml(tutorData.activeHint)}</p>
+          <p class="text-xs mb-0 text-secondary" style="color: #92400E; font-size: 13px; line-height: 1.5;">${escapeHtml(tutorData.activeHint)}</p>
         </div>
       </section>
 

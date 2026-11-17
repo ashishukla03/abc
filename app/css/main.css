@@ -31,11 +31,13 @@ body {
   min-height: 100dvh;
   background-color: #F4F7FC;
   background-image: 
+    radial-gradient(rgba(148, 163, 184, 0.22) 1.2px, transparent 1.2px),
     radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
     radial-gradient(at 100% 0%, rgba(13, 148, 136, 0.12) 0px, transparent 50%),
     radial-gradient(at 100% 100%, rgba(147, 51, 234, 0.12) 0px, transparent 50%),
     radial-gradient(at 0% 100%, rgba(245, 158, 11, 0.10) 0px, transparent 50%),
     radial-gradient(at 50% 50%, rgba(37, 99, 235, 0.05) 0px, transparent 50%);
+  background-size: 24px 24px, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
   background-attachment: fixed;
   color: var(--color-text-main);
   font-family: var(--font-family-base);
@@ -1874,18 +1876,75 @@ input[type="range"].accessible-slider:focus-visible::-moz-range-thumb {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--space-3);
+  padding: var(--space-4);
+  position: relative;
 }
 
 .radar-svg {
-  filter: drop-shadow(0 4px 12px rgba(39, 93, 219, 0.12));
+  filter: drop-shadow(0 8px 24px rgba(37, 99, 235, 0.2));
 }
 
 .radar-polygon {
-  fill: rgba(39, 93, 219, 0.25);
-  stroke: #275DDB;
+  fill: url(#radar-grad);
+  stroke: #2563EB;
   stroke-width: 2.5;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.radar-vertex-node {
+  fill: #FFFFFF;
+  stroke: #2563EB;
+  stroke-width: 2.5;
+  animation: vertexPulse 2.5s infinite ease-in-out;
+}
+
+@keyframes vertexPulse {
+  0%, 100% { r: 4px; stroke-width: 2.5px; }
+  50% { r: 5.5px; stroke-width: 3.5px; }
+}
+
+/* Tactile Range Sliders for Radar Exploration */
+.radar-slider-track {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.radar-slider-track label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-main);
+}
+
+.radar-slider-track input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  background: rgba(226, 232, 240, 0.8);
+  border-radius: 9999px;
+  outline: none;
+  transition: background 0.2s ease;
+}
+
+.radar-slider-track input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #2563EB;
+  border: 2px solid #FFFFFF;
+  box-shadow: 0 0 10px rgba(37, 99, 235, 0.5);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.radar-slider-track input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
 }
 
 /* Streak Flame Animation */
@@ -2347,19 +2406,38 @@ html[data-band="senior secondary"] .qw-card:hover {
    ========================================================================== */
 .pocket-progress-track {
   width: 100%;
-  height: 12px;
-  background-color: rgba(0, 0, 0, 0.08);
+  height: 10px;
+  background-color: rgba(226, 232, 240, 0.7);
   border-radius: var(--radius-full);
   overflow: hidden;
   position: relative;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .pocket-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #3B82F6 0%, #10B981 100%);
+  background: linear-gradient(90deg, #2563EB 0%, #0D9488 50%, #10B981 100%);
   border-radius: var(--radius-full);
-  transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 14px rgba(16, 185, 129, 0.45);
+  position: relative;
+  overflow: hidden;
+}
+
+.pocket-progress-fill::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.45) 50%, transparent 100%);
+  animation: progressShimmer 2.5s infinite;
+}
+
+@keyframes progressShimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
 }
 
 .pocket-progress-fill--amber {
@@ -3405,6 +3483,33 @@ html[data-band="preparatory"] .prep-accent-btn {
   transition: transform 0.08s ease;
 }
 
+/* Dark Slate Glass Card for Telemetry and Code/Command Panels */
+.timetable-card.dark-slate-card,
+.dark-slate-card {
+  background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%) !important;
+  color: #F8FAFC !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+.timetable-card.dark-slate-card strong,
+.dark-slate-card strong,
+.timetable-card.dark-slate-card h1,
+.dark-slate-card h1,
+.timetable-card.dark-slate-card h2,
+.dark-slate-card h2,
+.timetable-card.dark-slate-card h3,
+.dark-slate-card h3,
+.timetable-card.dark-slate-card h4,
+.dark-slate-card h4 {
+  color: #F8FAFC !important;
+}
+.timetable-card.dark-slate-card p,
+.dark-slate-card p,
+.timetable-card.dark-slate-card span.text-xs,
+.dark-slate-card span.text-xs {
+  color: #94A3B8 !important;
+}
+
 /* Reduced Motion Safety Conformance (WCAG 2.2.2 & 2.3.3) */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -3419,7 +3524,9 @@ html[data-band="preparatory"] .prep-accent-btn {
   .active-pulse,
   .ai-companion-pill,
   .mascot-avatar-large,
-  .skill-tree-path::after {
+  .skill-tree-path::after,
+  .pocket-progress-fill::after,
+  .radar-vertex-node {
     animation: none !important;
     transform: none !important;
   }

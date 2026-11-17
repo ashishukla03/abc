@@ -121,11 +121,16 @@ async function main() {
     await client.send('Page.enable');
     await client.send('Runtime.enable');
     await client.send('DOM.enable');
+    await client.send('Network.enable');
+    await client.send('Network.clearBrowserCache');
+    await client.send('Network.setCacheDisabled', { cacheDisabled: true });
 
     // 1. Question Worlds (Map)
     console.log('1. Navigating to Question Worlds...');
     await client.send('Page.navigate', { url: 'http://127.0.0.1:8000/#/map' });
     await new Promise(r => setTimeout(r, 1200));
+    await client.evaluate(`document.querySelector('#tab-btn-missions')?.click()`);
+    await new Promise(r => setTimeout(r, 800));
     await client.captureScreenshot(path.join(SCREENSHOTS_DIR, '01_question_worlds_map.png'));
 
     // 2. Courses Tab
@@ -133,12 +138,21 @@ async function main() {
     await client.evaluate(`document.querySelector('#tab-btn-browser')?.click()`);
     await new Promise(r => setTimeout(r, 1000));
     await client.captureScreenshot(path.join(SCREENSHOTS_DIR, '02_courses_tab.png'));
+    // Scroll down to show Bento grid and oscilloscope
+    await client.evaluate(`window.scrollTo(0, 650)`);
+    await new Promise(r => setTimeout(r, 600));
+    await client.captureScreenshot(path.join(SCREENSHOTS_DIR, '02b_courses_bento_and_wave.png'));
 
     // 3. School Hub Tab
     console.log('3. Navigating to School Hub Tab...');
+    await client.evaluate(`window.scrollTo(0, 0)`);
     await client.evaluate(`document.querySelector('#tab-btn-hub')?.click()`);
     await new Promise(r => setTimeout(r, 1000));
     await client.captureScreenshot(path.join(SCREENSHOTS_DIR, '03_school_hub_tab.png'));
+    // Scroll down to show Timetable with Active Now and Exams
+    await client.evaluate(`window.scrollTo(0, 1100)`);
+    await new Promise(r => setTimeout(r, 600));
+    await client.captureScreenshot(path.join(SCREENSHOTS_DIR, '03b_school_hub_timetable_active.png'));
 
     // 4. Mock Exams Tab
     console.log('4. Navigating to Mock Exams Tab...');

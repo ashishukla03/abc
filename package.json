@@ -2,5 +2,11 @@
   "name": "gramin-pocketlab",
   "version": "1.0.0",
   "type": "module",
-  "description": "Gramin PocketLab — Automated Verification and Test Suite"
+  "description": "Gramin PocketLab — Automated Verification and Test Suite",
+  "dependencies": {
+    "framer-motion": "^14.14.0",
+    "lucide": "^1.74.0",
+    "lucide-react": "^1.74.0",
+    "motion": "^14.14.0"
+  }
 }

@@ -23,6 +23,8 @@ import { store, STEP_IDS, SUBJECT_IDS } from '../js/store.js';
 import { router } from '../js/router.js';
 import { t, getCurrentLocale } from '../content/i18n.js';
 import { MISSIONS, getMission } from '../content/missions_data.js';
+import { renderIcon, badgeIcon } from '../js/icons.js';
+import { renderCircularRing } from '../js/motion_engine.js';
 
 export class LearningRunner {
   constructor(options = {}) {
@@ -341,10 +343,19 @@ export class LearningRunner {
         statusBadgeHtml = `<span class="badge" style="background: var(--color-surface-subtle); color: var(--color-text-secondary); border: 1px solid var(--color-border);">${t('status.not_started')}</span>`;
       }
 
+      const subIconMap = {
+        physics: { name: 'Zap', variant: 'phys' },
+        math: { name: 'Ruler', variant: 'math' },
+        biology: { name: 'Sprout', variant: 'bio' },
+        chemistry: { name: 'FlaskConical', variant: 'chem' }
+      };
+      const iconMeta = subIconMap[subjectId] || { name: 'Atom', variant: 'neutral' };
+      const iconBadgeHtml = badgeIcon(iconMeta.name, { variant: iconMeta.variant, size: 28, iconSize: 22 });
+
       return `
         <article class="mission-card" data-subject="${subjectId}" tabindex="0" role="region" aria-label="${t(mission.titleKey)} Mission">
           <div class="card-top">
-            <span class="card-icon" aria-hidden="true">${mission.iconEmoji}</span>
+            <span class="card-icon" aria-hidden="true" style="display: inline-flex; align-items: center;">${iconBadgeHtml}</span>
             <div style="display: flex; gap: 6px; align-items: center;">
               <span class="badge badge-${subjectId === 'physics' ? 'phys' : subjectId}">${t(`subject.${subjectId}.name`)}</span>
               ${statusBadgeHtml}
@@ -355,8 +366,8 @@ export class LearningRunner {
             <p class="card-desc">${t(mission.scopeSummaryKey)}</p>
           </div>
           <div class="card-meta">
-            <span>⏱ ${mission.estimatedDurationMinutes} mins</span>
-            <span>📚 ${mission.curriculumStandard}</span>
+            <span style="display: inline-flex; align-items: center; gap: 5px;">${renderIcon('Clock', { size: 14, color: '#64748B' })} ${mission.estimatedDurationMinutes} mins</span>
+            <span style="display: inline-flex; align-items: center; gap: 5px;">${renderIcon('BookOpen', { size: 14, color: '#64748B' })} ${mission.curriculumStandard}</span>
           </div>
           <button type="button" class="btn btn-primary btn-select-subject btn-subject-${subjectId}" data-subject="${subjectId}" style="width: 100%; min-height: 48px; margin-top: 8px;">
             ${ctaLabel}
@@ -374,7 +385,7 @@ export class LearningRunner {
           
           <div style="position: relative; z-index: 2; max-width: 900px; margin: 0 auto; text-align: center;">
             <div style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 18px; background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.2); border-radius: 9999px; margin-bottom: 16px;">
-              <span style="font-size: 16px;">🚀</span>
+              ${renderIcon('Sparkles', { size: 16, color: '#2563EB' })}
               <span style="font-size: 13px; font-weight: 700; color: #1D4ED8; letter-spacing: 0.5px; text-transform: uppercase;">Gramin PocketLab • Multi-Board STEM Platform</span>
             </div>
 
@@ -387,15 +398,17 @@ export class LearningRunner {
 
             <!-- Telemetry Status Pills Row -->
             <div style="display: inline-flex; gap: 12px; flex-wrap: wrap; justify-content: center; align-items: center;">
-              <span class="status-pill status-pill--ready" style="padding: 8px 16px; font-size: 13.5px; border-radius: 9999px;">
+              <span class="status-pill status-pill--ready" style="padding: 8px 16px; font-size: 13.5px; border-radius: 9999px; display: inline-flex; align-items: center; gap: 6px;">
                 <span class="status-pill-dot" aria-hidden="true"></span>
                 ${t('map.progress_summary', { completed: completedCount })}
               </span>
-              <span class="status-pill status-pill--offline" style="padding: 8px 16px; font-size: 13.5px; border-radius: 9999px;">
-                🔒 ${t('app.session_badge')}
+              <span class="status-pill status-pill--offline" style="padding: 8px 16px; font-size: 13.5px; border-radius: 9999px; display: inline-flex; align-items: center; gap: 6px;">
+                ${renderIcon('Lock', { size: 14, color: '#0D9488' })}
+                ${t('app.session_badge')}
               </span>
-              <span class="badge badge-purple" style="padding: 8px 16px; font-size: 13.5px; font-weight: 700; border-radius: 9999px;">
-                🔥 7-Day Streak Active
+              <span class="badge badge-purple" style="padding: 8px 16px; font-size: 13.5px; font-weight: 700; border-radius: 9999px; display: inline-flex; align-items: center; gap: 6px;">
+                ${badgeIcon('Flame', { variant: 'flame', size: 14, iconSize: 14, glow: false })}
+                7-Day Streak Active
               </span>
             </div>
           </div>
@@ -431,7 +444,7 @@ export class LearningRunner {
                   <h4 class="font-bold text-md mt-1 mb-0">Baker's Chapati Feast</h4>
                   <span class="text-xs text-secondary">NCERT Class 5 Math: Equivalent Fractions</span>
                 </div>
-                <span style="font-size: 28px;">🫓</span>
+                ${badgeIcon('Sparkles', { variant: 'gold', size: 24, iconSize: 20 })}
               </div>
               <p class="text-xs text-secondary my-2">Cut and merge village festival chapati slices to visually verify 2/4 and 4/8 equal 1/2.</p>
               <div class="qw-misconception-callout">
@@ -450,7 +463,7 @@ export class LearningRunner {
                   <h4 class="font-bold text-md mt-1 mb-0">Solar Rover Algorithm Studio</h4>
                   <span class="text-xs text-secondary">CBSE Class 8 Computing: Sequence & Loops</span>
                 </div>
-                <span style="font-size: 28px;">🤖</span>
+                ${badgeIcon('Bot', { variant: 'bot', size: 24, iconSize: 20 })}
               </div>
               <p class="text-xs text-secondary my-2">Compose sequential instructions and 3x loop blocks to navigate the solar rover through a grid maze.</p>
               <div class="qw-misconception-callout">
@@ -469,7 +482,7 @@ export class LearningRunner {
                   <h4 class="font-bold text-md mt-1 mb-0">Ray Optics Refraction & Snell's Law</h4>
                   <span class="text-xs text-secondary">CISCE / CBSE Class 10 Physics: Light Refraction</span>
                 </div>
-                <span style="font-size: 28px;">🔦</span>
+                ${badgeIcon('Lightbulb', { variant: 'phys', size: 24, iconSize: 20 })}
               </div>
               <p class="text-xs text-secondary my-2">Drag the laser angle slider into the glass slab to observe Snell's law bending and critical angles.</p>
               <div class="qw-misconception-callout">
@@ -488,7 +501,7 @@ export class LearningRunner {
                   <h4 class="font-bold text-md mt-1 mb-0">Solar Roof Calculus Integrals</h4>
                   <span class="text-xs text-secondary">CBSE Class 12 Math: Applications of Integrals</span>
                 </div>
-                <span style="font-size: 28px;">☀️</span>
+                ${badgeIcon('Atom', { variant: 'gold', size: 24, iconSize: 20 })}
               </div>
               <p class="text-xs text-secondary my-2">Increase rectangular Riemann sum strips to watch discrete area slices converge to the definite integral limit.</p>
               <div class="qw-misconception-callout">
