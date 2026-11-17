@@ -5,7 +5,7 @@
  * Strategy: Cache-First with Stale-While-Revalidate & Graceful Offline Fallback
  */
 
-const CACHE_NAME = 'pocketlab-v11';
+const CACHE_NAME = 'pocketlab-v12';
 
 const PRECACHE_ASSETS = [
   './',
@@ -17,6 +17,7 @@ const PRECACHE_ASSETS = [
   './js/app.js',
   './js/icons.js',
   './js/motion_engine.js',
+  './js/subject_3d_art.js',
   './js/store.js',
   './js/router.js',
   './content/i18n.js',

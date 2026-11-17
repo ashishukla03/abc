@@ -29,15 +29,11 @@ html {
 body {
   min-height: 100%;
   min-height: 100dvh;
-  background-color: #F4F7FC;
+  background-color: #EEF2FF;
   background-image: 
-    radial-gradient(rgba(148, 163, 184, 0.22) 1.2px, transparent 1.2px),
-    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(13, 148, 136, 0.12) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(147, 51, 234, 0.12) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, rgba(245, 158, 11, 0.10) 0px, transparent 50%),
-    radial-gradient(at 50% 50%, rgba(37, 99, 235, 0.05) 0px, transparent 50%);
-  background-size: 24px 24px, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+    radial-gradient(rgba(148, 163, 184, 0.25) 1.2px, transparent 1.2px),
+    linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 30%, #CCFBF1 70%, #FEF3C7 100%);
+  background-size: 24px 24px, 100% 100%;
   background-attachment: fixed;
   color: var(--color-text-main);
   font-family: var(--font-family-base);
@@ -1744,14 +1740,16 @@ input[type="range"].accessible-slider:focus-visible::-moz-range-thumb {
 .storage-card,
 .topic-item-card,
 .hub-form-card {
-  background: rgba(255, 255, 255, 0.82) !important;
-  backdrop-filter: blur(20px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.85) !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.88) 0%, rgba(240, 247, 255, 0.78) 100%) !important;
+  backdrop-filter: blur(24px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.90) !important;
   border-radius: 20px !important;
   padding: var(--space-6);
-  box-shadow: 0 10px 32px 0 rgba(31, 38, 135, 0.08), inset 0 1px 0 0 rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 0 16px 40px -10px rgba(30, 27, 75, 0.12), inset 0 1.5px 1px rgba(255, 255, 255, 0.95), inset 0 -1.5px 2px rgba(79, 70, 229, 0.08) !important;
   transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s ease, border-color 0.28s ease !important;
+  position: relative;
+  overflow: hidden;
 }
 
 .timetable-card:hover,
@@ -1763,9 +1761,9 @@ input[type="range"].accessible-slider:focus-visible::-moz-range-thumb {
 .storage-card:hover,
 .topic-item-card:hover,
 .hub-form-card:hover {
-  transform: translateY(-4px) !important;
-  box-shadow: 0 18px 45px -8px rgba(31, 38, 135, 0.13), inset 0 1px 0 0 rgba(255, 255, 255, 1) !important;
-  border-color: rgba(147, 197, 253, 0.8) !important;
+  transform: translateY(-5px) scale(1.01) !important;
+  box-shadow: 0 20px 48px -10px rgba(30, 27, 75, 0.18), inset 0 1.5px 1px rgba(255, 255, 255, 1) !important;
+  border-color: rgba(147, 197, 253, 0.9) !important;
 }
 
 .timetable-grid {
@@ -2915,35 +2913,43 @@ html[data-band="preparatory"] .prep-accent-btn {
 .ambient-orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(60px);
-  opacity: 0.22;
+  filter: blur(80px);
+  opacity: 0.28;
   pointer-events: none;
   z-index: 0;
-  animation: float-orb 8s ease-in-out infinite alternate;
+  animation: float-orb 10s ease-in-out infinite alternate;
 }
 
 .ambient-orb--blue {
-  width: 260px;
-  height: 260px;
-  background: radial-gradient(circle, #3B82F6 0%, transparent 70%);
-  top: -60px;
-  right: -40px;
+  width: 440px;
+  height: 440px;
+  background: radial-gradient(circle, #4F46E5 0%, #2563EB 50%, transparent 70%);
+  top: -80px;
+  right: -60px;
 }
 
 .ambient-orb--amber {
-  width: 220px;
-  height: 220px;
-  background: radial-gradient(circle, #F59E0B 0%, transparent 70%);
-  bottom: -40px;
-  left: -30px;
+  width: 380px;
+  height: 380px;
+  background: radial-gradient(circle, #F59E0B 0%, #D97706 50%, transparent 70%);
+  bottom: -60px;
+  right: 15%;
 }
 
 .ambient-orb--purple {
-  width: 280px;
-  height: 280px;
-  background: radial-gradient(circle, #8B5CF6 0%, transparent 70%);
-  top: 40px;
-  left: 20%;
+  width: 420px;
+  height: 420px;
+  background: radial-gradient(circle, #9333EA 0%, #7C3AED 50%, transparent 70%);
+  top: 30%;
+  left: -80px;
+}
+
+.ambient-orb--teal {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, #0D9488 0%, #06B6D4 50%, transparent 70%);
+  bottom: 15%;
+  left: 25%;
 }
 
 @keyframes float-orb {
@@ -3508,6 +3514,286 @@ html[data-band="preparatory"] .prep-accent-btn {
 .timetable-card.dark-slate-card span.text-xs,
 .dark-slate-card span.text-xs {
   color: #94A3B8 !important;
+}
+
+/* ======================================================================
+   APPLE VISIONOS MULTI-LAYERED TINTED GLASS & 3D ART MOTION ENGINE
+   ====================================================================== */
+
+/* Glass Light Sheen Sweep Effect on Card Hover */
+.glass-sheen,
+.mission-card,
+.qw-card,
+.timetable-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-sheen::after,
+.mission-card::after,
+.qw-card::after,
+.timetable-card::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -100%;
+  width: 60%;
+  height: 200%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.35) 50%,
+    transparent 100%
+  );
+  transform: rotate(25deg);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 2;
+}
+
+.glass-sheen:hover::after,
+.mission-card:hover::after,
+.qw-card:hover::after,
+.timetable-card:hover::after {
+  opacity: 1;
+  animation: glassSheenSweep 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes glassSheenSweep {
+  0% { transform: translateX(0) rotate(25deg); }
+  100% { transform: translateX(350%) rotate(25deg); }
+}
+
+/* 1. Physics: Electric Cobalt & Cyan Tinted Glass */
+.mission-card[data-subject="physics"],
+.glass-card-physics {
+  background: linear-gradient(135deg, rgba(238, 242, 255, 0.92) 0%, rgba(224, 242, 254, 0.82) 100%) !important;
+  border: 1.5px solid rgba(59, 130, 246, 0.40) !important;
+  box-shadow: 0 16px 40px -10px rgba(37, 99, 235, 0.20), inset 0 1.5px 1px rgba(255, 255, 255, 0.95), inset 0 -1.5px 2px rgba(79, 70, 229, 0.08) !important;
+}
+.mission-card[data-subject="physics"]:hover,
+.glass-card-physics:hover {
+  transform: translateY(-6px) scale(1.015) !important;
+  box-shadow: 0 24px 50px -10px rgba(37, 99, 235, 0.28), inset 0 1.5px 1px rgba(255, 255, 255, 1) !important;
+  border-color: rgba(59, 130, 246, 0.65) !important;
+}
+
+/* 2. Chemistry: Vivid Violet & Magenta Tinted Glass */
+.mission-card[data-subject="chemistry"],
+.glass-card-chemistry {
+  background: linear-gradient(135deg, rgba(250, 245, 255, 0.92) 0%, rgba(253, 242, 248, 0.82) 100%) !important;
+  border: 1.5px solid rgba(168, 85, 247, 0.40) !important;
+  box-shadow: 0 16px 40px -10px rgba(147, 51, 234, 0.20), inset 0 1.5px 1px rgba(255, 255, 255, 0.95), inset 0 -1.5px 2px rgba(147, 51, 234, 0.08) !important;
+}
+.mission-card[data-subject="chemistry"]:hover,
+.glass-card-chemistry:hover {
+  transform: translateY(-6px) scale(1.015) !important;
+  box-shadow: 0 24px 50px -10px rgba(147, 51, 234, 0.28), inset 0 1.5px 1px rgba(255, 255, 255, 1) !important;
+  border-color: rgba(168, 85, 247, 0.65) !important;
+}
+
+/* 3. Biology: Lush Emerald & Lime Tinted Glass */
+.mission-card[data-subject="biology"],
+.glass-card-biology {
+  background: linear-gradient(135deg, rgba(236, 253, 245, 0.92) 0%, rgba(240, 253, 250, 0.82) 100%) !important;
+  border: 1.5px solid rgba(16, 185, 129, 0.40) !important;
+  box-shadow: 0 16px 40px -10px rgba(16, 185, 129, 0.20), inset 0 1.5px 1px rgba(255, 255, 255, 0.95), inset 0 -1.5px 2px rgba(16, 185, 129, 0.08) !important;
+}
+.mission-card[data-subject="biology"]:hover,
+.glass-card-biology:hover {
+  transform: translateY(-6px) scale(1.015) !important;
+  box-shadow: 0 24px 50px -10px rgba(16, 185, 129, 0.28), inset 0 1.5px 1px rgba(255, 255, 255, 1) !important;
+  border-color: rgba(16, 185, 129, 0.65) !important;
+}
+
+/* 4. Mathematics: Warm Amber & Tangerine Tinted Glass */
+.mission-card[data-subject="math"],
+.glass-card-math {
+  background: linear-gradient(135deg, rgba(254, 243, 199, 0.92) 0%, rgba(255, 247, 237, 0.82) 100%) !important;
+  border: 1.5px solid rgba(245, 158, 11, 0.40) !important;
+  box-shadow: 0 16px 40px -10px rgba(217, 119, 6, 0.20), inset 0 1.5px 1px rgba(255, 255, 255, 0.95), inset 0 -1.5px 2px rgba(217, 119, 6, 0.08) !important;
+}
+.mission-card[data-subject="math"]:hover,
+.glass-card-math:hover {
+  transform: translateY(-6px) scale(1.015) !important;
+  box-shadow: 0 24px 50px -10px rgba(217, 119, 6, 0.28), inset 0 1.5px 1px rgba(255, 255, 255, 1) !important;
+  border-color: rgba(245, 158, 11, 0.65) !important;
+}
+
+/* Micro-Labs Age-Adaptive Tinted Glass Cards */
+.qw-card {
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s ease !important;
+  box-shadow: 0 10px 30px -8px rgba(31, 38, 135, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
+  border-radius: 18px !important;
+}
+.qw-card:hover {
+  transform: translateY(-5px) scale(1.012) !important;
+  box-shadow: 0 18px 40px -8px rgba(31, 38, 135, 0.16), inset 0 1px 0 rgba(255, 255, 255, 1) !important;
+}
+
+.qw-card.qw-card-fractions {
+  background: linear-gradient(135deg, rgba(254, 243, 199, 0.92) 0%, rgba(255, 247, 237, 0.82) 100%) !important;
+  border: 1.5px solid rgba(245, 158, 11, 0.45) !important;
+  border-left: 6px solid #F59E0B !important;
+}
+
+.qw-card.qw-card-coding {
+  background: linear-gradient(135deg, rgba(245, 243, 255, 0.92) 0%, rgba(238, 242, 255, 0.82) 100%) !important;
+  border: 1.5px solid rgba(139, 92, 246, 0.45) !important;
+  border-left: 6px solid #8B5CF6 !important;
+}
+
+.qw-card.qw-card-optics {
+  background: linear-gradient(135deg, rgba(236, 254, 255, 0.92) 0%, rgba(240, 253, 250, 0.82) 100%) !important;
+  border: 1.5px solid rgba(13, 148, 136, 0.45) !important;
+  border-left: 6px solid #087E79 !important;
+}
+
+.qw-card.qw-card-calculus {
+  background: linear-gradient(135deg, rgba(238, 242, 255, 0.92) 0%, rgba(224, 242, 254, 0.82) 100%) !important;
+  border: 1.5px solid rgba(37, 99, 235, 0.45) !important;
+  border-left: 6px solid #275DDB !important;
+}
+
+/* Themed Vibrant Action Buttons per Subject */
+.btn-subject-physics {
+  background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%) !important;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35) !important;
+  color: #FFFFFF !important;
+  border: none !important;
+  font-weight: 700 !important;
+  border-radius: 12px !important;
+}
+.btn-subject-physics:hover {
+  background: linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%) !important;
+  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.45) !important;
+  transform: translateY(-2px);
+}
+
+.btn-subject-math {
+  background: linear-gradient(135deg, #D97706 0%, #B45309 100%) !important;
+  box-shadow: 0 4px 14px rgba(217, 119, 6, 0.35) !important;
+  color: #FFFFFF !important;
+  border: none !important;
+  font-weight: 700 !important;
+  border-radius: 12px !important;
+}
+.btn-subject-math:hover {
+  background: linear-gradient(135deg, #B45309 0%, #92400E 100%) !important;
+  box-shadow: 0 8px 22px rgba(217, 119, 6, 0.45) !important;
+  transform: translateY(-2px);
+}
+
+.btn-subject-biology {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.35) !important;
+  color: #FFFFFF !important;
+  border: none !important;
+  font-weight: 700 !important;
+  border-radius: 12px !important;
+}
+.btn-subject-biology:hover {
+  background: linear-gradient(135deg, #047857 0%, #065F46 100%) !important;
+  box-shadow: 0 8px 22px rgba(5, 150, 105, 0.45) !important;
+  transform: translateY(-2px);
+}
+
+.btn-subject-chemistry {
+  background: linear-gradient(135deg, #9333EA 0%, #7E22CE 100%) !important;
+  box-shadow: 0 4px 14px rgba(147, 51, 234, 0.35) !important;
+  color: #FFFFFF !important;
+  border: none !important;
+  font-weight: 700 !important;
+  border-radius: 12px !important;
+}
+.btn-subject-chemistry:hover {
+  background: linear-gradient(135deg, #7E22CE 0%, #6B21A8 100%) !important;
+  box-shadow: 0 8px 22px rgba(147, 51, 234, 0.45) !important;
+  transform: translateY(-2px);
+}
+
+/* 3D Art Engine Keyframe Animations */
+.anim-float-orb1 {
+  animation: floatOrb1 5s ease-in-out infinite alternate;
+}
+.anim-float-orb2 {
+  animation: floatOrb2 6s ease-in-out infinite alternate;
+}
+.anim-float-orb3 {
+  animation: floatOrb3 4.5s ease-in-out infinite alternate;
+}
+.anim-breathe-nucleus {
+  animation: breatheNucleus 4s ease-in-out infinite alternate;
+}
+.anim-rise-bubble1 {
+  animation: riseBubble1 2.8s ease-in-out infinite;
+}
+.anim-rise-bubble2 {
+  animation: riseBubble2 3.4s ease-in-out infinite 0.6s;
+}
+.anim-rise-bubble3 {
+  animation: riseBubble3 3.0s ease-in-out infinite 1.2s;
+}
+.anim-float-leaf {
+  animation: floatLeaf 4s ease-in-out infinite alternate;
+}
+.anim-float-poly {
+  animation: floatPoly 5s ease-in-out infinite alternate;
+}
+.anim-float-pi {
+  animation: floatPi 3.5s ease-in-out infinite alternate;
+}
+.anim-buddy-eyes {
+  animation: blinkEyes 4.5s infinite;
+}
+
+@keyframes floatOrb1 {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(3px, -4px); }
+}
+@keyframes floatOrb2 {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(-3px, 4px); }
+}
+@keyframes floatOrb3 {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(4px, 3px); }
+}
+@keyframes breatheNucleus {
+  0% { transform: scale(1); transform-origin: 50px 50px; }
+  100% { transform: scale(1.05); transform-origin: 50px 50px; }
+}
+@keyframes riseBubble1 {
+  0% { transform: translateY(0); opacity: 0.85; }
+  70% { transform: translateY(-12px); opacity: 0.7; }
+  100% { transform: translateY(-20px); opacity: 0; }
+}
+@keyframes riseBubble2 {
+  0% { transform: translateY(0); opacity: 0.75; }
+  70% { transform: translateY(-14px); opacity: 0.6; }
+  100% { transform: translateY(-24px); opacity: 0; }
+}
+@keyframes riseBubble3 {
+  0% { transform: translateY(0); opacity: 0.9; }
+  70% { transform: translateY(-10px); opacity: 0.7; }
+  100% { transform: translateY(-18px); opacity: 0; }
+}
+@keyframes floatLeaf {
+  0% { transform: translate(18px, 12px) rotate(0deg); }
+  100% { transform: translate(18px, 9px) rotate(3deg); }
+}
+@keyframes floatPoly {
+  0% { transform: translateY(0) rotate(0deg); transform-origin: 50px 50px; }
+  100% { transform: translateY(-3px) rotate(1.5deg); transform-origin: 50px 50px; }
+}
+@keyframes floatPi {
+  0% { transform: translate(12px, 10px) translateY(0); }
+  100% { transform: translate(12px, 10px) translateY(-4px); }
+}
+@keyframes blinkEyes {
+  0%, 92%, 100% { transform: scaleY(1); transform-origin: 50px 50px; }
+  95% { transform: scaleY(0.1); transform-origin: 50px 50px; }
 }
 
 /* Reduced Motion Safety Conformance (WCAG 2.2.2 & 2.3.3) */

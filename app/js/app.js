@@ -26,6 +26,7 @@ import {
 } from '../engine/mock_exam_engine.js';
 import { renderIcon, badgeIcon } from './icons.js';
 import { renderCircularRing, renderLiveSineWaveSvg, animateCounter } from './motion_engine.js';
+import { render3DAtom, render3DFlask, render3DDNA, render3DPolyhedron, render3DAvatar, render3DStudyBuddy } from './subject_3d_art.js';
 
 /**
  * Subject display metadata.
@@ -1080,8 +1081,8 @@ function renderLearnerProfile(stage, state) {
         <div style="display: flex; align-items: center; gap: 16px;">
           <div style="position: relative; width: 84px; height: 84px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
             ${renderCircularRing({ value: p.xp || 450, max: 600, size: 84, strokeWidth: 5, color: '#8B5CF6' })}
-            <div style="position: absolute; width: 64px; height: 64px; border-radius: 50%; background: #EFF6FF; border: 2px solid #8B5CF6; display: flex; align-items: center; justify-content: center; font-size: 32px; box-shadow: 0 4px 14px rgba(139, 92, 246, 0.25);">
-              ${p.avatar || '👨‍🎓'}
+            <div style="position: absolute; width: 66px; height: 66px; border-radius: 50%; background: #EFF6FF; border: 2px solid #8B5CF6; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(139, 92, 246, 0.25); overflow: hidden;">
+              ${render3DAvatar({ size: 62, name: p.name || 'Scholar' })}
             </div>
           </div>
           <div>
@@ -1559,9 +1560,9 @@ function renderCourseBrowser(stage, state) {
       </div>
 
       <!-- Interactive 3D Cartoon Mascot & Motivational Companion -->
-      <div class="mascot-companion-card">
-        <div class="mascot-avatar-3d">
-          ${classLevel <= 5 ? '🦊' : (classLevel <= 8 ? '🤖' : (classLevel <= 10 ? '👩‍🎓' : '⚡'))}
+      <div class="mascot-companion-card glass-sheen" style="border-radius: 20px; box-shadow: 0 16px 40px -10px rgba(245, 158, 11, 0.15), inset 0 1.5px 1px rgba(255, 255, 255, 0.95);">
+        <div class="mascot-avatar-3d" style="display: flex; align-items: center; justify-content: center;">
+          ${classLevel <= 5 ? '🦊' : (classLevel <= 8 ? render3DStudyBuddy({ size: 58 }) : (classLevel <= 10 ? render3DAvatar({ size: 58, name: learnerProfile.name }) : '⚡'))}
         </div>
         <div class="mascot-bubble">
           <div class="d-flex justify-between align-center mb-1">
@@ -1625,8 +1626,10 @@ function renderCourseBrowser(stage, state) {
             const subIconInfo = iconData[s.id] || { name: 'BookOpen', variant: 'bot' };
             const accentColor = s.id === 'physics' ? '#0D9488' : (s.id === 'chemistry' ? '#9333EA' : (s.id === 'biology' ? '#059669' : (s.id === 'math' || s.id === 'mathematics' ? '#2563EB' : '#4F46E5')));
 
+            const cardGlassClass = s.id === 'physics' ? 'glass-card-physics' : (s.id === 'chemistry' ? 'glass-card-chemistry' : (s.id === 'biology' ? 'glass-card-biology' : 'glass-card-math'));
+
             return `
-              <div class="timetable-card btn-select-browser-sub ${isSelected ? 'border-primary' : ''}" data-sub-id="${s.id}" tabindex="0" role="button" aria-label="Select ${escapeHtml(s.name)}" style="cursor: pointer; padding: 20px; border: ${isSelected ? '2px solid ' + accentColor : '1px solid rgba(255,255,255,0.85)'}; background: ${isSelected ? 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, ' + accentColor + '15 100%)' : 'rgba(255, 255, 255, 0.78)'}; backdrop-filter: blur(16px) saturate(180%); -webkit-backdrop-filter: blur(16px) saturate(180%); border-radius: 20px; box-shadow: ${isSelected ? '0 12px 32px -4px ' + accentColor + '30, inset 0 1px 0 rgba(255,255,255,1)' : '0 4px 16px rgba(31,38,135,0.05), inset 0 1px 0 rgba(255,255,255,0.95)'}; transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);">
+              <div class="timetable-card ${cardGlassClass} glass-sheen btn-select-browser-sub ${isSelected ? 'border-primary' : ''}" data-sub-id="${s.id}" tabindex="0" role="button" aria-label="Select ${escapeHtml(s.name)}" style="cursor: pointer; padding: 22px; border-radius: 20px; transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);">
                 <div class="d-flex justify-between align-center mb-2">
                   <div class="d-flex align-center gap-2">
                     ${badgeIcon(subIconInfo.name, { variant: subIconInfo.variant, size: 24, iconSize: 20 })}
@@ -2033,7 +2036,7 @@ function renderMockExamExperience(stage, state) {
 
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
         <!-- Exam Card 1: CBSE Class 7 Term 1 -->
-        <article class="qw-card" style="border-left: 5px solid #275DDB; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); border-radius: 20px; padding: 22px; box-shadow: 0 8px 30px rgba(39,93,219,0.08); transition: all 0.25s ease;">
+        <article class="qw-card glass-card-physics glass-sheen" style="border-left: 5px solid #275DDB; border-radius: 20px; padding: 22px; transition: all 0.28s ease;">
           <div class="qw-card-top">
             <div>
               <div class="d-flex gap-2 align-center mb-1">
@@ -2053,12 +2056,12 @@ function renderMockExamExperience(stage, state) {
           </div>
           <div class="d-flex justify-between align-center text-xs text-secondary mt-3 pt-3 border-top">
             <button type="button" class="btn btn-outline btn-sm btn-practice-mock" data-exam-id="cbse-7-science-term1">Practice Mode 📖</button>
-            <button type="button" class="btn btn-primary btn-sm" id="btn-start-mock-t1">Start Timed Mock →</button>
+            <button type="button" class="btn btn-primary btn-sm btn-subject-physics" id="btn-start-mock-t1">Start Timed Mock →</button>
           </div>
         </article>
 
         <!-- Exam Card 2: ICSE Class 10 Physics Mock -->
-        <article class="qw-card" style="border-left: 5px solid #087E79; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); border-radius: 20px; padding: 22px; box-shadow: 0 8px 30px rgba(8,126,121,0.08); transition: all 0.25s ease;">
+        <article class="qw-card glass-card-chemistry glass-sheen" style="border-left: 5px solid #087E79; border-radius: 20px; padding: 22px; transition: all 0.28s ease;">
           <div class="qw-card-top">
             <div>
               <div class="d-flex gap-2 align-center mb-1">
@@ -2078,12 +2081,12 @@ function renderMockExamExperience(stage, state) {
           </div>
           <div class="d-flex justify-between align-center text-xs text-secondary mt-3 pt-3 border-top">
             <button type="button" class="btn btn-outline btn-sm" id="btn-start-mock-icse">Practice Mock →</button>
-            <button type="button" class="btn btn-primary btn-sm btn-timed-mock-icse">Start Timed Mock →</button>
+            <button type="button" class="btn btn-primary btn-sm btn-subject-chemistry btn-timed-mock-icse">Start Timed Mock →</button>
           </div>
         </article>
 
         <!-- Exam Card 3: Class 8 Computing & Logic -->
-        <article class="qw-card" style="border-left: 5px solid #8B5CF6; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); border-radius: 20px; padding: 22px; box-shadow: 0 8px 30px rgba(139,92,246,0.08); transition: all 0.25s ease;">
+        <article class="qw-card glass-card-biology glass-sheen" style="border-left: 5px solid #8B5CF6; border-radius: 20px; padding: 22px; transition: all 0.28s ease;">
           <div class="qw-card-top">
             <div>
               <div class="d-flex gap-2 align-center mb-1">
@@ -2103,12 +2106,12 @@ function renderMockExamExperience(stage, state) {
           </div>
           <div class="d-flex justify-between align-center text-xs text-secondary mt-3 pt-3 border-top">
             <button type="button" class="btn btn-outline btn-sm btn-practice-mock" data-exam-id="cbse-7-science-term1">Practice Mode 📖</button>
-            <button type="button" class="btn btn-primary btn-sm btn-start-mock-generic" data-exam-id="cbse-7-science-term1">Start Timed Mock →</button>
+            <button type="button" class="btn btn-primary btn-sm btn-subject-biology btn-start-mock-generic" data-exam-id="cbse-7-science-term1">Start Timed Mock →</button>
           </div>
         </article>
 
         <!-- Exam Card 4: Class 6 Math Proportions -->
-        <article class="qw-card" style="border-left: 5px solid #F59E0B; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); border-radius: 20px; padding: 22px; box-shadow: 0 8px 30px rgba(245,158,11,0.08); transition: all 0.25s ease;">
+        <article class="qw-card glass-card-math glass-sheen" style="border-left: 5px solid #F59E0B; border-radius: 20px; padding: 22px; transition: all 0.28s ease;">
           <div class="qw-card-top">
             <div>
               <div class="d-flex gap-2 align-center mb-1">
@@ -2128,7 +2131,7 @@ function renderMockExamExperience(stage, state) {
           </div>
           <div class="d-flex justify-between align-center text-xs text-secondary mt-3 pt-3 border-top">
             <button type="button" class="btn btn-outline btn-sm btn-practice-mock" data-exam-id="cbse-7-science-term1">Practice Mode 📖</button>
-            <button type="button" class="btn btn-primary btn-sm btn-start-mock-generic" data-exam-id="cbse-7-science-term1">Start Timed Mock →</button>
+            <button type="button" class="btn btn-primary btn-sm btn-subject-math btn-start-mock-generic" data-exam-id="cbse-7-science-term1">Start Timed Mock →</button>
           </div>
         </article>
       </div>

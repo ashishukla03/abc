@@ -65,3 +65,4 @@ export function badgeIcon(name, { variant = 'primary', size = 16, iconSize = 16,
 
 fs.writeFileSync(path.join(ROOT_DIR, 'app', 'js', 'icons.js'), fileContent, 'utf-8');
 console.log('app/js/icons.js created successfully with', Object.keys(dict).length, 'icons');
+

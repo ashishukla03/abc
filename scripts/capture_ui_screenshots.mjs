@@ -99,6 +99,9 @@ async function main() {
   const chromePath = findChromePath();
   const cdpPort = 9223;
   const userDataDir = path.join(ROOT_DIR, 'cdp_screenshot_profile');
+  try {
+    fs.rmSync(userDataDir, { recursive: true, force: true });
+  } catch (e) {}
 
   const chromeProc = spawn(chromePath, [
     '--headless=new',
@@ -132,6 +135,10 @@ async function main() {
     await client.evaluate(`document.querySelector('#tab-btn-missions')?.click()`);
     await new Promise(r => setTimeout(r, 800));
     await client.captureScreenshot(path.join(SCREENSHOTS_DIR, '01_question_worlds_map.png'));
+    await client.evaluate(`window.scrollTo(0, 440)`);
+    await new Promise(r => setTimeout(r, 600));
+    await client.captureScreenshot(path.join(SCREENSHOTS_DIR, '01b_question_worlds_cards.png'));
+    await client.evaluate(`window.scrollTo(0, 0)`);
 
     // 2. Courses Tab
     console.log('2. Navigating to Courses Tab...');
@@ -156,18 +163,21 @@ async function main() {
 
     // 4. Mock Exams Tab
     console.log('4. Navigating to Mock Exams Tab...');
+    await client.evaluate(`window.scrollTo(0, 0)`);
     await client.evaluate(`document.querySelector('#tab-btn-mock')?.click()`);
     await new Promise(r => setTimeout(r, 1000));
     await client.captureScreenshot(path.join(SCREENSHOTS_DIR, '04_mock_exams_tab.png'));
 
     // 5. AI Tutor Tab
     console.log('5. Navigating to AI Tutor Tab...');
+    await client.evaluate(`window.scrollTo(0, 0)`);
     await client.evaluate(`document.querySelector('#tab-btn-tutor')?.click()`);
     await new Promise(r => setTimeout(r, 1000));
     await client.captureScreenshot(path.join(SCREENSHOTS_DIR, '05_ai_tutor_tab.png'));
 
     // 6. Learner Model Tab
     console.log('6. Navigating to Learner Model Tab...');
+    await client.evaluate(`window.scrollTo(0, 0)`);
     await client.evaluate(`document.querySelector('#tab-btn-profile')?.click()`);
     await new Promise(r => setTimeout(r, 1000));
     await client.captureScreenshot(path.join(SCREENSHOTS_DIR, '06_learner_model_tab.png'));

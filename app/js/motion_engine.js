@@ -101,3 +101,4 @@ export function renderLiveSineWaveSvg({ id = 'sine-wave-header', frequency = 440
     </div>
   `;
 }
+

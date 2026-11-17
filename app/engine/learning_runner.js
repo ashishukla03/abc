@@ -25,6 +25,7 @@ import { t, getCurrentLocale } from '../content/i18n.js';
 import { MISSIONS, getMission } from '../content/missions_data.js';
 import { renderIcon, badgeIcon } from '../js/icons.js';
 import { renderCircularRing } from '../js/motion_engine.js';
+import { render3DAtom, render3DFlask, render3DDNA, render3DPolyhedron } from '../js/subject_3d_art.js';
 
 export class LearningRunner {
   constructor(options = {}) {
@@ -352,14 +353,25 @@ export class LearningRunner {
       const iconMeta = subIconMap[subjectId] || { name: 'Atom', variant: 'neutral' };
       const iconBadgeHtml = badgeIcon(iconMeta.name, { variant: iconMeta.variant, size: 28, iconSize: 22 });
 
+      const art3DMap = {
+        physics: render3DAtom({ size: 84 }),
+        math: render3DPolyhedron({ size: 84 }),
+        biology: render3DDNA({ size: 84 }),
+        chemistry: render3DFlask({ size: 84 })
+      };
+      const art3DHtml = art3DMap[subjectId] || '';
+
       return `
-        <article class="mission-card" data-subject="${subjectId}" tabindex="0" role="region" aria-label="${t(mission.titleKey)} Mission">
+        <article class="mission-card glass-sheen" data-subject="${subjectId}" tabindex="0" role="region" aria-label="${t(mission.titleKey)} Mission">
           <div class="card-top">
             <span class="card-icon" aria-hidden="true" style="display: inline-flex; align-items: center;">${iconBadgeHtml}</span>
             <div style="display: flex; gap: 6px; align-items: center;">
               <span class="badge badge-${subjectId === 'physics' ? 'phys' : subjectId}">${t(`subject.${subjectId}.name`)}</span>
               ${statusBadgeHtml}
             </div>
+          </div>
+          <div class="card-hero-3d" style="display: flex; justify-content: center; align-items: center; padding: 14px 0 8px 0; min-height: 94px;">
+            ${art3DHtml}
           </div>
           <div>
             <h3 class="card-title">${t(mission.titleKey)}</h3>
@@ -437,7 +449,7 @@ export class LearningRunner {
           </div>
 
           <div class="multi-grade-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
-            <article class="qw-card" style="border-left: 5px solid #F59E0B;">
+            <article class="qw-card qw-card-fractions glass-sheen">
               <div class="qw-card-top">
                 <div>
                   <span class="badge badge-secondary" style="font-size: 11px;">Class 5 • Preparatory</span>
@@ -456,7 +468,7 @@ export class LearningRunner {
               </div>
             </article>
 
-            <article class="qw-card" style="border-left: 5px solid #8B5CF6;">
+            <article class="qw-card qw-card-coding glass-sheen">
               <div class="qw-card-top">
                 <div>
                   <span class="badge badge-purple" style="font-size: 11px;">Class 8 • Middle</span>
@@ -475,7 +487,7 @@ export class LearningRunner {
               </div>
             </article>
 
-            <article class="qw-card" style="border-left: 5px solid #087E79;">
+            <article class="qw-card qw-card-optics glass-sheen">
               <div class="qw-card-top">
                 <div>
                   <span class="badge badge-info" style="font-size: 11px;">Class 10 • Secondary</span>
@@ -494,7 +506,7 @@ export class LearningRunner {
               </div>
             </article>
 
-            <article class="qw-card" style="border-left: 5px solid #275DDB;">
+            <article class="qw-card qw-card-calculus glass-sheen">
               <div class="qw-card-top">
                 <div>
                   <span class="badge badge-phys" style="font-size: 11px;">Class 12 • Senior Secondary</span>
