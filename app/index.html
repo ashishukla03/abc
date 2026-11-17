@@ -36,8 +36,14 @@
           </span>
         </div>
 
-        <!-- Utility Controls: Language, Mute, Reset -->
+        <!-- Utility Controls: Profile Switcher, Language, Mute, Reset -->
         <div class="header-right">
+          <!-- Multi-Profile Switcher Pill -->
+          <button type="button" id="btn-header-profile" class="btn btn-ghost profile-header-pill" aria-label="Switch learner profile" title="Switch or create profile">
+            <span id="header-profile-avatar" aria-hidden="true">👨‍🎓</span>
+            <span id="header-profile-name" class="profile-pill-name">Aarav</span>
+          </button>
+
           <!-- Locale Toggle -->
           <button type="button" id="btn-locale-toggle" class="btn btn-ghost" aria-label="Toggle language between English and Kannada" title="Switch language">
             <span id="locale-label" aria-hidden="true">EN | ಕನ್ನ</span>
@@ -63,13 +69,25 @@
               <span class="tab-icon">🔬</span>
               <span class="tab-label">Question Worlds</span>
             </button>
+            <button type="button" class="tab-btn" id="tab-btn-browser" data-tab="browser" role="tab" aria-selected="false">
+              <span class="tab-icon">📖</span>
+              <span class="tab-label">Courses</span>
+            </button>
             <button type="button" class="tab-btn" id="tab-btn-hub" data-tab="hub" role="tab" aria-selected="false">
               <span class="tab-icon">🏫</span>
-              <span class="tab-label">School & Study Hub</span>
+              <span class="tab-label">School Hub</span>
+            </button>
+            <button type="button" class="tab-btn" id="tab-btn-mock" data-tab="mock-test" role="tab" aria-selected="false">
+              <span class="tab-icon">📝</span>
+              <span class="tab-label">Mock Exams</span>
+            </button>
+            <button type="button" class="tab-btn" id="tab-btn-tutor" data-tab="tutor" role="tab" aria-selected="false">
+              <span class="tab-icon">🤖</span>
+              <span class="tab-label">AI Tutor</span>
             </button>
             <button type="button" class="tab-btn" id="tab-btn-profile" data-tab="profile" role="tab" aria-selected="false">
               <span class="tab-icon">👤</span>
-              <span class="tab-label">My Learning Model</span>
+              <span class="tab-label">Learner Model</span>
             </button>
           </div>
 

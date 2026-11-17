@@ -25,7 +25,11 @@ const SUITES = [
   { name: 'Biology Module (Food Web)', file: 'test_biology_module.mjs', baseline: false },
   { name: 'Chemistry Module (pH Color Lab)', file: 'test_chemistry_module.mjs', baseline: false },
   { name: 'Learning Runner Failure Paths & Invariants', file: 'test_learning_runner_failure_paths.mjs', baseline: false },
-  { name: 'Truthful Offline Telemetry', file: 'test_offline_status.mjs', baseline: false }
+  { name: 'Truthful Offline Telemetry', file: 'test_offline_status.mjs', baseline: false },
+
+  // 11-12: Master Swarm Phase B & E (Curriculum Ontology, Multi-Profile Sandbox, AI Tutor & Mock Exam)
+  { name: 'Curriculum Registry & Multi-Profile Sandbox', file: 'test_curriculum_and_profiles.mjs', baseline: false },
+  { name: 'Grounded AI Tutor & Mock Exam Engine', file: 'test_tutor_and_mock_engine.mjs', baseline: false }
 ];
 
 console.log('='.repeat(70));

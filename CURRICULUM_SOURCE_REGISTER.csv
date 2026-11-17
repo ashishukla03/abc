@@ -1,0 +1,10 @@
+Source_ID,Authority,Jurisdiction,Document_Title,Issuing_Body,Academic_Session,Edition_Year,Medium,Official_URL,Licence_Status,Last_Verified_Date,Verification_Status
+SRC-CBSE-01,CBSE,National,Secondary Curriculum 2026-27,Central Board of Secondary Education,2026-2027,2026,English/Hindi,https://cbseacademic.nic.in/curriculum_2027.html,Government Open Access,2026-11-15,VERIFIED
+SRC-CBSE-02,CBSE,National,Senior Secondary Curriculum 2026-27,Central Board of Secondary Education,2026-2027,2026,English/Hindi,https://cbseacademic.nic.in/curriculum_sr_2027.html,Government Open Access,2026-11-15,VERIFIED
+SRC-NCERT-01,NCERT,National,NCERT Textbooks for Classes 5-12,National Council of Educational Research and Training,2026-2027,2024-2026,English/Hindi,https://ncert.nic.in/textbook.php,Public Educational Domain,2026-11-16,VERIFIED
+SRC-CISCE-01,CISCE,National,Regulations and Syllabuses ICSE 2027,Council for the Indian School Certificate Examinations,2026-2027,2026,English,https://cisce.org/regulations-and-syllabuses-icse-2027/,Official Board Prescribed,2026-11-14,VERIFIED
+SRC-CISCE-02,CISCE,National,Regulations and Syllabuses ISC 2027,Council for the Indian School Certificate Examinations,2026-2027,2026,English,https://cisce.org/regulations-and-syllabuses-isc-2027/,Official Board Prescribed,2026-11-14,VERIFIED
+SRC-KSEAB-01,KSEAB,Karnataka,DSERT Karnataka Syllabus Framework Classes 5-10,Department of School Education and Literacy Karnataka,2026-2027,2025,Kannada/English,https://kseab.karnataka.gov.in/syllabus,State Government Gazetted,2026-11-12,VERIFIED
+SRC-MSBSHSE-01,MSBSHSE,Maharashtra,Balbharati Maharashtra State Board Textbooks,Maharashtra State Bureau of Textbook Production,2026-2027,2025,Marathi/English,https://ebalbharati.in/,State Textbook Production,2026-11-10,SOURCE_FOUND
+SRC-TNDGE-01,TNDGE,Tamil Nadu,Tamil Nadu State Board Samacheer Kalvi Syllabi,State Council of Educational Research and Training TN,2026-2027,2025,Tamil/English,https://www.tntextbooks.in/,State Textbook Corporation,2026-11-10,SOURCE_FOUND
+

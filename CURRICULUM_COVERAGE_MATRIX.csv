@@ -1,0 +1,25 @@
+Authority,State_UT,Class,Exam_Route,Academic_Session,Subject,Medium,Textbook_Prescribed,Source_ID,Coverage_Status,QA_Verdict
+CBSE,National,Class 5,General,2026-2027,Mathematics,English/Hindi,Math-Magic Class 5 (NCERT),SRC-NCERT-01,PUBLISHED,PASS
+CBSE,National,Class 5,General,2026-2027,Environmental Studies,English/Hindi,Looking Around Class 5 (NCERT),SRC-NCERT-01,PUBLISHED,PASS
+CBSE,National,Class 6,Middle,2026-2027,Science,English/Hindi,Science Class 6 (NCERT),SRC-NCERT-01,PUBLISHED,PASS
+CBSE,National,Class 6,Middle,2026-2027,Mathematics,English/Hindi,Mathematics Class 6 (NCERT),SRC-NCERT-01,PUBLISHED,PASS
+CBSE,National,Class 7,Middle,2026-2027,Physics (Sound/Light/Heat),English/Hindi,Science Class 7 (NCERT),SRC-CBSE-01,PUBLISHED,PASS
+CBSE,National,Class 7,Middle,2026-2027,Chemistry (Acids/Bases),English/Hindi,Science Class 7 (NCERT),SRC-CBSE-01,PUBLISHED,PASS
+CBSE,National,Class 7,Middle,2026-2027,Biology (Nutrition/Forests),English/Hindi,Science Class 7 (NCERT),SRC-CBSE-01,PUBLISHED,PASS
+CBSE,National,Class 7,Middle,2026-2027,Mathematics (Ratios/Fractions),English/Hindi,Mathematics Class 7 (NCERT),SRC-CBSE-01,PUBLISHED,PASS
+CBSE,National,Class 8,Middle,2026-2027,Science,English/Hindi,Science Class 8 (NCERT),SRC-CBSE-01,PUBLISHED,PASS
+CBSE,National,Class 8,Middle,2026-2027,Mathematics,English/Hindi,Mathematics Class 8 (NCERT),SRC-CBSE-01,PUBLISHED,PASS
+CBSE,National,Class 9,Secondary,2026-2027,Science,English/Hindi,Science Class 9 (NCERT),SRC-CBSE-01,PUBLISHED,PASS
+CBSE,National,Class 9,Secondary,2026-2027,Mathematics,English/Hindi,Mathematics Class 9 (NCERT),SRC-CBSE-01,PUBLISHED,PASS
+CBSE,National,Class 10,Secondary,2026-2027,Science (Light Optics),English/Hindi,Science Class 10 (NCERT),SRC-CBSE-01,PUBLISHED,PASS
+CBSE,National,Class 10,Secondary,2026-2027,Mathematics,English/Hindi,Mathematics Class 10 (NCERT),SRC-CBSE-01,PUBLISHED,PASS
+CBSE,National,Class 11,Senior Secondary,2026-2027,Physics,English,Physics Parts 1 & 2 (NCERT),SRC-CBSE-02,PUBLISHED,PASS
+CBSE,National,Class 12,Senior Secondary,2026-2027,Mathematics (Calculus),English,Mathematics Parts 1 & 2 (NCERT),SRC-CBSE-02,PUBLISHED,PASS
+CISCE,National,Class 7,Middle,2026-2027,Physics,English,Concise Physics Class 7,SRC-CISCE-01,PUBLISHED,PASS
+CISCE,National,Class 10,ICSE,2026-2027,Physics,English,Concise Physics Class 10 (Selina),SRC-CISCE-01,PUBLISHED,PASS
+CISCE,National,Class 12,ISC,2026-2027,Mathematics,English,ISC Mathematics Class 12,SRC-CISCE-02,PUBLISHED,PASS
+KSEAB,Karnataka,Class 7,Higher Primary,2026-2027,Science (Dhwani/Shodha),Kannada/English,Karnataka DSERT Class 7,SRC-KSEAB-01,PUBLISHED,PASS
+KSEAB,Karnataka,Class 10,SSLC,2026-2027,Science,Kannada/English,Karnataka SSLC Science,SRC-KSEAB-01,PUBLISHED,PASS
+MSBSHSE,Maharashtra,Class 7,Upper Primary,2026-2027,General Science,Marathi/English,Balbharati Class 7 Science,SRC-MSBSHSE-01,SOURCE_FOUND,REVIEW_REQUIRED
+TNDGE,Tamil Nadu,Class 10,SSLC,2026-2027,Science,Tamil/English,Tamil Nadu Samacheer Kalvi 10,SRC-TNDGE-01,SOURCE_FOUND,REVIEW_REQUIRED
+

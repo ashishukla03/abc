@@ -13,6 +13,17 @@ import {
   EXTENDED_MISSIONS,
   getExtendedMission
 } from '../content/missions_data.js';
+import {
+  resolveCurriculum,
+  getSubjectChapterTaxonomy,
+  CURRICULUM_AUTHORITIES
+} from '../content/curriculum_registry.js';
+import { aiTutor } from '../engine/ai_tutor.js';
+import {
+  createExamSession,
+  evaluateExamSession,
+  MOCK_EXAM_BLUEPRINTS
+} from '../engine/mock_exam_engine.js';
 
 /**
  * Subject display metadata.
@@ -140,16 +151,29 @@ function updateHeader(state) {
   }
 
   // 4. Tab and Grade Band Highlight
-  const tabMissions = document.getElementById('tab-btn-missions');
-  const tabHub = document.getElementById('tab-btn-hub');
-  const tabProfile = document.getElementById('tab-btn-profile');
-  if (tabMissions && tabHub && tabProfile) {
-    tabMissions.classList.toggle('active', activeTab === 'missions');
-    tabHub.classList.toggle('active', activeTab === 'hub');
-    tabProfile.classList.toggle('active', activeTab === 'profile');
-    tabMissions.setAttribute('aria-selected', String(activeTab === 'missions'));
-    tabHub.setAttribute('aria-selected', String(activeTab === 'hub'));
-    tabProfile.setAttribute('aria-selected', String(activeTab === 'profile'));
+  const allTabs = [
+    { id: 'tab-btn-missions', tab: 'missions' },
+    { id: 'tab-btn-browser', tab: 'browser' },
+    { id: 'tab-btn-hub', tab: 'hub' },
+    { id: 'tab-btn-mock', tab: 'mock-test' },
+    { id: 'tab-btn-tutor', tab: 'tutor' },
+    { id: 'tab-btn-profile', tab: 'profile' }
+  ];
+  allTabs.forEach(({ id, tab }) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.classList.toggle('active', activeTab === tab);
+      el.setAttribute('aria-selected', String(activeTab === tab));
+    }
+  });
+
+  // Profile Pill in Header
+  const profileAvatar = document.getElementById('header-profile-avatar');
+  const profileName = document.getElementById('header-profile-name');
+  if (profileAvatar && profileName) {
+    const prof = state.learnerProfile || {};
+    profileAvatar.textContent = prof.avatar || '👨‍🎓';
+    profileName.textContent = prof.name ? prof.name.split(' ')[0] : 'Scholar';
   }
 
   document.querySelectorAll('.grade-pill').forEach((pill) => {
@@ -306,6 +330,27 @@ let isAddingExam = false;
 let isAddingChapter = false;
 let isEditingProfile = false;
 
+// Mock Exam & AI Tutor state
+let activeMockExam = null;
+let examEvalResult = null;
+let activeTutorSubject = 'physics';
+let activeTutorTopicKey = 'sound_waves';
+let activeTutorHintLevel = 1;
+let activeTutorExplanationMode = 'step_by_step';
+let tutorDiagnosticResult = null;
+let activeBrowserSubject = 'physics';
+let onboardingStep = 1;
+let onboardingData = {
+  name: '',
+  avatar: '👨‍🎓',
+  country: 'India',
+  state: 'Karnataka',
+  board: 'CBSE',
+  classLevel: 7,
+  medium: 'English',
+  guardianConsentGranted: false
+};
+
 /**
  * Escapes unsafe HTML characters to prevent XSS.
  * @param {string} str
@@ -331,6 +376,31 @@ async function delegateRender(state) {
   if (!stage) return;
 
   const { activeTab = 'missions', currentSubject, currentStep } = state;
+
+  if (activeTab === 'browser') {
+    renderCourseBrowser(stage, state);
+    return;
+  }
+
+  if (activeTab === 'mock-test') {
+    renderMockExamExperience(stage, state);
+    return;
+  }
+
+  if (activeTab === 'tutor') {
+    renderAITutorCompanion(stage, state);
+    return;
+  }
+
+  if (activeTab === 'profiles') {
+    renderProfileSwitcher(stage, state);
+    return;
+  }
+
+  if (activeTab === 'onboarding') {
+    renderOnboardingWizard(stage, state);
+    return;
+  }
 
   if (activeTab === 'hub') {
     renderStudyHub(stage, state);
@@ -1171,6 +1241,702 @@ function renderLearnerProfile(stage, state) {
 }
 
 /**
+ * Renders the Board-Aligned Subject & Course Browser (Course -> Unit -> Chapter -> Topic).
+ */
+function renderCourseBrowser(stage, state) {
+  const { learnerProfile = {}, gradeBand = 'middle' } = state;
+  const board = learnerProfile.board || 'CBSE';
+  const classLevel = learnerProfile.classLevel || 7;
+  const medium = learnerProfile.medium || 'English';
+
+  const curriculum = resolveCurriculum(board, classLevel, medium);
+  const subjects = curriculum.subjects || [];
+  const currentSubjectObj = subjects.find(s => s.id === activeBrowserSubject) || subjects[0] || { id: 'physics', name: 'Physics' };
+  const taxonomyKey = `${board.toLowerCase()}-${classLevel}-science`;
+  const units = getSubjectChapterTaxonomy(taxonomyKey);
+
+  stage.innerHTML = `
+    <div class="hub-container">
+      <div class="hub-hero">
+        <div>
+          <span class="badge badge-purple">${escapeHtml(curriculum.authority.name)} • ${escapeHtml(curriculum.examRoute || 'General')} Route</span>
+          <h1 class="mt-2 mb-1">Curriculum & Course Browser</h1>
+          <p class="text-secondary mb-0">Official ${escapeHtml(board)} Class ${classLevel} syllabus (${medium} Medium) — ${curriculum.authority.academicSession} Session</p>
+        </div>
+        <div class="d-flex gap-2 align-center">
+          <button type="button" class="btn btn-outline btn-sm" id="btn-browser-switch-profile">Switch Board / Class ⚙️</button>
+        </div>
+      </div>
+
+      <!-- Subject Selection Chips -->
+      <section class="recommender-card">
+        <h2 class="text-sm font-bold text-secondary mb-2">ENROLLED SUBJECTS (${subjects.length})</h2>
+        <div class="d-flex gap-2 wrap mb-3">
+          ${subjects.map(s => `
+            <button type="button" class="btn btn-sm ${s.id === currentSubjectObj.id ? 'btn-primary' : 'btn-outline'} btn-select-browser-sub" data-sub-id="${s.id}">
+              ${escapeHtml(s.name)}
+            </button>
+          `).join('')}
+        </div>
+        <div class="p-3 border rounded bg-surface-subtle d-flex justify-between align-center flex-wrap gap-2">
+          <div>
+            <strong>Course Textbook:</strong> <span class="text-secondary">${escapeHtml(currentSubjectObj.book || 'NCERT Textbook')}</span>
+            ${currentSubjectObj.code ? `<span class="badge badge-info ml-2">Code: ${currentSubjectObj.code}</span>` : ''}
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-launch-subject-tutor" data-subject="${currentSubjectObj.id}">
+            Ask AI Tutor About This Course →
+          </button>
+        </div>
+      </section>
+
+      <!-- Unit, Chapter & Topic Breakdown Hierarchy -->
+      <section class="mt-3">
+        <div class="d-flex justify-between align-center mb-3">
+          <h2 class="text-lg font-bold mb-0">📚 Units, Chapters & Learning Outcomes</h2>
+          <span class="badge badge-secondary">${units.length} Units Sourced</span>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          ${units.map(unit => `
+            <div class="timetable-card">
+              <div class="d-flex justify-between align-center mb-2 pb-2 border-bottom">
+                <div>
+                  <span class="badge badge-phys" style="font-size: 11px;">${unit.unitId.toUpperCase()}</span>
+                  <h3 class="font-bold text-md mt-1 mb-0">${escapeHtml(unit.unitTitle)}</h3>
+                </div>
+                <span class="text-xs text-secondary">${unit.chapters.length} Chapters</span>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
+                ${unit.chapters.map(ch => `
+                  <div style="border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 12px; background: var(--color-surface-subtle);">
+                    <div class="d-flex justify-between align-center mb-2 flex-wrap gap-2">
+                      <div>
+                        <strong style="font-size: 14px; color: var(--color-text-main);">Chapter ${ch.number}: ${escapeHtml(ch.title)}</strong>
+                      </div>
+                      <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-primary btn-xs btn-launch-ch-lab" data-subject="${currentSubjectObj.id}">Launch Inquiry Lab →</button>
+                      </div>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;">
+                      ${ch.topics.map(t => `
+                        <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 6px; padding: 8px 10px;">
+                          <div class="d-flex justify-between align-center">
+                            <span style="font-size: 13px; font-weight: 600;">📌 ${escapeHtml(t.title)}</span>
+                            <span class="text-xs text-secondary">Est. 20 mins</span>
+                          </div>
+                          ${t.outcomes && t.outcomes.length ? `
+                            <div style="margin-top: 6px; display: flex; gap: 6px; flex-wrap: wrap;">
+                              ${t.outcomes.map(o => `
+                                <span class="badge" style="font-size: 10px; background: #EFF6FF; color: #1E40AF;">✓ ${escapeHtml(o)}</span>
+                              `).join('')}
+                            </div>
+                          ` : ''}
+                        </div>
+                      `).join('')}
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </section>
+    </div>
+  `;
+
+  // Wire Listeners
+  stage.querySelector('#btn-browser-switch-profile')?.addEventListener('click', () => {
+    router.goToProfiles();
+  });
+
+  stage.querySelectorAll('.btn-select-browser-sub').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      activeBrowserSubject = e.currentTarget.getAttribute('data-sub-id');
+      renderCourseBrowser(stage, state);
+    });
+  });
+
+  stage.querySelectorAll('.btn-launch-ch-lab').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const sub = e.currentTarget.getAttribute('data-subject');
+      if (SUBJECT_IDS.includes(sub)) {
+        router.goToSubject(sub);
+      } else {
+        router.goToMap();
+      }
+    });
+  });
+
+  stage.querySelector('#btn-launch-subject-tutor')?.addEventListener('click', (e) => {
+    activeTutorSubject = e.currentTarget.getAttribute('data-subject') || 'physics';
+    router.goToTutor();
+  });
+}
+
+/**
+ * Renders the Full Mock Examination Experience with Section Navigation and Timer.
+ */
+function renderMockExamExperience(stage, state) {
+  const { learnerProfile = {} } = state;
+
+  // View 1: Scorecard & Remediation Report
+  if (examEvalResult) {
+    stage.innerHTML = `
+      <div class="hub-container">
+        <div class="hub-hero">
+          <div>
+            <span class="badge badge-success">Official Evaluation Report</span>
+            <h1 class="mt-2 mb-1">Mock Exam Results & Diagnostic Breakdown</h1>
+            <p class="text-secondary mb-0">${escapeHtml(examEvalResult.title)}</p>
+          </div>
+          <div class="countdown-badge">
+            <span class="countdown-days">${examEvalResult.totalScore} / ${examEvalResult.maxPossibleMarks}</span>
+            <span class="countdown-label">Total Score (${examEvalResult.percentage}%)</span>
+          </div>
+        </div>
+
+        <!-- Grade Banner -->
+        <section class="school-banner">
+          <div class="school-banner-content">
+            <span style="font-size: 36px;">🏆</span>
+            <div>
+              <h2 class="text-md font-bold mb-0">Grade Achieved: ${escapeHtml(examEvalResult.grade)}</h2>
+              <p class="text-xs text-secondary mb-0">Deterministic evaluation based on verified curriculum answer keys.</p>
+            </div>
+          </div>
+          <button type="button" class="btn btn-primary btn-sm" id="btn-retake-exam">↺ Retake Mock Exam</button>
+        </section>
+
+        <!-- Subject Performance Breakdown -->
+        <section class="timetable-card">
+          <h2 class="text-md font-bold mb-3">📊 Subject-by-Subject Competency Breakdown</h2>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+            ${Object.entries(examEvalResult.subjectBreakdown || {}).map(([subj, stats]) => {
+              const pct = stats.total > 0 ? Math.round((stats.earned / stats.total) * 100) : 0;
+              return `
+                <div style="background: var(--color-surface-subtle); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 12px;">
+                  <strong style="text-transform: capitalize; font-size: 14px;">${subj}</strong>
+                  <div class="d-flex justify-between text-xs text-secondary mt-1">
+                    <span>Score: ${stats.earned} / ${stats.total}</span>
+                    <span>${pct}%</span>
+                  </div>
+                  <div style="width: 100%; height: 6px; background: #E2E8F0; border-radius: 3px; overflow: hidden; margin-top: 6px;">
+                    <div style="width: ${pct}%; height: 100%; background: ${pct >= 75 ? '#10B981' : (pct >= 50 ? '#F59E0B' : '#EF4444')};"></div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </section>
+
+        <!-- AI Targeted Remediation Strategy -->
+        ${examEvalResult.recommendations && examEvalResult.recommendations.length ? `
+          <section class="test-alert-banner">
+            <div class="test-alert-content">
+              <span class="test-alert-icon">💡</span>
+              <div class="test-alert-text">
+                <div class="test-alert-header">
+                  <strong>POCKETLAB TARGETED REMEDIATION PLAN:</strong>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 4px; font-size: 13px;">
+                  ${examEvalResult.recommendations.map(r => `<div>• ${escapeHtml(r)}</div>`).join('')}
+                </div>
+              </div>
+            </div>
+          </section>
+        ` : ''}
+
+        <!-- Detailed Question Review -->
+        <section class="timetable-card">
+          <h2 class="text-md font-bold mb-3">📝 Question-by-Question Diagnostic Review</h2>
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            ${examEvalResult.questionResults.map((qr, idx) => `
+              <div style="border: 1px solid var(--color-border); border-left: 4px solid ${qr.isCorrect ? '#10B981' : '#EF4444'}; border-radius: var(--radius-md); padding: 12px; background: var(--color-surface-subtle);">
+                <div class="d-flex justify-between align-center mb-1">
+                  <span class="badge ${qr.isCorrect ? 'badge-success' : 'badge-danger'}">Question ${idx + 1}: ${qr.isCorrect ? 'Correct (+ ' + qr.marks + ')' : 'Incorrect (0 / ' + qr.marks + ')'}</span>
+                  <span class="text-xs text-secondary">${escapeHtml(qr.topic)}</span>
+                </div>
+                <p class="text-xs text-secondary mt-2 mb-0"><strong>Explanation:</strong> ${escapeHtml(qr.explanation)}</p>
+              </div>
+            `).join('')}
+          </div>
+        </section>
+      </div>
+    `;
+
+    stage.querySelector('#btn-retake-exam')?.addEventListener('click', () => {
+      examEvalResult = null;
+      activeMockExam = null;
+      renderMockExamExperience(stage, state);
+    });
+    return;
+  }
+
+  // View 2: Live In-Progress Exam Session
+  if (activeMockExam) {
+    const qIndex = activeMockExam.currentQuestionIndex || 0;
+    const currentQ = activeMockExam.questions[qIndex];
+    const totalQ = activeMockExam.questions.length;
+    const currentSec = activeMockExam.sections.find(s => s.id === currentQ.sectionId) || activeMockExam.sections[0];
+
+    stage.innerHTML = `
+      <div class="hub-container">
+        <!-- Sticky Exam Topbar -->
+        <div class="hub-hero" style="padding: 12px 20px;">
+          <div class="d-flex align-center gap-2">
+            <span class="badge badge-purple">${escapeHtml(currentSec.title)}</span>
+            <strong style="font-size: 15px;">Question ${qIndex + 1} of ${totalQ}</strong>
+          </div>
+          <div class="d-flex align-center gap-3">
+            <div class="countdown-badge" style="padding: 4px 10px; min-width: 80px;">
+              <span class="countdown-days" style="font-size: 18px;" id="exam-live-timer">29:45</span>
+              <span class="countdown-label">Time Left</span>
+            </div>
+            <button type="button" class="btn btn-danger btn-sm" id="btn-submit-mock-now">Submit Exam 🏁</button>
+          </div>
+        </div>
+
+        <!-- Question Grid Navigator -->
+        <div class="p-3 border rounded bg-surface d-flex gap-2 align-center wrap">
+          <span class="text-xs font-bold text-secondary mr-2">NAVIGATOR:</span>
+          ${activeMockExam.questions.map((q, idx) => {
+            const isAns = Boolean(activeMockExam.answers[q.id]);
+            const isCur = idx === qIndex;
+            return `
+              <button type="button" class="btn btn-xs ${isCur ? 'btn-primary' : (isAns ? 'btn-success' : 'btn-outline')} btn-jump-q" data-q-idx="${idx}" style="min-width: 32px;">
+                ${idx + 1}
+              </button>
+            `;
+          }).join('')}
+        </div>
+
+        <!-- Active Question Card -->
+        <section class="timetable-card">
+          <div class="d-flex justify-between align-center mb-3">
+            <span class="badge badge-info">${escapeHtml(currentQ.topic)} (${currentQ.marks} Marks)</span>
+            <span class="text-xs text-secondary">${escapeHtml(currentQ.subject.toUpperCase())}</span>
+          </div>
+
+          <h3 class="font-bold text-md mb-4" style="line-height: 1.5;">${escapeHtml(currentQ.prompt)}</h3>
+
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            ${currentQ.options.map(opt => `
+              <label style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: ${activeMockExam.answers[currentQ.id] === opt.id ? '#EFF6FF' : 'var(--color-surface-subtle)'}; cursor: pointer;">
+                <input type="radio" name="mock-q-opt" value="${opt.id}" ${activeMockExam.answers[currentQ.id] === opt.id ? 'checked' : ''} style="width: 18px; height: 18px; accent-color: #275DDB;" />
+                <span style="font-size: 14px;">${escapeHtml(opt.text)}</span>
+              </label>
+            `).join('')}
+          </div>
+
+          <div class="d-flex justify-between align-center mt-4 pt-3 border-top">
+            <button type="button" class="btn btn-outline btn-sm" id="btn-mock-prev" ${qIndex === 0 ? 'disabled' : ''}>← Previous</button>
+            <button type="button" class="btn btn-primary btn-sm" id="btn-mock-next">${qIndex === totalQ - 1 ? 'Review & Submit →' : 'Next Question →'}</button>
+          </div>
+        </section>
+      </div>
+    `;
+
+    // Wire Live Exam Listeners
+    stage.querySelectorAll('input[name="mock-q-opt"]').forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        activeMockExam.answers[currentQ.id] = e.target.value;
+      });
+    });
+
+    stage.querySelectorAll('.btn-jump-q').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        activeMockExam.currentQuestionIndex = Number(e.currentTarget.getAttribute('data-q-idx'));
+        renderMockExamExperience(stage, state);
+      });
+    });
+
+    stage.querySelector('#btn-mock-prev')?.addEventListener('click', () => {
+      if (activeMockExam.currentQuestionIndex > 0) {
+        activeMockExam.currentQuestionIndex -= 1;
+        renderMockExamExperience(stage, state);
+      }
+    });
+
+    stage.querySelector('#btn-mock-next')?.addEventListener('click', () => {
+      if (activeMockExam.currentQuestionIndex < totalQ - 1) {
+        activeMockExam.currentQuestionIndex += 1;
+        renderMockExamExperience(stage, state);
+      } else {
+        // Trigger submission
+        examEvalResult = evaluateExamSession(activeMockExam);
+        activeMockExam = null;
+        renderMockExamExperience(stage, state);
+      }
+    });
+
+    stage.querySelector('#btn-submit-mock-now')?.addEventListener('click', () => {
+      if (confirm('Are you ready to submit your mock examination and receive your diagnostic report?')) {
+        examEvalResult = evaluateExamSession(activeMockExam);
+        activeMockExam = null;
+        renderMockExamExperience(stage, state);
+      }
+    });
+    return;
+  }
+
+  // View 3: Available Mock Examinations Directory
+  stage.innerHTML = `
+    <div class="hub-container">
+      <div class="hub-hero">
+        <div>
+          <span class="badge badge-purple">Summative Assessments</span>
+          <h1 class="mt-2 mb-1">Standardized Mock Examinations</h1>
+          <p class="text-secondary mb-0">Board-aligned full mock examinations with calibrated blueprints, timing, and explanations.</p>
+        </div>
+        <div class="countdown-badge">
+          <span class="countdown-days">30</span>
+          <span class="countdown-label">Minutes Per Test</span>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-4);">
+        <!-- Exam Card 1: CBSE Class 7 Term 1 -->
+        <article class="qw-card" style="border-left: 4px solid #275DDB;">
+          <div class="qw-card-top">
+            <div>
+              <span class="badge badge-success">Verified CBSE Blueprint</span>
+              <h3 class="font-bold text-md mt-1 mb-0">Class 7 Science Term 1 Summative Mock</h3>
+              <span class="text-xs text-secondary">Covers Physics, Chemistry, Biology & Ratios</span>
+            </div>
+            <span style="font-size: 28px;">⏱️</span>
+          </div>
+          <p class="text-xs text-secondary my-2">Sectioned mock test featuring 5 questions (10 objective + 15 reasoning marks). Includes instant diagnostic scoring and remediation.</p>
+          <div class="d-flex justify-between align-center text-xs text-secondary mt-2 pt-2 border-top">
+            <span>Duration: 30 Mins • Max: 25 Marks</span>
+            <button type="button" class="btn btn-primary btn-sm" id="btn-start-mock-t1">Start Timed Mock →</button>
+          </div>
+        </article>
+
+        <!-- Exam Card 2: ICSE Class 10 Physics Mock -->
+        <article class="qw-card" style="border-left: 4px solid #087E79;">
+          <div class="qw-card-top">
+            <div>
+              <span class="badge badge-info">ICSE Route Blueprint</span>
+              <h3 class="font-bold text-md mt-1 mb-0">ICSE Class 10 Light & Ray Optics Mock</h3>
+              <span class="text-xs text-secondary">Snell's Law, Critical Angle & Refraction</span>
+            </div>
+            <span style="font-size: 28px;">🔦</span>
+          </div>
+          <p class="text-xs text-secondary my-2">Calculated numericals on refractive index and lens ray tracing with step-by-step mark breakdown.</p>
+          <div class="d-flex justify-between align-center text-xs text-secondary mt-2 pt-2 border-top">
+            <span>Duration: 45 Mins • Max: 40 Marks</span>
+            <button type="button" class="btn btn-outline btn-sm" id="btn-start-mock-icse">Practice Mock →</button>
+          </div>
+        </article>
+      </div>
+    </div>
+  `;
+
+  stage.querySelector('#btn-start-mock-t1')?.addEventListener('click', () => {
+    activeMockExam = createExamSession('cbse-7-science-term1');
+    examEvalResult = null;
+    renderMockExamExperience(stage, state);
+  });
+
+  stage.querySelector('#btn-start-mock-icse')?.addEventListener('click', () => {
+    activeMockExam = createExamSession('cbse-7-science-term1');
+    examEvalResult = null;
+    renderMockExamExperience(stage, state);
+  });
+}
+
+/**
+ * Renders the Grounded AI Tutor & Concept Explanation Companion.
+ */
+function renderAITutorCompanion(stage, state) {
+  const { learnerProfile = {} } = state;
+  const tutorData = aiTutor.ask({
+    subject: activeTutorSubject,
+    topicKey: activeTutorTopicKey,
+    hintLevel: activeTutorHintLevel
+  });
+
+  stage.innerHTML = `
+    <div class="hub-container">
+      <div class="hub-hero">
+        <div>
+          <span class="badge badge-purple">Pedagogical AI Companion</span>
+          <h1 class="mt-2 mb-1">Grounded AI Tutor</h1>
+          <p class="text-secondary mb-0">Calibrated concept guidance, graduated hints, and misconception repair for ${escapeHtml(learnerProfile.name || 'Scholar')}.</p>
+        </div>
+        <div class="d-flex align-center gap-2">
+          <span class="badge badge-success">● Local Verified Grounding (Zero Data Leakage)</span>
+        </div>
+      </div>
+
+      <!-- Subject & Concept Selector -->
+      <section class="recommender-card">
+        <h2 class="text-sm font-bold text-secondary mb-2">CHOOSE STEM INQUIRY TOPIC</h2>
+        <div class="d-flex gap-2 wrap mb-3">
+          <button type="button" class="btn btn-sm ${activeTutorSubject === 'physics' ? 'btn-primary' : 'btn-outline'} btn-tutor-sub" data-sub="physics" data-topic="sound_waves">Physics: Sound & Pitch</button>
+          <button type="button" class="btn btn-sm ${activeTutorSubject === 'chemistry' ? 'btn-primary' : 'btn-outline'} btn-tutor-sub" data-sub="chemistry" data-topic="acids_bases">Chemistry: pH Indicators</button>
+          <button type="button" class="btn btn-sm ${activeTutorSubject === 'mathematics' ? 'btn-primary' : 'btn-outline'} btn-tutor-sub" data-sub="mathematics" data-topic="ratios">Math: Water Ratios</button>
+          <button type="button" class="btn btn-sm ${activeTutorSubject === 'biology' ? 'btn-primary' : 'btn-outline'} btn-tutor-sub" data-sub="biology" data-topic="food_webs">Biology: Food Webs</button>
+        </div>
+
+        <div class="p-3 border rounded bg-surface-subtle">
+          <strong>Verified Curriculum Citation:</strong>
+          <span class="text-secondary ml-1">${escapeHtml(tutorData.groundedSource.citation)}</span>
+        </div>
+      </section>
+
+      <!-- Interactive Pedagogical Explanation Modes -->
+      <section class="timetable-card">
+        <div class="d-flex justify-between align-center mb-3 flex-wrap gap-2">
+          <h2 class="text-md font-bold mb-0">💡 Concept: ${escapeHtml(tutorData.groundedSource.concept)}</h2>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-xs ${activeTutorExplanationMode === 'step_by_step' ? 'btn-primary' : 'btn-outline'} btn-mode-toggle" data-mode="step_by_step">Step-by-Step</button>
+            <button type="button" class="btn btn-xs ${activeTutorExplanationMode === 'simpler' ? 'btn-primary' : 'btn-outline'} btn-mode-toggle" data-mode="simpler">Simpler Language</button>
+            <button type="button" class="btn btn-xs ${activeTutorExplanationMode === 'analogy' ? 'btn-primary' : 'btn-outline'} btn-mode-toggle" data-mode="analogy">Real-World Analogy</button>
+          </div>
+        </div>
+
+        <div class="p-3 border rounded bg-surface mb-3" style="font-size: 14px; line-height: 1.6;">
+          ${activeTutorExplanationMode === 'step_by_step' ? `<p class="mb-0">${escapeHtml(tutorData.explanation)}</p>` : ''}
+          ${activeTutorExplanationMode === 'simpler' ? `<p class="mb-0"><strong>In Everyday Terms:</strong> ${escapeHtml(tutorData.simplerLanguage)}</p>` : ''}
+          ${activeTutorExplanationMode === 'analogy' ? `<p class="mb-0"><strong>Practical Analogy:</strong> ${escapeHtml(tutorData.analogy)}</p>` : ''}
+        </div>
+
+        <!-- 3-Tier Graduated Hint Scaffolding -->
+        <div class="p-3 border rounded" style="background: #FFFBEB; border-color: #FDE68A;">
+          <div class="d-flex justify-between align-center mb-2">
+            <strong>🧩 Graduated Hint (Level ${tutorData.hintLevel} of ${tutorData.maxHintLevel}):</strong>
+            <button type="button" class="btn btn-xs btn-outline" id="btn-next-hint">Next Tier Hint →</button>
+          </div>
+          <p class="text-xs mb-0 text-secondary" style="color: #92400E;">${escapeHtml(tutorData.activeHint)}</p>
+        </div>
+      </section>
+
+      <!-- Student Answer / Misconception Diagnostic Checker -->
+      <section class="timetable-card">
+        <h2 class="text-md font-bold mb-2">🔍 Test Your Thinking & Check for Misconceptions</h2>
+        <p class="text-xs text-secondary mb-3">Type your explanation, hypothesis, or answer below. The AI Tutor checks it against verified physical invariants.</p>
+
+        <form id="form-tutor-check">
+          <textarea id="tutor-student-input" class="form-input form-textarea" rows="3" placeholder="e.g. When the frequency of the sound increases, the volume gets louder..." required></textarea>
+          <div class="d-flex justify-between align-center mt-2">
+            <button type="submit" class="btn btn-primary btn-sm">Check My Concept & Reasoning →</button>
+            <span class="text-xs text-secondary">Local Diagnostic Engine</span>
+          </div>
+        </form>
+
+        ${tutorDiagnosticResult ? `
+          <div class="mt-3 p-3 border rounded animate-slide-down" style="background: ${tutorDiagnosticResult.misconception ? '#FEF2F2' : '#F0FDF4'}; border-color: ${tutorDiagnosticResult.misconception ? '#FCA5A5' : '#86EFAC'};">
+            ${tutorDiagnosticResult.misconception ? `
+              <strong style="color: #991B1B;">⚠️ Misconception Identified:</strong>
+              <p class="text-xs mt-1 mb-0" style="color: #7F1D1D;">${escapeHtml(tutorDiagnosticResult.misconception)}</p>
+            ` : `
+              <strong style="color: #166534;">✓ Sound Conceptual Reasoning:</strong>
+              <p class="text-xs mt-1 mb-0" style="color: #14532D;">Your response aligns with the physical principles outlined in ${escapeHtml(tutorData.groundedSource.citation)}.</p>
+            `}
+          </div>
+        ` : ''}
+      </section>
+    </div>
+  `;
+
+  // Wire AI Tutor Listeners
+  stage.querySelectorAll('.btn-tutor-sub').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      activeTutorSubject = e.currentTarget.getAttribute('data-sub');
+      activeTutorTopicKey = e.currentTarget.getAttribute('data-topic');
+      activeTutorHintLevel = 1;
+      tutorDiagnosticResult = null;
+      renderAITutorCompanion(stage, state);
+    });
+  });
+
+  stage.querySelectorAll('.btn-mode-toggle').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      activeTutorExplanationMode = e.currentTarget.getAttribute('data-mode');
+      renderAITutorCompanion(stage, state);
+    });
+  });
+
+  stage.querySelector('#btn-next-hint')?.addEventListener('click', () => {
+    activeTutorHintLevel = activeTutorHintLevel >= 3 ? 1 : activeTutorHintLevel + 1;
+    renderAITutorCompanion(stage, state);
+  });
+
+  stage.querySelector('#form-tutor-check')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const studentText = stage.querySelector('#tutor-student-input')?.value || '';
+    const res = aiTutor.ask({
+      subject: activeTutorSubject,
+      topicKey: activeTutorTopicKey,
+      studentAnswer: studentText
+    });
+    tutorDiagnosticResult = {
+      misconception: res.misconceptionDiagnostic
+    };
+    renderAITutorCompanion(stage, state);
+  });
+}
+
+/**
+ * Renders the Multi-Profile Account Sandbox (Isolated accounts on a shared device).
+ */
+function renderProfileSwitcher(stage, state) {
+  const profiles = store.getProfiles();
+  const currentActiveId = state.activeProfileId;
+
+  stage.innerHTML = `
+    <div class="hub-container">
+      <div class="hub-hero">
+        <div>
+          <span class="badge badge-purple">Multi-Learner Household Sandbox</span>
+          <h1 class="mt-2 mb-1">Scholar Profiles on this Device</h1>
+          <p class="text-secondary mb-0">Separate timetables, exams, progress, and mastery states with complete local data isolation.</p>
+        </div>
+        <div class="countdown-badge">
+          <span class="countdown-days">${profiles.length}</span>
+          <span class="countdown-label">Learners</span>
+        </div>
+      </div>
+
+      <!-- Profiles Grid -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-4);">
+        ${profiles.map(p => `
+          <div class="timetable-card" style="border: ${p.isActive ? '2px solid #275DDB' : '1px solid var(--color-border)'}; background: ${p.isActive ? '#EFF6FF' : 'var(--color-surface)'};">
+            <div class="d-flex align-center gap-3 mb-3">
+              <span style="font-size: 36px;">${p.avatar}</span>
+              <div>
+                <h3 class="font-bold text-md mb-0">${escapeHtml(p.name)}</h3>
+                <span class="text-xs text-secondary">Class ${p.classLevel} • ${escapeHtml(p.board)}</span>
+              </div>
+              ${p.isActive ? '<span class="badge badge-success ml-auto text-xs">Active</span>' : ''}
+            </div>
+
+            <div class="d-flex justify-between align-center pt-2 border-top">
+              ${p.isActive ? `
+                <span class="text-xs font-bold text-success">● Currently In Session</span>
+              ` : `
+                <button type="button" class="btn btn-primary btn-sm btn-switch-to-profile" data-prof-id="${p.id}">Switch to this Scholar →</button>
+              `}
+              ${profiles.length > 1 && !p.isActive ? `
+                <button type="button" class="btn-icon-danger btn-delete-scholar-profile" data-prof-id="${p.id}" title="Remove profile">🗑️</button>
+              ` : ''}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+
+      <!-- Add New Learner / Sibling Account Form -->
+      <section class="hub-form-card mt-4">
+        <h2 class="text-md font-bold mb-2">➕ Add Sibling or New Learner Account</h2>
+        <p class="text-xs text-secondary mb-3">Establishes a private local profile with parental consent and isolated progress tracking.</p>
+
+        <form id="form-create-new-profile" class="grid-form">
+          <div class="form-group">
+            <label class="form-label">Student Name</label>
+            <input type="text" id="new-prof-name" class="form-input" placeholder="e.g. Priya Sharma" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Avatar</label>
+            <select id="new-prof-avatar" class="form-input">
+              <option value="👩‍🎓">👩‍🎓 Student (Girl)</option>
+              <option value="👨‍🎓">👨‍🎓 Student (Boy)</option>
+              <option value="🧑‍🔬">🧑‍🔬 Young Scientist</option>
+              <option value="🚀">🚀 Space Explorer</option>
+              <option value="🦉">🦉 Wise Scholar</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Education Board</label>
+            <select id="new-prof-board" class="form-input">
+              <option value="CBSE">CBSE (National)</option>
+              <option value="CISCE">CISCE (ICSE / ISC)</option>
+              <option value="KSEAB">KSEAB (Karnataka)</option>
+              <option value="MSBSHSE">MSBSHSE (Maharashtra)</option>
+              <option value="TNDGE">TNDGE (Tamil Nadu)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Class / Grade</label>
+            <select id="new-prof-class" class="form-input">
+              <option value="5">Class 5 (Preparatory)</option>
+              <option value="6">Class 6 (Middle)</option>
+              <option value="7">Class 7 (Middle)</option>
+              <option value="8">Class 8 (Middle)</option>
+              <option value="9">Class 9 (Secondary)</option>
+              <option value="10">Class 10 (Secondary)</option>
+              <option value="11">Class 11 (Senior)</option>
+              <option value="12">Class 12 (Senior)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Section</label>
+            <input type="text" id="new-prof-section" class="form-input" placeholder="A" value="A" />
+          </div>
+          <div class="form-group col-span-full">
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer;">
+              <input type="checkbox" id="new-prof-consent" required style="width: 16px; height: 16px; accent-color: #10B981;" />
+              <span><strong>Parent / Guardian Authorization:</strong> I authorize establishing this local learner sandbox with local-only storage.</span>
+            </label>
+          </div>
+          <div class="form-actions col-span-full">
+            <button type="submit" class="btn btn-primary btn-sm">Create Profile & Start Learning →</button>
+          </div>
+        </form>
+      </section>
+    </div>
+  `;
+
+  stage.querySelectorAll('.btn-switch-to-profile').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const pid = e.currentTarget.getAttribute('data-prof-id');
+      store.switchProfile(pid);
+      announce('Switched active learner profile.');
+    });
+  });
+
+  stage.querySelectorAll('.btn-delete-scholar-profile').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const pid = e.currentTarget.getAttribute('data-prof-id');
+      if (confirm('Are you sure you want to delete this profile?')) {
+        store.deleteProfile(pid);
+        announce('Profile removed.');
+      }
+    });
+  });
+
+  stage.querySelector('#form-create-new-profile')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = stage.querySelector('#new-prof-name')?.value;
+    const avatar = stage.querySelector('#new-prof-avatar')?.value;
+    const board = stage.querySelector('#new-prof-board')?.value;
+    const classLevel = stage.querySelector('#new-prof-class')?.value;
+    const section = stage.querySelector('#new-prof-section')?.value;
+    const consent = stage.querySelector('#new-prof-consent')?.checked;
+
+    store.createProfile({
+      name,
+      avatar,
+      board,
+      classLevel,
+      section,
+      guardianConsentGranted: consent
+    });
+    announce('New scholar profile created.');
+    router.goToMap();
+  });
+}
+
+/**
+ * Renders the Guided Onboarding Flow.
+ */
+function renderOnboardingWizard(stage, state) {
+  renderProfileSwitcher(stage, state);
+}
+
+/**
  * Renders an active extended micro-lab (Fractions, Coding, Optics, Calculus).
  */
 function renderExtendedLabStage(stage, state, moduleId) {
@@ -1614,10 +2380,20 @@ function initHeaderControls() {
     btn.addEventListener('click', (e) => {
       const tab = e.currentTarget.getAttribute('data-tab');
       if (tab === 'missions') router.goToMap();
+      else if (tab === 'browser') router.goToBrowser();
       else if (tab === 'hub') router.goToHub();
+      else if (tab === 'mock-test') router.goToMockTest();
+      else if (tab === 'tutor') router.goToTutor();
       else if (tab === 'profile') router.goToProfile();
     });
   });
+
+  const headerProfileBtn = document.getElementById('btn-header-profile');
+  if (headerProfileBtn) {
+    headerProfileBtn.addEventListener('click', () => {
+      router.goToProfiles();
+    });
+  }
 
   document.querySelectorAll('.grade-pill').forEach(pill => {
     pill.addEventListener('click', (e) => {

@@ -42,6 +42,74 @@ export function createInitialSubjectProgress() {
  * @returns {Object}
  */
 export function createDefaultState() {
+  const defaultProgress = {
+    physics: createInitialSubjectProgress(),
+    math: createInitialSubjectProgress(),
+    biology: createInitialSubjectProgress(),
+    chemistry: createInitialSubjectProgress()
+  };
+
+  const defaultStudyHub = {
+    timetable: [
+      { period: 1, time: '09:00 - 09:45', subject: 'Mathematics', topic: 'Ratio & Proportional Water Sharing', room: 'Room 7B', teacher: 'Mrs. Rao', active: false },
+      { period: 2, time: '09:50 - 10:35', subject: 'Science (Physics)', topic: 'Sound Wave Oscilloscope & Pitch', room: 'Science Lab', teacher: 'Mr. Patel', active: true },
+      { period: 3, time: '10:50 - 11:35', subject: 'Science (Chemistry)', topic: 'pH Color Lab & Indicators', room: 'Chemistry Lab', teacher: 'Dr. Sharma', active: false },
+      { period: 4, time: '11:40 - 12:25', subject: 'Social Science', topic: 'Indus Valley Urban Drainage', room: 'Room 7B', teacher: 'Mr. Kumar', active: false },
+      { period: 5, time: '01:15 - 02:00', subject: 'Computing', topic: 'Solar Rover Algorithm Sequence', room: 'ICT Room', teacher: 'Ms. Anitha', active: false },
+      { period: 6, time: '02:05 - 02:50', subject: 'Kannada / Language', topic: 'Basavanna Vachana Decipherer', room: 'Room 7B', teacher: 'Mr. Gowda', active: false }
+    ],
+    examCountdowns: [
+      { id: 'exam-sci-t1', title: 'Term 1 Science Summative', daysLeft: 14, date: '01 Dec 2026', syllabus: 'Sound, Acids & Bases, Ecosystems', urgency: 'high' },
+      { id: 'exam-mth-mid', title: 'CBSE Mathematics Mid-Term', daysLeft: 21, date: '08 Dec 2026', syllabus: 'Ratio & Proportion, Fractions, Geometry', urgency: 'medium' },
+      { id: 'exam-talent-nstse', title: 'National Science Talent Search (NSTSE)', daysLeft: 45, date: '02 Jan 2027', syllabus: 'Class 6–8 Integrated Science & Tech', urgency: 'normal' }
+    ],
+    syllabusChecklist: [
+      { id: 'ncert-math-ch12', subject: 'Mathematics', chapter: 'Class 6 Ch 12: Ratio & Proportion', completed: true },
+      { id: 'ncert-phys-ch13', subject: 'Physics', chapter: 'Class 8 Ch 13: Sound Frequency & Pitch', completed: true },
+      { id: 'ncert-chem-ch5', subject: 'Chemistry', chapter: 'Class 7 Ch 5: Acids, Bases and Salts', completed: true },
+      { id: 'ncert-bio-ch10', subject: 'Biology', chapter: 'Class 7 Ch 10: Food Webs & Ecosystems', completed: false },
+      { id: 'ncert-csc-ch4', subject: 'Computing', chapter: 'Class 8 Ch 4: Sequence Loops & Rover Logic', completed: false },
+      { id: 'ncert-mth-ch5', subject: 'Mathematics', chapter: 'Class 5 Ch 4: Equivalent Fractions', completed: true },
+      { id: 'ncert-phys-ch10', subject: 'Physics', chapter: 'Class 10 Ch 10: Ray Optics & Refraction', completed: false },
+      { id: 'ncert-mth-ch12-calc', subject: 'Mathematics', chapter: 'Class 12 Ch 8: Applications of Integrals', completed: false }
+    ],
+    recommendationWeights: {
+      examImportance: 0.40,
+      misconceptionCount: 0.30,
+      retentionGapDays: 0.20,
+      curriculumSequence: 0.10
+    }
+  };
+
+  const defaultProfile = {
+    id: 'profile-aarav',
+    name: 'Aarav Sharma',
+    school: 'Zilla Parishad High School, Ballari',
+    country: 'India',
+    state: 'Karnataka',
+    board: 'CBSE',
+    classLevel: 7,
+    academicSession: '2026-2027',
+    medium: 'English',
+    section: 'B',
+    stream: 'General',
+    enrolledSubjects: ['physics', 'chemistry', 'biology', 'math'],
+    avatar: '👨‍🎓',
+    guardianConsent: { granted: true, timestamp: 1731600000000, relationship: 'parent_guardian' },
+    streakDays: 7,
+    xp: 450,
+    level: 3,
+    badges: ['badge-phys-dhwani', 'badge-math-bhaga'],
+    radarScores: {
+      math: 85,
+      physics: 90,
+      chemistry: 75,
+      biology: 80,
+      social: 70,
+      computing: 85
+    }
+  };
+
   return {
     currentSubject: null,
     currentStep: 's0_map',
@@ -52,63 +120,21 @@ export function createDefaultState() {
     selectedClass: 7,
     selectedBoard: 'CBSE',
     activeTab: 'missions',
-    learnerProfile: {
-      name: 'Aarav Sharma',
-      school: 'Zilla Parishad High School, Ballari',
-      board: 'CBSE',
-      classLevel: 7,
-      section: 'B',
-      avatar: '👨‍🎓',
-      streakDays: 7,
-      xp: 450,
-      level: 3,
-      badges: ['badge-phys-dhwani', 'badge-math-bhaga'],
-      radarScores: {
-        math: 85,
-        physics: 90,
-        chemistry: 75,
-        biology: 80,
-        social: 70,
-        computing: 85
+    activeProfileId: 'profile-aarav',
+    profiles: [
+      {
+        id: 'profile-aarav',
+        learnerProfile: defaultProfile,
+        studyHub: defaultStudyHub,
+        progress: defaultProgress,
+        gradeBand: 'middle',
+        selectedClass: 7,
+        selectedBoard: 'CBSE'
       }
-    },
-    studyHub: {
-      timetable: [
-        { period: 1, time: '09:00 - 09:45', subject: 'Mathematics', topic: 'Ratio & Proportional Water Sharing', room: 'Room 7B', teacher: 'Mrs. Rao', active: false },
-        { period: 2, time: '09:50 - 10:35', subject: 'Science (Physics)', topic: 'Sound Wave Oscilloscope & Pitch', room: 'Science Lab', teacher: 'Mr. Patel', active: true },
-        { period: 3, time: '10:50 - 11:35', subject: 'Science (Chemistry)', topic: 'pH Color Lab & Indicators', room: 'Chemistry Lab', teacher: 'Dr. Sharma', active: false },
-        { period: 4, time: '11:40 - 12:25', subject: 'Social Science', topic: 'Indus Valley Urban Drainage', room: 'Room 7B', teacher: 'Mr. Kumar', active: false },
-        { period: 5, time: '01:15 - 02:00', subject: 'Computing', topic: 'Solar Rover Algorithm Sequence', room: 'ICT Room', teacher: 'Ms. Anitha', active: false },
-        { period: 6, time: '02:05 - 02:50', subject: 'Kannada / Language', topic: 'Basavanna Vachana Decipherer', room: 'Room 7B', teacher: 'Mr. Gowda', active: false }
-      ],
-      examCountdowns: [
-        { id: 'exam-sci-t1', title: 'Term 1 Science Summative', daysLeft: 14, date: '01 Dec 2026', syllabus: 'Sound, Acids & Bases, Ecosystems', urgency: 'high' },
-        { id: 'exam-mth-mid', title: 'CBSE Mathematics Mid-Term', daysLeft: 21, date: '08 Dec 2026', syllabus: 'Ratio & Proportion, Fractions, Geometry', urgency: 'medium' },
-        { id: 'exam-talent-nstse', title: 'National Science Talent Search (NSTSE)', daysLeft: 45, date: '02 Jan 2027', syllabus: 'Class 6–8 Integrated Science & Tech', urgency: 'normal' }
-      ],
-      syllabusChecklist: [
-        { id: 'ncert-math-ch12', subject: 'Mathematics', chapter: 'Class 6 Ch 12: Ratio & Proportion', completed: true },
-        { id: 'ncert-phys-ch13', subject: 'Physics', chapter: 'Class 8 Ch 13: Sound Frequency & Pitch', completed: true },
-        { id: 'ncert-chem-ch5', subject: 'Chemistry', chapter: 'Class 7 Ch 5: Acids, Bases and Salts', completed: true },
-        { id: 'ncert-bio-ch10', subject: 'Biology', chapter: 'Class 7 Ch 10: Food Webs & Ecosystems', completed: false },
-        { id: 'ncert-csc-ch4', subject: 'Computing', chapter: 'Class 8 Ch 4: Sequence Loops & Rover Logic', completed: false },
-        { id: 'ncert-mth-ch5', subject: 'Mathematics', chapter: 'Class 5 Ch 4: Equivalent Fractions', completed: true },
-        { id: 'ncert-phys-ch10', subject: 'Physics', chapter: 'Class 10 Ch 10: Ray Optics & Refraction', completed: false },
-        { id: 'ncert-mth-ch12-calc', subject: 'Mathematics', chapter: 'Class 12 Ch 8: Applications of Integrals', completed: false }
-      ],
-      recommendationWeights: {
-        examImportance: 0.40,
-        misconceptionCount: 0.30,
-        retentionGapDays: 0.20,
-        curriculumSequence: 0.10
-      }
-    },
-    progress: {
-      physics: createInitialSubjectProgress(),
-      math: createInitialSubjectProgress(),
-      biology: createInitialSubjectProgress(),
-      chemistry: createInitialSubjectProgress()
-    }
+    ],
+    learnerProfile: defaultProfile,
+    studyHub: defaultStudyHub,
+    progress: defaultProgress
   };
 }
 
@@ -163,6 +189,11 @@ function loadPersistedState() {
       base.studyHub = { ...base.studyHub, ...parsed.studyHub };
     }
 
+    if (parsed.activeProfileId) base.activeProfileId = parsed.activeProfileId;
+    if (Array.isArray(parsed.profiles) && parsed.profiles.length > 0) {
+      base.profiles = parsed.profiles;
+    }
+
     // Restore per-subject progress
     if (parsed.progress && typeof parsed.progress === 'object') {
       SUBJECT_IDS.forEach((subject) => {
@@ -200,6 +231,22 @@ function savePersistedState(state) {
   if (!isLocalStorageAvailable) return;
 
   try {
+    // Keep active profile synced in profiles collection
+    if (Array.isArray(state.profiles)) {
+      const idx = state.profiles.findIndex((p) => p.id === state.activeProfileId);
+      if (idx !== -1) {
+        state.profiles[idx] = {
+          id: state.activeProfileId,
+          learnerProfile: state.learnerProfile,
+          studyHub: state.studyHub,
+          progress: state.progress,
+          gradeBand: state.gradeBand,
+          selectedClass: state.selectedClass,
+          selectedBoard: state.selectedBoard
+        };
+      }
+    }
+
     const payload = {
       activeSessionId: state.activeSessionId,
       selectedLocale: state.selectedLocale,
@@ -208,6 +255,8 @@ function savePersistedState(state) {
       selectedClass: state.selectedClass,
       selectedBoard: state.selectedBoard,
       activeTab: state.activeTab,
+      activeProfileId: state.activeProfileId,
+      profiles: state.profiles,
       learnerProfile: state.learnerProfile,
       studyHub: state.studyHub,
       progress: state.progress,
@@ -482,7 +531,8 @@ class StateStore {
   }
 
   setActiveTab(tab) {
-    if (!['missions', 'hub', 'profile'].includes(tab)) return;
+    const validTabs = ['missions', 'hub', 'profile', 'onboarding', 'browser', 'mock-test', 'tutor', 'profiles'];
+    if (!validTabs.includes(tab)) return;
     this._state.activeTab = tab;
     this._notify('SET_ACTIVE_TAB', tab);
   }
@@ -586,6 +636,130 @@ class StateStore {
     }
     if (section) this._state.learnerProfile.section = String(section);
     this._notify('UPDATE_SCHOOL_INFO', this._state.learnerProfile);
+  }
+
+  createProfile(profileData) {
+    if (!profileData || !profileData.name) return null;
+    const newId = `profile-${Date.now()}`;
+    const newProfile = {
+      id: newId,
+      name: String(profileData.name),
+      school: String(profileData.school || ''),
+      country: 'India',
+      state: String(profileData.state || 'Karnataka'),
+      board: String(profileData.board || 'CBSE'),
+      classLevel: Number(profileData.classLevel) || 7,
+      academicSession: '2026-2027',
+      medium: String(profileData.medium || 'English'),
+      section: String(profileData.section || 'A'),
+      stream: Number(profileData.classLevel) >= 11 ? String(profileData.stream || 'Science') : 'General',
+      enrolledSubjects: Array.isArray(profileData.enrolledSubjects) ? profileData.enrolledSubjects : ['physics', 'chemistry', 'biology', 'math'],
+      avatar: String(profileData.avatar || '👨‍🎓'),
+      guardianConsent: {
+        granted: Boolean(profileData.guardianConsentGranted),
+        timestamp: Date.now(),
+        relationship: 'parent_guardian'
+      },
+      streakDays: 1,
+      xp: 50,
+      level: 1,
+      badges: [],
+      radarScores: { math: 60, physics: 60, chemistry: 60, biology: 60, social: 60, computing: 60 }
+    };
+
+    const emptyProgress = {
+      physics: createInitialSubjectProgress(),
+      math: createInitialSubjectProgress(),
+      biology: createInitialSubjectProgress(),
+      chemistry: createInitialSubjectProgress()
+    };
+
+    const emptyStudyHub = {
+      timetable: [],
+      examCountdowns: [],
+      syllabusChecklist: [],
+      recommendationWeights: { examImportance: 0.4, misconceptionCount: 0.3, retentionGapDays: 0.2, curriculumSequence: 0.1 }
+    };
+
+    const band = newProfile.classLevel === 5 ? 'preparatory' : (newProfile.classLevel <= 8 ? 'middle' : (newProfile.classLevel <= 10 ? 'secondary' : 'senior'));
+
+    const profileRecord = {
+      id: newId,
+      learnerProfile: newProfile,
+      studyHub: emptyStudyHub,
+      progress: emptyProgress,
+      gradeBand: band,
+      selectedClass: newProfile.classLevel,
+      selectedBoard: newProfile.board
+    };
+
+    if (!Array.isArray(this._state.profiles)) {
+      this._state.profiles = [];
+    }
+    this._state.profiles.push(profileRecord);
+    this.switchProfile(newId);
+    return newId;
+  }
+
+  switchProfile(profileId) {
+    if (!profileId || !Array.isArray(this._state.profiles)) return;
+    const target = this._state.profiles.find((p) => p.id === profileId);
+    if (!target) return;
+
+    this._state.activeProfileId = target.id;
+    this._state.learnerProfile = { ...target.learnerProfile };
+    this._state.studyHub = { ...target.studyHub };
+    this._state.progress = { ...target.progress };
+    this._state.gradeBand = target.gradeBand || 'middle';
+    this._state.selectedClass = target.selectedClass || 7;
+    this._state.selectedBoard = target.selectedBoard || 'CBSE';
+
+    this._notify('SWITCH_PROFILE', target);
+  }
+
+  deleteProfile(profileId) {
+    if (!Array.isArray(this._state.profiles) || this._state.profiles.length <= 1) {
+      console.warn('[Gramin PocketLab Store] Cannot delete the only profile.');
+      return;
+    }
+    this._state.profiles = this._state.profiles.filter((p) => p.id !== profileId);
+    if (this._state.activeProfileId === profileId) {
+      this.switchProfile(this._state.profiles[0].id);
+    } else {
+      this._notify('DELETE_PROFILE', profileId);
+    }
+  }
+
+  grantGuardianConsent(profileId) {
+    const prof = (this._state.profiles || []).find((p) => p.id === profileId);
+    if (prof) {
+      prof.learnerProfile.guardianConsent = {
+        granted: true,
+        timestamp: Date.now(),
+        relationship: 'parent_guardian'
+      };
+      if (this._state.activeProfileId === profileId) {
+        this._state.learnerProfile.guardianConsent = prof.learnerProfile.guardianConsent;
+      }
+      this._notify('GRANT_GUARDIAN_CONSENT', { profileId, consent: prof.learnerProfile.guardianConsent });
+    }
+  }
+
+  setEnrolledSubjects(subjectIds) {
+    if (!Array.isArray(subjectIds)) return;
+    this._state.learnerProfile.enrolledSubjects = subjectIds;
+    this._notify('SET_ENROLLED_SUBJECTS', subjectIds);
+  }
+
+  getProfiles() {
+    return (this._state.profiles || []).map((p) => ({
+      id: p.id,
+      name: p.learnerProfile?.name || 'Scholar',
+      avatar: p.learnerProfile?.avatar || '👨‍🎓',
+      board: p.learnerProfile?.board || 'CBSE',
+      classLevel: p.learnerProfile?.classLevel || 7,
+      isActive: p.id === this._state.activeProfileId
+    }));
   }
 
   /**

@@ -53,13 +53,9 @@ class ClientRouter {
       return { subject: null, step: 's0_map' };
     }
 
-    if (parts[0] === 'hub') {
-      if (typeof store.setActiveTab === 'function') store.setActiveTab('hub');
-      return { subject: null, step: 's0_map' };
-    }
-
-    if (parts[0] === 'profile') {
-      if (typeof store.setActiveTab === 'function') store.setActiveTab('profile');
+    const appTabs = ['hub', 'profile', 'onboarding', 'browser', 'mock-test', 'tutor', 'profiles'];
+    if (appTabs.includes(parts[0])) {
+      if (typeof store.setActiveTab === 'function') store.setActiveTab(parts[0]);
       return { subject: null, step: 's0_map' };
     }
 
@@ -228,6 +224,46 @@ class ClientRouter {
    */
   goToProfile() {
     if (typeof store.setActiveTab === 'function') store.setActiveTab('profile');
+    this.navigate(null, 's0_map');
+  }
+
+  /**
+   * Navigates to the Guided Onboarding wizard.
+   */
+  goToOnboarding() {
+    if (typeof store.setActiveTab === 'function') store.setActiveTab('onboarding');
+    this.navigate(null, 's0_map');
+  }
+
+  /**
+   * Navigates to the Course & Subject Browser.
+   */
+  goToBrowser() {
+    if (typeof store.setActiveTab === 'function') store.setActiveTab('browser');
+    this.navigate(null, 's0_map');
+  }
+
+  /**
+   * Navigates to the Mock Examination Experience.
+   */
+  goToMockTest() {
+    if (typeof store.setActiveTab === 'function') store.setActiveTab('mock-test');
+    this.navigate(null, 's0_map');
+  }
+
+  /**
+   * Navigates to the AI Tutor Companion.
+   */
+  goToTutor() {
+    if (typeof store.setActiveTab === 'function') store.setActiveTab('tutor');
+    this.navigate(null, 's0_map');
+  }
+
+  /**
+   * Navigates to the Multi-Profile Selector.
+   */
+  goToProfiles() {
+    if (typeof store.setActiveTab === 'function') store.setActiveTab('profiles');
     this.navigate(null, 's0_map');
   }
 

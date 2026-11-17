@@ -22,6 +22,8 @@ html {
   -webkit-tap-highlight-color: transparent;
   scroll-behavior: smooth;
   height: 100%;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 body {
@@ -38,6 +40,8 @@ body {
   -moz-osx-font-smoothing: grayscale;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 img,
@@ -125,6 +129,7 @@ a {
   flex-direction: column;
   background-color: var(--color-bg-app);
   position: relative;
+  overflow-x: hidden;
 }
 
 /* Top Persistent Navigation Bar */
@@ -185,9 +190,41 @@ a {
 @media (max-width: 480px) {
   .app-header {
     padding: var(--space-2) var(--space-2);
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+  .header-inner {
+    max-width: 100%;
+    overflow: hidden;
+  }
+  .header-left {
+    min-width: 0;
+    flex-shrink: 1;
+  }
+  .brand-title {
+    font-size: var(--font-size-sm);
+    max-width: 110px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .header-center {
     display: none;
+  }
+  .header-right {
+    gap: 2px;
+    flex-shrink: 0;
+  }
+  .profile-header-pill .profile-pill-name {
+    display: none;
+  }
+  .profile-header-pill {
+    padding: 4px 6px;
+    min-width: 0;
+  }
+  #btn-locale-toggle {
+    padding: 4px 6px;
+    font-size: 11px;
   }
 }
 
@@ -1368,6 +1405,8 @@ input[type="range"].accessible-slider:focus-visible::-moz-range-thumb {
 @media (max-width: 480px) {
   .app-nav-tabs {
     padding: 4px 6px;
+    max-width: 100%;
+    overflow-x: hidden;
   }
   .tabs-container {
     flex-direction: column;
@@ -1380,16 +1419,25 @@ input[type="range"].accessible-slider:focus-visible::-moz-range-thumb {
   .primary-tabs {
     display: flex;
     width: 100%;
-    justify-content: space-between;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    justify-content: flex-start;
     gap: 4px;
+    padding-bottom: 2px;
+  }
+  .primary-tabs::-webkit-scrollbar {
+    display: none;
   }
   .tab-btn {
-    padding: 6px 6px;
+    flex: 0 0 auto;
+    padding: 6px 10px;
     font-size: 11px;
     min-height: 36px;
-    flex: 1;
     justify-content: center;
     gap: 4px;
+    white-space: nowrap;
   }
   .tab-btn .tab-label {
     font-size: 10.5px;
@@ -1397,18 +1445,26 @@ input[type="range"].accessible-slider:focus-visible::-moz-range-thumb {
   .grade-band-selector {
     display: flex;
     width: 100%;
-    justify-content: space-between;
-    gap: 2px;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    justify-content: flex-start;
+    gap: 3px;
     padding: 2px;
+  }
+  .grade-band-selector::-webkit-scrollbar {
+    display: none;
   }
   .grade-label {
     display: none;
   }
   .grade-pill {
-    padding: 4px 4px;
+    flex: 0 0 auto;
+    padding: 4px 8px;
     font-size: 10px;
-    flex: 1;
     text-align: center;
+    white-space: nowrap;
   }
 }
 
