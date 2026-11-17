@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ArrowLeft, Play, FileQuestion, CheckCircle2, Clock, Sparkles } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowLeft, Play, FileQuestion, CheckCircle2, Clock, Sparkles, Beaker, HelpCircle, Trophy } from 'lucide-react';
 import { useSessionStore } from '../store/useSessionStore';
 import { TopicQuizModal } from '../components/modals/TopicQuizModal';
 import { TopicActivity } from '../data/curriculumData';
@@ -21,65 +21,85 @@ export const SubjectTimelineView: React.FC = () => {
     return (
       <div className="p-8 text-center glass-panel rounded-3xl">
         <h2 className="text-xl font-bold text-slate-800">Subject Not Found</h2>
-        <button onClick={() => navigate('/')} className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-xl">
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => navigate('/')}
+          className="mt-4 px-5 py-2.5 bg-indigo-600 text-white font-bold rounded-xl active-click-pulse cursor-pointer"
+        >
           Return to Dashboard
-        </button>
+        </motion.button>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* Subject Header */}
-      <div className={`p-8 rounded-3xl border ${subject.colorTheme.border} ${subject.colorTheme.bgTint} backdrop-blur-2xl shadow-glass flex flex-wrap items-center justify-between gap-4`}>
+      {/* Subject Header with Royal Opalescent Glass & Motion */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className={`p-8 rounded-3xl border ${subject.colorTheme.border} ${subject.colorTheme.bgTint} glass-header shadow-glass flex flex-wrap items-center justify-between gap-4`}
+      >
         <div>
           <button
             onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-indigo-600 mb-2 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 text-xs font-black text-slate-500 hover:text-indigo-600 mb-2 transition-colors cursor-pointer active-click-pulse"
           >
             <ArrowLeft className="w-3.5 h-3.5" /> Back to Courses
           </button>
           <div className="flex items-center gap-2">
-            <span className={`px-3 py-1 rounded-full text-xs font-bold border ${subject.colorTheme.badgeBg}`}>
+            <span className={`px-3 py-1 rounded-full text-xs font-black tracking-wider uppercase border ${subject.colorTheme.badgeBg}`}>
               {subject.category.toUpperCase()}
             </span>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">{subject.name}</h1>
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{subject.name}</h1>
           </div>
-          <p className="text-xs text-slate-600 mt-1">
+          <p className="text-xs text-slate-600 font-medium mt-1">
             Official NCERT Curriculum Chapters • Interactive Labs & Formative Quizzes
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => alert(`Launching AI Tutor for ${subject.name}... Ask any question!`)}
-            className="px-4 py-2.5 rounded-xl text-xs font-bold bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 shadow-sm transition-all"
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => alert(`🤖 RoboBuddy AI Tutor for ${subject.name} is ready! Ask your conceptual doubts.`)}
+            className="px-4 py-2.5 rounded-xl text-xs font-bold bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 shadow-sm transition-all cursor-pointer active-click-pulse"
           >
-            Ask AI Tutor About This Course
-          </button>
-          <button
+            Ask AI Tutor
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => navigate('/mock-exams')}
-            className="px-4 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 text-white shadow-md shadow-indigo-500/25 hover:bg-indigo-700 transition-all"
+            className="px-4 py-2.5 rounded-xl text-xs font-black bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg shadow-indigo-500/30 hover:bg-indigo-700 transition-all cursor-pointer active-click-pulse"
           >
-            Take Summative Mock Exam
-          </button>
+            Take Mock Exam
+          </motion.button>
         </div>
-      </div>
+      </motion.div>
 
       {/* Chapters & Topics Timeline */}
       <div className="space-y-8">
-        {subject.chapters.map((chapter) => (
-          <div key={chapter.id} className="glass-panel rounded-3xl p-6 sm:p-8 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+        {subject.chapters.map((chapter, cIdx) => (
+          <motion.div
+            key={chapter.id}
+            initial={{ opacity: 0, y: 25 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: cIdx * 0.1, duration: 0.45 }}
+            className="glass-royal-card rounded-3xl p-6 sm:p-8 space-y-4"
+          >
+            <div className="flex items-center justify-between pb-3.5 border-b border-slate-200/80">
               <div>
-                <span className="text-[11px] font-bold text-indigo-600 font-mono tracking-wider uppercase">
+                <span className="text-[11px] font-black text-indigo-600 font-mono tracking-wider uppercase">
                   {chapter.theme}
                 </span>
-                <h2 className="text-xl font-bold text-slate-900 mt-0.5">
+                <h2 className="text-xl font-black text-slate-900 mt-0.5">
                   Chapter {chapter.number}: {chapter.title}
                 </h2>
               </div>
-              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600">
+              <span className="px-3.5 py-1 rounded-full text-xs font-black bg-indigo-50 text-indigo-900 border border-indigo-200 shadow-sm font-mono">
                 {chapter.topics.length} Activities
               </span>
             </div>
@@ -93,69 +113,73 @@ export const SubjectTimelineView: React.FC = () => {
                 return (
                   <motion.div
                     key={topic.id}
-                    whileHover={{ scale: 1.005 }}
-                    className="p-5 rounded-2xl bg-white/80 border border-white shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
+                    whileHover={{ scale: 1.015, y: -3 }}
+                    whileTap={{ scale: 0.99 }}
+                    className="p-5 rounded-2xl bg-white/90 border border-white shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4 active-click-pulse"
                   >
                     <div className="space-y-1.5 max-w-xl">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs font-bold text-slate-700 font-mono bg-slate-100 px-2 py-0.5 rounded">
-                          {topic.ncertCode}
-                        </span>
-                        {isMastered ? (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-extrabold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                            <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Mastered ({prog.score || 100}%)
-                          </span>
-                        ) : (
-                          <span className="text-[11px] font-medium text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
-                            Ready to Learn
+                        <span className="text-xs font-mono font-black text-slate-500">{topic.ncertCode}</span>
+                        {isMastered && (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-black px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                            <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Mastered ({prog.score}%)
                           </span>
                         )}
-                        <span className="text-xs text-slate-400 flex items-center gap-1">
-                          <Clock className="w-3 h-3" /> {topic.durationMinutes} mins
-                        </span>
+                        {topic.hasInquiryLab && (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-black px-2.5 py-0.5 rounded-full bg-cyan-100 text-cyan-800 border border-cyan-300">
+                            <Beaker className="w-3 h-3 text-cyan-600" /> Interactive STEM Lab
+                          </span>
+                        )}
                       </div>
-
-                      <h3 className="text-base font-bold text-slate-900">{topic.title}</h3>
-                      <p className="text-xs text-slate-500 leading-relaxed">{topic.shortDesc}</p>
+                      <h3 className="text-base font-black text-slate-900">{topic.title}</h3>
+                      <p className="text-xs text-slate-600 font-medium leading-relaxed">{topic.shortDesc}</p>
+                      <div className="flex items-center gap-3 text-xs text-slate-500 font-bold">
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-3.5 h-3.5 text-slate-400" /> {topic.durationMinutes} mins
+                        </span>
+                        <span>•</span>
+                        <span>{topic.testQuestions.length} Formative Questions</span>
+                      </div>
                     </div>
 
+                    {/* Action buttons */}
                     <div className="flex items-center gap-2.5 w-full md:w-auto">
                       {topic.hasInquiryLab && (
-                        <button
+                        <motion.button
+                          whileHover={{ scale: 1.06 }}
+                          whileTap={{ scale: 0.94 }}
                           onClick={() => navigate(`/lab/${topic.id}`)}
-                          className="flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-white text-indigo-700 border border-indigo-200 hover:bg-indigo-50 shadow-sm transition-all cursor-pointer"
+                          className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black bg-cyan-500 hover:bg-cyan-600 text-white shadow-md shadow-cyan-500/25 transition cursor-pointer active-click-pulse"
                         >
-                          <Play className="w-3.5 h-3.5" />
-                          <span>Explore Lab</span>
-                        </button>
+                          <Play className="w-3.5 h-3.5 fill-white" /> Explore Lab
+                        </motion.button>
                       )}
 
-                      <button
+                      <motion.button
+                        whileHover={{ scale: 1.06 }}
+                        whileTap={{ scale: 0.94 }}
                         onClick={() => setActiveQuizActivity(topic)}
-                        className="flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-md shadow-indigo-500/25 hover:scale-[1.02] active:scale-95 transition-all cursor-pointer"
+                        className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/25 transition cursor-pointer active-click-pulse"
                       >
-                        <FileQuestion className="w-3.5 h-3.5" />
-                        <span>Take Topic Test</span>
-                      </button>
+                        <FileQuestion className="w-3.5 h-3.5" /> Take Topic Test
+                      </motion.button>
                     </div>
                   </motion.div>
                 );
               })}
             </div>
-          </div>
+          </motion.div>
         ))}
       </div>
 
-      {/* Quiz Modal */}
+      {/* Diagnostic Quiz Modal */}
       {activeQuizActivity && (
         <TopicQuizModal
           activity={activeQuizActivity}
           subjectCategory={subject.category}
-          isOpen={Boolean(activeQuizActivity)}
           onClose={() => setActiveQuizActivity(null)}
         />
       )}
     </div>
   );
 };
-
