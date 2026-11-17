@@ -4,7 +4,7 @@
 **Lead Engineering Architect & Multi-Agent Orchestrator:** Antigravity Governed Swarm (AGT-01 through AGT-14)  
 **Target Repository:** `c:\Users\priya\Downloads\STEM`  
 **Distribution Archive:** `c:\Users\priya\Downloads\STEM_COMPLETE_BUILD.zip`  
-**Archive SHA-256:** `5442a0f8031c7c700a66ed2d478384a71bb71c7c0f8259f6122858bd021f00eb`  
+**Archive SHA-256:** `5cf7ea2a2f428b5254dbce3245dafaee0d955e5ab62982fc34796b4ca9dc0112`  
 **Git Commit SHA:** `7978390`  
 
 ---
