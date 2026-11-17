@@ -1,0 +1,49 @@
+{
+  "browserValidation": {
+    "initialLoad": {
+      "status": "PASS",
+      "title": "Gramin PocketLab — STEM Missions",
+      "consoleErrorsCount": 0
+    },
+    "mapNavigation": {
+      "status": "PASS",
+      "cardsRendered": 4,
+      "targetHash": "#/physics/s1_intro"
+    },
+    "journeyS1toS3": {
+      "status": "PASS",
+      "hashS2": "#/physics/s2_predict",
+      "hashS3": "#/physics/s3_explore",
+      "canvasRendered": true
+    },
+    "audioEngine": {
+      "status": "PASS",
+      "tone220Started": true,
+      "tone440Cycles": "4.4 cycles / 10 ms",
+      "stoppedCorrectly": true
+    },
+    "endToEndJourney": {
+      "status": "PASS",
+      "scoreRecordedInStorage": true
+    },
+    "refreshPersistence": {
+      "status": "PASS",
+      "dataPreservedAfterReload": true
+    },
+    "mobileViewport": {
+      "status": "PASS",
+      "details": {
+        "bodyScrollWidth": 360,
+        "documentElementScrollWidth": 360,
+        "hasHorizontalOverflow": false
+      }
+    }
+  },
+  "offlineVerification": {
+    "status": "PASS",
+    "swRegistered": true,
+    "cachedAssetCount": 16,
+    "offlineReloadSuccess": true
+  },
+  "consoleErrors": []
+}

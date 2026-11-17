@@ -1,0 +1,11 @@
+TestID,Precondition,Action,ExpectedResult,Severity,ActualResult
+TC-PHY-01,On S3 Physics Lab load,Inspect speaker and console before interaction,Zero audio output produced; AudioContext suspended; zero autoplay console warnings,Blocker,
+TC-PHY-02,On S3 Physics Lab,Tap Play 220 Hz button,Audible low tone plays; oscilloscope canvas displays reference wave cycles (2.2 cycles across 10 ms window or 2 on normalized canvas),Blocker,
+TC-PHY-03,On S3 Physics Lab,Tap Play 440 Hz button,Pitch audibly rises by one octave; oscilloscope canvas displays 2x compressed wave cycles (4.4 cycles across 10 ms window or 4 on normalized canvas),Blocker,
+TC-PHY-04,On S3 Physics Lab at 220 Hz,Drag continuous frequency slider from 220 Hz to 440 Hz,Pitch glides upward smoothly; canvas wave compresses continuously at 60 FPS without stutter,High,
+TC-PHY-05,On S3 Physics Lab at 440 Hz,Slide amplitude slider from 20% to 90%,Tone volume increases audibly; wave peak height expands vertically; horizontal crest spacing unchanged,Blocker,
+TC-PHY-06,On S3 Physics Lab with tone playing,Tap Stop Tone button,Oscillator halts immediately; sound ceases; canvas freezes oscillation,High,
+TC-PHY-07,On S3 Physics Lab,Tap Test Microphone and select Block on browser prompt,Non-blocking toast displayed; lab remains 100% playable on synthetic oscillator,Blocker,
+TC-PHY-08,On S3 Physics Lab with mic active,Navigate to S4 Concept Explanation,All microphone hardware media stream tracks stop immediately; top bar mic badge removes,High,
+TC-PHY-09,On S3 Physics Lab,Inspect audio output GainNode in Web Audio graph,Gain value clamped to maximum 0.70 (-3 dBFS) to prevent digital clipping/distortion,High,
+TC-PHY-10,On S3 Physics Lab,Inspect all on-screen labels and axes,Axes labeled with illustrative Time (0 to 10 ms) and Amplitude; frequency labeled in Hz; no fake dB meters,High,

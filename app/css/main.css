@@ -1,0 +1,1271 @@
+/**
+ * Gramin PocketLab — Main Application Styling Foundation
+ * File: app/css/main.css
+ * Standard: WCAG 2.1 AA Compliant, Mobile-First PWA (Redmi 9A 360px to Tablet/Desktop)
+ * Dependencies: app/css/tokens.css (pure vanilla CSS, zero external fonts or CDNs)
+ */
+
+/* ==========================================================================
+   1. CSS Reset & Baseline Box Sizing
+   ========================================================================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 100%; /* 16px standard baseline */
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  scroll-behavior: smooth;
+  height: 100%;
+}
+
+body {
+  min-height: 100%;
+  min-height: 100dvh;
+  background-color: var(--color-bg-app);
+  color: var(--color-text-main);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  font-weight: var(--font-weight-regular);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  display: flex;
+  flex-direction: column;
+}
+
+img,
+svg,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+a {
+  color: var(--color-subject-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* ==========================================================================
+   2. Accessibility Utilities & Focus Engine
+   ========================================================================== */
+/* Screen Reader Utility (WCAG 4.1.2 Compatible Visually Hidden) */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* Screen reader elements that become visible on keyboard focus (Skip Links) */
+.sr-only-focusable:focus,
+.sr-only-focusable:focus-visible {
+  position: fixed !important;
+  top: var(--space-3) !important;
+  left: var(--space-3) !important;
+  width: auto !important;
+  height: auto !important;
+  padding: var(--space-3) var(--space-5) !important;
+  margin: 0 !important;
+  overflow: visible !important;
+  clip: auto !important;
+  white-space: normal !important;
+  background-color: var(--color-text-main) !important;
+  color: var(--color-text-inverse) !important;
+  font-weight: var(--font-weight-bold) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-lg) !important;
+  z-index: var(--z-toast) !important;
+  outline: var(--focus-outline) !important;
+  outline-offset: var(--focus-offset) !important;
+  text-decoration: none !important;
+}
+
+/* Universal Focus Visible Ring: 3px solid #275DDB with 2px offset */
+:focus-visible {
+  outline: var(--focus-outline) !important;
+  outline-offset: var(--focus-outline-offset) !important;
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ==========================================================================
+   3. App Shell & Layout Structure (360px Budget Mobile to Tablet/Desktop)
+   ========================================================================== */
+#app,
+.app-container {
+  width: 100%;
+  max-width: var(--container-max-width);
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-bg-app);
+  position: relative;
+}
+
+/* Top Persistent Navigation Bar */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-header);
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-2) var(--space-4);
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: var(--touch-target-min);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.app-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  text-decoration: none;
+  color: var(--color-text-main);
+}
+
+.brand-icon {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.brand-title {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.header-center {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+@media (max-width: 480px) {
+  .app-header {
+    padding: var(--space-2) var(--space-2);
+  }
+  .header-center {
+    display: none;
+  }
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+/* Offline & Status Pills */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.status-pill--offline {
+  background-color: var(--color-offline-bg);
+  color: var(--color-offline-text);
+  border: 1px solid var(--color-offline-border);
+}
+
+.status-pill-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background-color: currentColor;
+}
+
+/* Secondary Header Sub-bar for Current Subject & Step */
+.header-subbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding-top: var(--space-2);
+  margin-top: var(--space-1);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+/* Main Content Mount Area */
+.app-main {
+  flex: 1 0 auto;
+  width: 100%;
+  padding: var(--space-4);
+  padding-bottom: calc(var(--touch-target-min) + var(--space-8)); /* Clearance for sticky bottom bar */
+  max-width: var(--content-read-max-width);
+  margin: 0 auto;
+}
+
+/* Sticky Bottom Action Navigation Bar */
+.bottom-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: var(--z-sticky-bar);
+  background-color: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sticky-bar);
+  padding: var(--space-2) var(--space-4);
+  width: 100%;
+}
+
+.bottom-bar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  max-width: var(--content-read-max-width);
+  margin: 0 auto;
+  min-height: var(--touch-target-min);
+}
+
+/* ==========================================================================
+   4. Typography & Headings
+   ========================================================================== */
+h1, .h1 {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  color: var(--color-text-main);
+  margin-bottom: var(--space-3);
+}
+
+h2, .h2 {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-snug);
+  color: var(--color-text-main);
+  margin-bottom: var(--space-2);
+}
+
+h3, .h3 {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-snug);
+  color: var(--color-text-main);
+  margin-bottom: var(--space-2);
+}
+
+p {
+  font-size: var(--font-size-base);
+  color: var(--color-text-main);
+  line-height: var(--line-height-normal);
+  margin-bottom: var(--space-3);
+}
+
+p.lead {
+  font-size: var(--font-size-md);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-relaxed);
+}
+
+.text-secondary {
+  color: var(--color-text-secondary);
+}
+
+.text-muted {
+  color: var(--color-text-muted);
+}
+
+/* ==========================================================================
+   5. Buttons & Interactive Controls (Strict >= 48px Touch Invariant)
+   ========================================================================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--touch-target-min);
+  min-width: var(--touch-target-min);
+  padding: var(--space-3) var(--space-5);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.25;
+  text-align: center;
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  border: 2px solid transparent;
+  cursor: pointer;
+  user-select: none;
+  background-color: var(--color-surface);
+  color: var(--color-text-main);
+  transition: var(--transition-colors), transform var(--transition-fast);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+/* Primary Action Button (Themed with white text) */
+.btn-primary {
+  background-color: var(--color-subject-accent);
+  color: var(--color-text-inverse);
+  border-color: var(--color-subject-accent);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(0.92);
+}
+
+/* Secondary Button (Crisp surface with control border) */
+.btn-secondary {
+  background-color: var(--color-surface);
+  color: var(--color-text-main);
+  border-color: var(--color-border-control);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--color-surface-subtle);
+}
+
+/* Ghost / Icon Only Button */
+.btn-ghost {
+  background-color: transparent;
+  border-color: transparent;
+  color: var(--color-text-main);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background-color: var(--color-surface-subtle);
+}
+
+.btn-icon {
+  width: var(--touch-target-min);
+  height: var(--touch-target-min);
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+}
+
+/* Disabled State */
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+  box-shadow: none;
+}
+
+/* Stepper Increment/Decrement Buttons */
+.btn-stepper {
+  width: var(--touch-target-min);
+  height: var(--touch-target-min);
+  min-width: var(--touch-target-min);
+  min-height: var(--touch-target-min);
+  border-radius: var(--radius-md);
+  border: 2px solid var(--color-border-control);
+  background-color: var(--color-surface);
+  color: var(--color-text-main);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.btn-stepper:active:not(:disabled) {
+  background-color: var(--color-surface-subtle);
+}
+
+/* ==========================================================================
+   6. Badges & Step Indicators
+   ========================================================================== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  line-height: 1.25;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.badge-math {
+  background-color: var(--color-math-bg);
+  color: var(--color-math-dark);
+  border: 1px solid var(--color-math);
+}
+
+.badge-bio {
+  background-color: var(--color-bio-bg);
+  color: var(--color-bio-dark);
+  border: 1px solid var(--color-bio);
+}
+
+.badge-chem {
+  background-color: var(--color-chem-bg);
+  color: var(--color-chem-dark);
+  border: 1px solid var(--color-chem);
+}
+
+.badge-phys {
+  background-color: var(--color-phys-bg);
+  color: var(--color-phys-dark);
+  border: 1px solid var(--color-phys);
+}
+
+/* Step Dots Indicator (7 Steps) */
+.step-indicator {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0 var(--space-1);
+}
+
+.step-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-border);
+  transition: width var(--transition-fast), background-color var(--transition-fast);
+}
+
+.step-dot.active {
+  width: 20px;
+  background-color: var(--color-subject-accent);
+}
+
+.step-dot.completed {
+  background-color: var(--color-correct);
+}
+
+.step-counter-text {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   7. S0: Subject Mission Cards (Dashboard)
+   ========================================================================== */
+.subject-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+@media (min-width: 540px) {
+  .subject-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.mission-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-3);
+  text-decoration: none;
+  color: inherit;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.mission-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Subject Left Accent Strip */
+.mission-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 6px;
+  background-color: var(--card-accent, var(--color-phys));
+}
+
+.mission-card[data-subject="math"] { --card-accent: var(--color-math); }
+.mission-card[data-subject="bio"]  { --card-accent: var(--color-bio); }
+.mission-card[data-subject="chem"] { --card-accent: var(--card-accent, var(--color-chem)); }
+.mission-card[data-subject="phys"] { --card-accent: var(--card-accent, var(--color-phys)); }
+
+.card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.card-icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.card-title {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-main);
+  margin-bottom: var(--space-1);
+}
+
+.card-desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-snug);
+  margin-bottom: 0;
+}
+
+.card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  font-weight: var(--font-weight-medium);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.badge-completed {
+  background-color: var(--color-correct-bg);
+  color: var(--color-correct-text);
+  border: 1px solid var(--color-correct);
+  font-size: var(--font-size-xs);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-weight: var(--font-weight-bold);
+}
+
+/* ==========================================================================
+   8. Radio Option Cards (S2, S5, S6 Assessments)
+   ========================================================================== */
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: var(--space-4) 0;
+  border: none;
+  padding: 0;
+}
+
+.radio-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--touch-target-min);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-border-control);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition-colors), border-color var(--transition-fast);
+  user-select: none;
+  position: relative;
+}
+
+.radio-card:hover {
+  background-color: var(--color-surface-subtle);
+}
+
+.radio-card input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--color-border-control);
+  border-radius: var(--radius-full);
+  margin: 0;
+  flex-shrink: 0;
+  display: grid;
+  place-content: center;
+  transition: border-color var(--transition-fast);
+}
+
+.radio-card input[type="radio"]::before {
+  content: "";
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-full);
+  transform: scale(0);
+  transition: transform var(--transition-fast);
+  background-color: var(--color-subject-accent);
+}
+
+.radio-card input[type="radio"]:checked::before {
+  transform: scale(1);
+}
+
+.radio-card.selected,
+.radio-card:has(input[type="radio"]:checked) {
+  border-color: var(--color-subject-accent);
+  background-color: var(--color-subject-accent-bg);
+  font-weight: var(--font-weight-semibold);
+}
+
+.radio-card:has(input[type="radio"]:checked) input[type="radio"] {
+  border-color: var(--color-subject-accent);
+}
+
+.radio-label-text {
+  font-size: var(--font-size-base);
+  color: var(--color-text-main);
+  line-height: var(--line-height-snug);
+}
+
+/* ==========================================================================
+   9. Diagnostic Feedback Callout Banners
+   ========================================================================== */
+.callout {
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  margin: var(--space-4) 0;
+  border-left: 6px solid var(--callout-border, var(--color-info-border));
+  background-color: var(--callout-bg, var(--color-info-bg));
+  color: var(--callout-text, var(--color-info-text));
+}
+
+.callout-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-md);
+  margin-bottom: var(--space-2);
+}
+
+.callout-body {
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+}
+
+.callout-body p:last-child {
+  margin-bottom: 0;
+}
+
+/* Success Callout */
+.callout-success {
+  --callout-border: var(--color-correct-border);
+  --callout-bg: var(--color-correct-bg);
+  --callout-text: var(--color-correct-text);
+}
+
+/* Warning / Misconception Scaffolding Callout */
+.callout-warning {
+  --callout-border: var(--color-warning-border);
+  --callout-bg: var(--color-warning-bg);
+  --callout-text: var(--color-warning-text);
+}
+
+/* Alert / Incorrect Callout */
+.callout-error,
+.callout-incorrect {
+  --callout-border: var(--color-incorrect-border);
+  --callout-bg: var(--color-incorrect-bg);
+  --callout-text: var(--color-incorrect-text);
+}
+
+/* Informational Callout */
+.callout-info {
+  --callout-border: var(--color-info-border);
+  --callout-bg: var(--color-info-bg);
+  --callout-text: var(--color-info-text);
+}
+
+/* Chemistry Water Safety Permanent Notice Banner */
+.safety-notice-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background-color: #FFFBEB;
+  border: 2px solid #F59E0B;
+  border-radius: var(--radius-md);
+  color: #78350F;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-snug);
+  margin: var(--space-3) 0;
+}
+
+.safety-notice-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   10. Interactive Micro-Lab Layout (S3 Container & Sub-widgets)
+   ========================================================================== */
+.lab-container {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--space-4);
+}
+
+.lab-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.lab-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-main);
+  margin-bottom: 0;
+}
+
+/* Real-time Invariant Banner */
+.invariant-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-surface-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--space-3);
+}
+
+.invariant-banner.warning {
+  background-color: var(--color-warning-bg);
+  border-color: var(--color-warning-border);
+  color: var(--color-warning-text);
+}
+
+.invariant-banner.valid {
+  background-color: var(--color-correct-bg);
+  border-color: var(--color-correct-border);
+  color: var(--color-correct-text);
+}
+
+/* 10.1 Mathematics Steppers Layout */
+.math-allocator {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.stepper-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background-color: var(--color-surface-subtle);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+}
+
+.stepper-label {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.stepper-name {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-main);
+}
+
+.stepper-sub {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.stepper-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.stepper-value {
+  min-width: 36px;
+  text-align: center;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-main);
+}
+
+/* 10.2 Oscilloscope Canvas & Acoustics Controls (Physics Flagship) */
+.oscilloscope-wrapper {
+  background-color: var(--color-surface-dark);
+  border: 2px solid var(--color-border-control);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+  margin-bottom: var(--space-3);
+}
+
+.oscilloscope-canvas {
+  width: 100%;
+  height: 240px;
+  max-height: 280px;
+  display: block;
+}
+
+.oscilloscope-overlay {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  display: flex;
+  gap: var(--space-2);
+}
+
+.oscilloscope-badge {
+  background-color: rgba(15, 23, 42, 0.85);
+  color: #38BDF8;
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid #0369A1;
+}
+
+/* Physics Controls Grid */
+.audio-controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.preset-buttons {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.preset-btn {
+  flex: 1 1 calc(50% - var(--space-2));
+  min-height: var(--touch-target-min);
+}
+
+/* Range Sliders with Accessible Touch Bounds (48px Touch Area) */
+.slider-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.slider-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-main);
+}
+
+.slider-val-readout {
+  font-family: var(--font-family-mono);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-subject-accent);
+}
+
+.range-slider-wrap {
+  position: relative;
+  min-height: var(--touch-target-min);
+  display: flex;
+  align-items: center;
+}
+
+input[type="range"].accessible-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-border);
+  outline: none;
+  margin: 0;
+  cursor: pointer;
+}
+
+/* WebKit Slider Thumb (48px Touch Area Envelope) */
+input[type="range"].accessible-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-subject-accent);
+  border: 3px solid #FFFFFF;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+  cursor: grab;
+  transition: transform var(--transition-fast), background-color var(--transition-fast);
+}
+
+input[type="range"].accessible-slider:active::-webkit-slider-thumb {
+  transform: scale(1.15);
+  cursor: grabbing;
+}
+
+/* Firefox Slider Thumb */
+input[type="range"].accessible-slider::-moz-range-thumb {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-subject-accent);
+  border: 3px solid #FFFFFF;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+  cursor: grab;
+}
+
+input[type="range"].accessible-slider:focus-visible::-webkit-slider-thumb {
+  outline: var(--focus-outline);
+  outline-offset: 4px;
+}
+
+input[type="range"].accessible-slider:focus-visible::-moz-range-thumb {
+  outline: var(--focus-outline);
+  outline-offset: 4px;
+}
+
+/* 10.3 Chemistry Beakers & Dipping Strip */
+.beaker-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+  margin: var(--space-3) 0;
+}
+
+.beaker-card {
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  text-align: center;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.beaker-card.active {
+  border-color: var(--color-chem);
+  background-color: var(--color-chem-bg);
+}
+
+.ph-indicator-strip {
+  width: 100%;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-control);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-main);
+  transition: background-color var(--transition-normal);
+}
+
+/* 10.4 Biology Food Web Graph & Screen Reader Table */
+.food-web-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.food-web-svg {
+  width: 100%;
+  height: auto;
+  min-height: 240px;
+  background-color: var(--color-surface-subtle);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+}
+
+.food-web-actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.food-web-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+  margin-top: var(--space-3);
+}
+
+.food-web-table th,
+.food-web-table td {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  text-align: left;
+}
+
+.food-web-table th {
+  background-color: var(--color-surface-subtle);
+  font-weight: var(--font-weight-bold);
+}
+
+/* ==========================================================================
+   11. S4: Concept Explanation & Comparison Grid
+   ========================================================================== */
+.comparison-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+  margin: var(--space-4) 0;
+}
+
+@media (min-width: 580px) {
+  .comparison-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.comparison-box {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+
+.comparison-box.predicted {
+  border-left: 4px solid var(--color-text-secondary);
+}
+
+.comparison-box.observed {
+  border-left: 4px solid var(--color-subject-accent);
+}
+
+.comparison-label {
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-1);
+}
+
+.rule-box {
+  background-color: var(--color-subject-accent-bg);
+  border-left: 6px solid var(--color-subject-accent);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin: var(--space-4) 0;
+}
+
+.rule-box-title {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-subject-accent-dark);
+  margin-bottom: var(--space-2);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* ==========================================================================
+   12. S6: Exit Check, Score Card & Trophy Badges
+   ========================================================================== */
+.score-card {
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-correct);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  text-align: center;
+  box-shadow: var(--shadow-md);
+  margin: var(--space-4) 0;
+}
+
+.score-badge {
+  font-size: 3rem;
+  line-height: 1;
+  margin-bottom: var(--space-2);
+}
+
+.score-title {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-correct-text);
+  margin-bottom: var(--space-1);
+}
+
+.score-detail {
+  font-size: var(--font-size-md);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-4);
+}
+
+/* ==========================================================================
+   13. Modals & Dialogs (Accessible Reset Confirmation)
+   ========================================================================== */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  z-index: var(--z-modal-backdrop);
+}
+
+.modal-dialog {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  max-width: 480px;
+  width: 100%;
+  box-shadow: var(--shadow-lg);
+  z-index: var(--z-modal);
+}
+
+.modal-header {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-main);
+  margin-bottom: var(--space-2);
+}
+
+.modal-body {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-5);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+/* ==========================================================================
+   14. Toast Notifications
+   ========================================================================== */
+.toast-container {
+  position: fixed;
+  bottom: calc(var(--touch-target-min) + var(--space-6));
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - var(--space-6));
+  max-width: 480px;
+  z-index: var(--z-toast);
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  background-color: var(--color-text-main);
+  color: var(--color-text-inverse);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-snug);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+  transition: opacity var(--transition-normal), transform var(--transition-normal);
+}
+
+/* ==========================================================================
+   15. Accessibility: Reduced Motion Rules (WCAG 2.2.2 / 2.3.3)
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .oscilloscope-canvas {
+    /* Script detects prefers-reduced-motion and switches to static freeze render */
+  }
+}
+
+/* ==========================================================================
+   16. Windows High Contrast Mode (Forced Colors)
+   ========================================================================== */
+@media (forced-colors: active) {
+  .btn,
+  .radio-card,
+  .mission-card,
+  .callout,
+  .status-pill {
+    border: 2px solid ButtonText !important;
+  }
+
+  :focus-visible {
+    outline: 3px solid Highlight !important;
+  }
+}

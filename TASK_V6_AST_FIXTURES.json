@@ -1,0 +1,1341 @@
+{
+  "schemaVersion": "1.0.0",
+  "declaredStateSchema": {
+    "plots.plot1": "number",
+    "plots.plot2": "number",
+    "plots.plot3": "number",
+    "water.allocated": "number",
+    "solution.ph": "number",
+    "solution.indicator": "string",
+    "gate.open": "boolean"
+  },
+  "validTestCases": [
+    {
+      "id": "valid_comparison_simple",
+      "description": "Valid scalar comparison checking plot1 == 2",
+      "state": {
+        "plots.plot1": 2
+      },
+      "ast": {
+        "nodeType": "comparison",
+        "operator": "EQ",
+        "left": {
+          "nodeType": "variable",
+          "path": "plots.plot1"
+        },
+        "right": {
+          "nodeType": "literal",
+          "valueType": "number",
+          "value": 2
+        }
+      },
+      "expectedResult": true
+    },
+    {
+      "id": "valid_nested_logical",
+      "description": "Valid nested AND expression for canal water sharing",
+      "state": {
+        "plots.plot1": 2,
+        "plots.plot2": 4,
+        "plots.plot3": 6,
+        "water.allocated": 12
+      },
+      "ast": {
+        "nodeType": "logical",
+        "operator": "AND",
+        "children": [
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot2"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 4
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot3"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 6
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "water.allocated"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 12
+            }
+          }
+        ]
+      },
+      "expectedResult": true
+    },
+    {
+      "id": "valid_between_and_not",
+      "description": "Valid BETWEEN operator with NOT condition",
+      "state": {
+        "solution.ph": 7.0,
+        "gate.open": false
+      },
+      "ast": {
+        "nodeType": "logical",
+        "operator": "AND",
+        "children": [
+          {
+            "nodeType": "comparison",
+            "operator": "BETWEEN",
+            "left": {
+              "nodeType": "variable",
+              "path": "solution.ph"
+            },
+            "right": [
+              {
+                "nodeType": "literal",
+                "valueType": "number",
+                "value": 6.5
+              },
+              {
+                "nodeType": "literal",
+                "valueType": "number",
+                "value": 7.5
+              }
+            ]
+          },
+          {
+            "nodeType": "logical",
+            "operator": "NOT",
+            "children": [
+              {
+                "nodeType": "comparison",
+                "operator": "EQ",
+                "left": {
+                  "nodeType": "variable",
+                  "path": "gate.open"
+                },
+                "right": {
+                  "nodeType": "literal",
+                  "valueType": "boolean",
+                  "value": true
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "expectedResult": true
+    },
+    {
+      "id": "valid_in_array_operator",
+      "description": "Valid IN operator checking string indicator in allowable set",
+      "state": {
+        "solution.indicator": "turmeric"
+      },
+      "ast": {
+        "nodeType": "comparison",
+        "operator": "IN",
+        "left": {
+          "nodeType": "variable",
+          "path": "solution.indicator"
+        },
+        "right": [
+          {
+            "nodeType": "literal",
+            "valueType": "string",
+            "value": "litmus"
+          },
+          {
+            "nodeType": "literal",
+            "valueType": "string",
+            "value": "turmeric"
+          },
+          {
+            "nodeType": "literal",
+            "valueType": "string",
+            "value": "china_rose"
+          }
+        ]
+      },
+      "expectedResult": true
+    }
+  ],
+  "invalidTestCases": [
+    {
+      "id": "invalid_unknown_operator",
+      "description": "Comparison uses unapproved operator REGEX_MATCH",
+      "expectedError": "UNKNOWN_OPERATOR",
+      "ast": {
+        "nodeType": "comparison",
+        "operator": "REGEX_MATCH",
+        "left": {
+          "nodeType": "variable",
+          "path": "solution.indicator"
+        },
+        "right": {
+          "nodeType": "literal",
+          "valueType": "string",
+          "value": "turmeric"
+        }
+      }
+    },
+    {
+      "id": "invalid_missing_operand",
+      "description": "Comparison is missing right operand",
+      "expectedError": "MISSING_OPERAND",
+      "ast": {
+        "nodeType": "comparison",
+        "operator": "EQ",
+        "left": {
+          "nodeType": "variable",
+          "path": "plots.plot1"
+        }
+      }
+    },
+    {
+      "id": "invalid_undeclared_variable",
+      "description": "Variable path unauthorized.secret is not in declared schema",
+      "expectedError": "UNDECLARED_VARIABLE",
+      "ast": {
+        "nodeType": "comparison",
+        "operator": "EQ",
+        "left": {
+          "nodeType": "variable",
+          "path": "unauthorized.secret"
+        },
+        "right": {
+          "nodeType": "literal",
+          "valueType": "number",
+          "value": 42
+        }
+      }
+    },
+    {
+      "id": "invalid_wrong_variable_type",
+      "description": "Variable plots.plot1 holds string at runtime instead of declared number",
+      "expectedError": "TYPE_MISMATCH",
+      "state": {
+        "plots.plot1": "not_a_number"
+      },
+      "ast": {
+        "nodeType": "comparison",
+        "operator": "GT",
+        "left": {
+          "nodeType": "variable",
+          "path": "plots.plot1"
+        },
+        "right": {
+          "nodeType": "literal",
+          "valueType": "number",
+          "value": 10
+        }
+      }
+    },
+    {
+      "id": "invalid_unexpected_extra_field",
+      "description": "Node contains unauthorized extra property executeScript",
+      "expectedError": "UNEXPECTED_EXTRA_FIELD",
+      "ast": {
+        "nodeType": "comparison",
+        "operator": "EQ",
+        "left": {
+          "nodeType": "variable",
+          "path": "plots.plot1"
+        },
+        "right": {
+          "nodeType": "literal",
+          "valueType": "number",
+          "value": 2
+        },
+        "executeScript": "alert(1)"
+      }
+    },
+    {
+      "id": "invalid_empty_logical_child_list",
+      "description": "Logical AND node has empty children array",
+      "expectedError": "EMPTY_LOGICAL_CHILD_LIST",
+      "ast": {
+        "nodeType": "logical",
+        "operator": "AND",
+        "children": []
+      }
+    },
+    {
+      "id": "invalid_excessive_depth",
+      "description": "Condition tree exceeds maximum allowable depth of 8 (has depth 10)",
+      "expectedError": "EXCESSIVE_DEPTH",
+      "ast": {
+        "nodeType": "logical",
+        "operator": "NOT",
+        "children": [
+          {
+            "nodeType": "logical",
+            "operator": "NOT",
+            "children": [
+              {
+                "nodeType": "logical",
+                "operator": "NOT",
+                "children": [
+                  {
+                    "nodeType": "logical",
+                    "operator": "NOT",
+                    "children": [
+                      {
+                        "nodeType": "logical",
+                        "operator": "NOT",
+                        "children": [
+                          {
+                            "nodeType": "logical",
+                            "operator": "NOT",
+                            "children": [
+                              {
+                                "nodeType": "logical",
+                                "operator": "NOT",
+                                "children": [
+                                  {
+                                    "nodeType": "logical",
+                                    "operator": "NOT",
+                                    "children": [
+                                      {
+                                        "nodeType": "logical",
+                                        "operator": "NOT",
+                                        "children": [
+                                          {
+                                            "nodeType": "comparison",
+                                            "operator": "EQ",
+                                            "left": {
+                                              "nodeType": "variable",
+                                              "path": "plots.plot1"
+                                            },
+                                            "right": {
+                                              "nodeType": "literal",
+                                              "valueType": "number",
+                                              "value": 2
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "invalid_excessive_node_count",
+      "description": "Condition tree exceeds maximum node count of 64 (has 70 nodes)",
+      "expectedError": "EXCESSIVE_NODE_COUNT",
+      "ast": {
+        "nodeType": "logical",
+        "operator": "AND",
+        "children": [
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          },
+          {
+            "nodeType": "comparison",
+            "operator": "EQ",
+            "left": {
+              "nodeType": "variable",
+              "path": "plots.plot1"
+            },
+            "right": {
+              "nodeType": "literal",
+              "valueType": "number",
+              "value": 2
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "invalid_non_finite_number",
+      "description": "Literal value is marked number but contains non-finite numeric string Infinity",
+      "expectedError": "NON_FINITE_NUMBER",
+      "ast": {
+        "nodeType": "comparison",
+        "operator": "EQ",
+        "left": {
+          "nodeType": "variable",
+          "path": "plots.plot1"
+        },
+        "right": {
+          "nodeType": "literal",
+          "valueType": "number",
+          "value": "Infinity"
+        }
+      }
+    },
+    {
+      "id": "invalid_unknown_schema_version",
+      "description": "Schema version 99.9.9 is not recognized",
+      "expectedError": "UNKNOWN_SCHEMA_VERSION",
+      "schemaVersion": "99.9.9",
+      "ast": {
+        "nodeType": "comparison",
+        "operator": "EQ",
+        "left": {
+          "nodeType": "variable",
+          "path": "plots.plot1"
+        },
+        "right": {
+          "nodeType": "literal",
+          "valueType": "number",
+          "value": 2
+        }
+      }
+    },
+    {
+      "id": "invalid_missing_state_value",
+      "description": "Variable plots.plot1 is declared in schema but missing from runtime state",
+      "expectedError": "MISSING_STATE_VALUE",
+      "state": {},
+      "ast": {
+        "nodeType": "comparison",
+        "operator": "EQ",
+        "left": {
+          "nodeType": "variable",
+          "path": "plots.plot1"
+        },
+        "right": {
+          "nodeType": "literal",
+          "valueType": "number",
+          "value": 2
+        }
+      }
+    }
+  ]
+}

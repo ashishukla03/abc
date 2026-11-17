@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en" data-subject="physics">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="theme-color" content="#275DDB">
+  <meta name="description" content="Gramin PocketLab — Four-Subject STEM Missions for rural schools. Offline-first interactive learning lab.">
+  <title>Gramin PocketLab — STEM Missions</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="assets/icon.svg">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <!-- Accessible Keyboard Skip Navigation -->
+  <a href="#main-content" class="sr-only sr-only-focusable skip-link">Skip to main content</a>
+
+  <!-- Main Application Wrapper -->
+  <div id="app" class="app-container">
+    <!-- Top Persistent Application Bar -->
+    <header class="app-header" role="banner">
+      <div class="header-inner">
+        <!-- Brand Title & Icon -->
+        <div class="header-left">
+          <a href="#/map" class="app-brand" aria-label="Gramin PocketLab Home">
+            <img src="assets/icon.svg" alt="" class="brand-icon" width="28" height="28" aria-hidden="true">
+            <span class="brand-title">Gramin PocketLab</span>
+          </a>
+        </div>
+
+        <!-- Network & Cache Status Indicator -->
+        <div class="header-center">
+          <span id="network-status-badge" class="status-pill status-pill--offline" role="status" aria-live="polite">
+            <span class="status-pill-dot" aria-hidden="true"></span>
+            <span id="network-status-text">Offline Ready</span>
+          </span>
+        </div>
+
+        <!-- Utility Controls: Language, Mute, Reset -->
+        <div class="header-right">
+          <!-- Locale Toggle -->
+          <button type="button" id="btn-locale-toggle" class="btn btn-ghost" aria-label="Toggle language between English and Kannada" title="Switch language">
+            <span id="locale-label" aria-hidden="true">EN | ಕನ್ನ</span>
+          </button>
+
+          <!-- Audio Mute Toggle -->
+          <button type="button" id="btn-audio-mute" class="btn btn-ghost btn-icon" aria-label="Mute audio tones" title="Toggle audio">
+            <span id="audio-mute-icon" aria-hidden="true">🔊</span>
+          </button>
+
+          <!-- Mission Reset Trigger -->
+          <button type="button" id="btn-mission-reset" class="btn btn-ghost btn-icon" aria-label="Reset lab or mission" title="Reset progress">
+            <span aria-hidden="true">↺</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Secondary Sub-bar: Active Subject & Step Progress -->
+      <div id="header-subbar" class="header-subbar" style="display: none;">
+        <span id="header-subject-badge" class="badge badge-phys">Physics</span>
+        <div id="header-step-dots" class="step-indicator" role="navigation" aria-label="Mission step progress">
+          <!-- Populated dynamically by app.js -->
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Dynamic Stage -->
+    <main id="main-content" class="app-main" role="main" tabindex="-1">
+      <!-- Learning runner mounts screens S0 through S6 here -->
+      <div id="runner-stage" class="runner-stage">
+        <noscript>
+          <div class="callout callout-warning">
+            <p><strong>JavaScript is required</strong> to run Gramin PocketLab offline micro-labs.</p>
+          </div>
+        </noscript>
+      </div>
+    </main>
+
+    <!-- Bottom Sticky Navigation Action Bar -->
+    <nav id="action-bar" class="bottom-bar" aria-label="Mission navigation">
+      <div class="bottom-bar-inner">
+        <button type="button" id="btn-nav-back" class="btn btn-secondary" style="display: none;">
+          ← Back
+        </button>
+        <button type="button" id="btn-nav-primary" class="btn btn-primary" style="display: none;">
+          Continue →
+        </button>
+      </div>
+    </nav>
+  </div>
+
+  <!-- Screen Reader Polite Live Region for Announcements -->
+  <div id="a11y-announcer" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Accessible Reset Confirmation Dialog -->
+  <div id="reset-modal-backdrop" class="modal-backdrop" style="display: none;" role="presentation">
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="reset-modal-title" aria-describedby="reset-modal-desc">
+      <h2 id="reset-modal-title" class="modal-header">Reset Mission Options</h2>
+      <p id="reset-modal-desc" class="modal-body">
+        You can reset only the current interactive experiment to try different parameters, or reset all progress across all four STEM subjects.
+      </p>
+      <div class="modal-actions">
+        <button type="button" id="btn-modal-cancel" class="btn btn-secondary">Cancel</button>
+        <button type="button" id="btn-modal-reset-lab" class="btn btn-secondary">Reset Lab Only</button>
+        <button type="button" id="btn-modal-reset-all" class="btn btn-primary">Reset All</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Root Application Entry Point -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

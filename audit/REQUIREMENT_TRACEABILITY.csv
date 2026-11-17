@@ -1,0 +1,29 @@
+ReqID,Category,RequirementSummary,ApprovedScopeStatus,AuditClassification,TargetModule,SeverityIfGap,VerificationMethod
+REQ-01,Product,Target middle school learners (Grades 6-8) in rural Indian schools,Approved,Complete and internally consistent,All Modules,None,Document review of UDISE+ and ASER alignment
+REQ-02,Product,Single coherent application housing four STEM subjects,Approved,Complete and internally consistent,Shell/All,None,Architecture and PRD review
+REQ-03,Pedagogy,Canonical 7-step learning flow (Intro->Predict->Explore->Explain->Feedback->Exit->Result),Approved,Complete and internally consistent,Shared Engine,None,Module schema and state machine inspection
+REQ-04,Pedagogy,Low-stakes prediction hypothesis before lab entry,Approved,Complete and internally consistent,Step 2 (All),None,Content specs verify non-punitive scoring
+REQ-05,Pedagogy,Process-oriented formative feedback addressing misconceptions,Approved,Complete and internally consistent,Step 5 (All),None,Feedback scripts in content spec
+REQ-06,Pedagogy,Summative transfer exit check before mission completion,Approved,Complete and internally consistent,Step 6 (All),None,Answer keys and transfer scenarios defined
+REQ-07,Math,Water Share Challenge: divide 12 units in ratio 1:2:3,Approved,Complete and internally consistent,Math Lab,None,Mathematical verification (2, 4, 6)
+REQ-08,Math,Invariant check: prevent or explain inconsistent totals (!= T),Approved,Complete and internally consistent,Math Lab,None,Enforce dynamic clamp 0-T and disabled verify button
+REQ-09,Bio,Food Web Explorer: trophic cascade from predator removal,Approved,Complete and internally consistent,Bio Lab,None,Ecosystem logic verification
+REQ-10,Bio,Explicit arrows for energy flow and text equivalent,Approved,Incomplete,Bio Lab,Medium,Collapsible semantic HTML table for screen readers
+REQ-11,Chem,"pH Color Lab: Lemon Juice pH 2.2, Distilled Water pH 7.0, Baking Soda pH 8.5, Soap pH 10.0",Approved,Complete and internally consistent,Chem Lab,None,Chemical scale verification
+REQ-12,Chem,Explicit disclaimer that pH 7 does not guarantee drinking water safety,Approved,Complete and internally consistent,Chem Lab,None,Mandatory banner verification
+REQ-13,Chem,Virtual color shifts simulate indicators without claiming calibrated accuracy,Approved,Complete and internally consistent,Chem Lab,None,Content notice verification
+REQ-14,Phys,Sound Detective: synthetic tone generation at 220 Hz and 440 Hz,Approved,Complete and internally consistent,Physics Lab,None,Web Audio API graph inspection
+REQ-15,Phys,Visual canvas decoupling frequency (pitch) from amplitude (loudness),Approved,Complete and internally consistent,Physics Lab,None,Canvas rendering math verification
+REQ-16,Phys,Optional permission-gated microphone input without blocking lab on denial,Approved,Incomplete,Physics Lab,High,Try/catch getUserMedia with synthetic fallback
+REQ-17,Phys,Audio output gain clamped to prevent clipping/distortion (< -3 dBFS) + behavioral safeguards,Approved,Complete and internally consistent,Physics Lab,None,GainNode value clamp check and low volume default review
+REQ-18,Phys,User gesture requirement for mobile AudioContext initialization,Approved,Incomplete,Physics Lab,Blocker,Synchronous audioCtx.resume() on tap button
+REQ-19,Architecture,Client-only PWA with zero runtime cloud or server dependencies,Approved,Complete and internally consistent,Architecture,None,Zero external API calls in codebase
+REQ-20,Architecture,Offline operation via Service Worker cache after first successful load,Approved,Incomplete,Architecture,Blocker,Clarify first load requires connectivity; offline thereafter
+REQ-21,Architecture,Local anonymous progress persistence without PII (Multi-profile UI deferred from MVP),Approved,Complete and internally consistent,Storage,None,LocalStorage schema inspection
+REQ-22,UI/UX,High-contrast accessible color palette with distinct subject accents,Approved,Complete and internally consistent,UI System,None,Contrast ratio check (WCAG AA/AAA)
+REQ-23,UI/UX,Minimum touch target size of 48x48 px on all mobile controls,Approved,Complete and internally consistent,UI System,None,CSS token audit
+REQ-24,UI/UX,Support for prefers-reduced-motion media query,Approved,Complete and internally consistent,UI System,None,CSS animation pause verification
+REQ-25,Inclusion,Language support (English primary fallback + Kannada draft review; Hindi deferred),Approved,Complete and internally consistent,Content,None,i18n dictionary verification
+REQ-26,Legal,Zero reuse of PhET Scenery code or Phyphox trademarks/GPL code,Approved,Complete and internally consistent,Legal/Licensing,None,Risk register review
+REQ-27,Governance,Single-subject hackathon rule reconciliation with four-subject platform,Approved,Conflicting,Governance,High,Organizer pitch confirmation: Physics flagship entry
+REQ-28,Execution,Feasible 21-hour build schedule with 5-person role allocation,Approved,Complete and internally consistent,Project Plan,None,Timeline and role matrix review

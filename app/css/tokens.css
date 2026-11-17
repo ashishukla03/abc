@@ -1,0 +1,220 @@
+/**
+ * Gramin PocketLab — Design System Tokens
+ * File: app/css/tokens.css
+ * Standard: WCAG 2.1 AA Compliant Design System
+ * Budget Device Target: Redmi 9A (360px viewport width, low-end CPU/GPU)
+ * Zero external font or CSS dependencies.
+ */
+
+:root {
+  /* ==========================================================================
+     1. Surface & Background Colors
+     ========================================================================== */
+  --color-bg-app: #F5F7FB;          /* Soft cool slate background */
+  --color-surface: #FFFFFF;         /* Crisp card and modal surface */
+  --color-surface-subtle: #F0F4F8;  /* Subtle tinted surface for secondary panels */
+  --color-surface-dark: #0F172A;    /* Dark container for oscilloscope display */
+  --color-surface-dark-grid: #1E293B;
+
+  /* ==========================================================================
+     2. Border & Divider Colors
+     ========================================================================== */
+  --color-border: #D9E0EB;          /* Structural card dividers (1.38:1 on white) */
+  --color-border-control: #6B7280;  /* Essential control borders (4.83:1 on white, passes WCAG 3:1) */
+  --color-border-subtle: #E5E7EB;   /* Low-contrast separators */
+  --color-border-focus: #275DDB;    /* Unmissable focus indicator ring */
+
+  /* ==========================================================================
+     3. Typography Colors (High Contrast WCAG AA / AAA)
+     ========================================================================== */
+  --color-text-main: #162033;       /* High-contrast deep navy (13.84:1 on white, WCAG AAA) */
+  --color-text-secondary: #596579;  /* Supporting copy (5.32:1 on white, WCAG AA) */
+  --color-text-muted: #64748B;      /* Supplementary meta text */
+  --color-text-inverse: #FFFFFF;    /* White text on dark/accent surfaces */
+  --color-text-on-dark: #F8FAFC;    /* High contrast text on dark canvas containers */
+
+  /* ==========================================================================
+     4. Subject Identity Accents (All pass WCAG AA >= 4.5:1 with white text)
+     ========================================================================== */
+  /* Mathematics: Water Share Challenge */
+  --color-math: #275DDB;            /* Cobalt Blue (4.68:1 on white text) */
+  --color-math-bg: #EBF1FD;         /* 10% tint for cards/badges */
+  --color-math-dark: #1A46A8;       /* High-contrast text on math-bg */
+
+  /* Biology: Food Web Explorer */
+  --color-bio: #18794E;             /* Forest Green (4.82:1 on white text) */
+  --color-bio-bg: #E8F5EE;          /* 10% tint for cards/badges */
+  --color-bio-dark: #0E472E;        /* High-contrast text on bio-bg */
+
+  /* Chemistry: pH Color Lab */
+  --color-chem: #8B3E98;            /* Plum Purple (4.62:1 on white text) */
+  --color-chem-bg: #F5EBF7;         /* 10% tint for cards/badges */
+  --color-chem-dark: #5C2765;       /* High-contrast text on chem-bg */
+
+  /* Physics (Flagship): Sound Detective */
+  --color-phys: #087E79;            /* Deep Teal (4.74:1 on white text) */
+  --color-phys-bg: #E6F5F4;         /* 10% tint for cards/badges */
+  --color-phys-dark: #05504D;       /* High-contrast text on phys-bg */
+
+  /* Active Subject Dynamic Accent (default to Physics, updated via data-subject) */
+  --color-subject-accent: var(--color-phys);
+  --color-subject-accent-bg: var(--color-phys-bg);
+  --color-subject-accent-dark: var(--color-phys-dark);
+
+  /* ==========================================================================
+     5. Feedback & State Colors
+     ========================================================================== */
+  /* Correct / Success */
+  --color-correct: #18794E;
+  --color-correct-bg: #E8F5EE;
+  --color-correct-border: #18794E;
+  --color-correct-text: #0E472E;
+
+  /* Incorrect / Alert */
+  --color-incorrect: #C5221F;
+  --color-incorrect-bg: #FDF2F2;
+  --color-incorrect-border: #C5221F;
+  --color-incorrect-text: #771412;
+
+  /* Scaffolding Warning / Invariant Alert */
+  --color-warning: #B45309;         /* Amber-700 (4.51:1 contrast on white) */
+  --color-warning-bg: #FEF3C7;      /* Amber-100 */
+  --color-warning-border: #F59E0B;  /* Amber-500 */
+  --color-warning-text: #78350F;    /* Amber-900 (High contrast on #FEF3C7) */
+
+  /* Information / Scientific Notice */
+  --color-info: #1D4ED8;            /* Blue-700 */
+  --color-info-bg: #EFF6FF;         /* Blue-50 */
+  --color-info-border: #3B82F6;     /* Blue-500 */
+  --color-info-text: #1E3A8A;       /* Blue-900 */
+
+  /* Focus Indicator (WCAG 2.1 Focus Visible Criterion) */
+  --color-focus: #275DDB;
+  --focus-outline-width: 3px;
+  --focus-outline-style: solid;
+  --focus-outline-color: var(--color-focus);
+  --focus-outline-offset: 2px;
+  --focus-outline: var(--focus-outline-width) var(--focus-outline-style) var(--focus-outline-color);
+
+  /* Offline Indicator States */
+  --color-offline-bg: #ECFDF5;
+  --color-offline-border: #10B981;
+  --color-offline-text: #065F46;
+
+  /* ==========================================================================
+     6. Typography System (System Font Stack - Zero External Web Fonts)
+     ========================================================================== */
+  --font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  --font-family-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-family-base: var(--font-family-sans);
+
+  /* Modular Font Sizes (16px base root) */
+  --font-size-xs: 0.75rem;     /* 12px - Badges, captions */
+  --font-size-sm: 0.875rem;    /* 14px - Meta text, sub-labels */
+  --font-size-base: 1rem;      /* 16px - Standard body copy */
+  --font-size-md: 1.125rem;    /* 18px - Lead paragraphs, cards */
+  --font-size-lg: 1.25rem;     /* 20px - Subheadings (h3) */
+  --font-size-xl: 1.5rem;      /* 24px - Section headings (h2) */
+  --font-size-2xl: 1.75rem;    /* 28px - Primary screen headings (h1) */
+  --font-size-3xl: 2rem;       /* 32px - Hero display titles */
+
+  /* Font Weights */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Line Heights */
+  --line-height-tight: 1.2;
+  --line-height-snug: 1.35;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.625;
+
+  /* ==========================================================================
+     7. Spacing & Sizing Scale (4px Base Grid)
+     ========================================================================== */
+  --space-1: 0.25rem;   /* 4px */
+  --space-2: 0.5rem;    /* 8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-5: 1.25rem;   /* 20px */
+  --space-6: 1.5rem;    /* 24px */
+  --space-8: 2rem;      /* 32px */
+  --space-10: 2.5rem;   /* 40px */
+  --space-12: 3rem;     /* 48px */
+
+  /* Touch Target Minimum (WCAG 2.5.5 / 2.5.8 touch target invariant >= 48px) */
+  --touch-target-min: 48px;
+
+  /* Layout Max-Width Boundary */
+  --container-max-width: 720px;
+  --content-read-max-width: 680px;
+
+  /* ==========================================================================
+     8. Border Radius Tokens
+     ========================================================================== */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  /* ==========================================================================
+     9. Shadows & Elevation (Lightweight, GPU-friendly for low-end devices)
+     ========================================================================== */
+  --shadow-none: none;
+  --shadow-sm: 0 1px 2px 0 rgba(16, 24, 40, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(16, 24, 40, 0.08), 0 2px 4px -2px rgba(16, 24, 40, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(16, 24, 40, 0.08), 0 4px 6px -4px rgba(16, 24, 40, 0.04);
+  --shadow-sticky-bar: 0 -4px 12px rgba(16, 24, 40, 0.06);
+
+  /* ==========================================================================
+     10. Transitions & Animation Timings
+     ========================================================================== */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-colors: color 150ms ease, background-color 150ms ease, border-color 150ms ease;
+
+  /* ==========================================================================
+     11. Z-Index Layering Scale
+     ========================================================================== */
+  --z-base: 1;
+  --z-sticky-bar: 100;
+  --z-header: 200;
+  --z-dropdown: 300;
+  --z-modal-backdrop: 500;
+  --z-modal: 510;
+  --z-toast: 1000;
+}
+
+/* ==========================================================================
+   12. Dynamic Subject Theme Selectors
+   Applied at root or container level: [data-subject="math" | "bio" | "chem" | "phys"]
+   ========================================================================== */
+[data-subject="math"] {
+  --color-subject-accent: var(--color-math);
+  --color-subject-accent-bg: var(--color-math-bg);
+  --color-subject-accent-dark: var(--color-math-dark);
+}
+
+[data-subject="biology"],
+[data-subject="bio"] {
+  --color-subject-accent: var(--color-bio);
+  --color-subject-accent-bg: var(--color-bio-bg);
+  --color-subject-accent-dark: var(--color-bio-dark);
+}
+
+[data-subject="chemistry"],
+[data-subject="chem"] {
+  --color-subject-accent: var(--color-chem);
+  --color-subject-accent-bg: var(--color-chem-bg);
+  --color-subject-accent-dark: var(--color-chem-dark);
+}
+
+[data-subject="physics"],
+[data-subject="phys"] {
+  --color-subject-accent: var(--color-phys);
+  --color-subject-accent-bg: var(--color-phys-bg);
+  --color-subject-accent-dark: var(--color-phys-dark);
+}
