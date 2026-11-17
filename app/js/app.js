@@ -1597,16 +1597,16 @@ function renderCourseBrowser(stage, state) {
             const accentColor = s.id === 'physics' ? '#0D9488' : s.id === 'chemistry' ? '#9333EA' : s.id === 'biology' ? '#059669' : s.id === 'math' ? '#2563EB' : '#4F46E5';
 
             return `
-              <div class="timetable-card btn-select-browser-sub ${isSelected ? 'border-primary' : ''}" data-sub-id="${s.id}" tabindex="0" role="button" aria-label="Select ${escapeHtml(s.name)}" style="cursor: pointer; padding: 16px; border: ${isSelected ? '2px solid ' + accentColor : '1px solid var(--color-border)'}; background: ${isSelected ? 'linear-gradient(135deg, #F8FAFC 0%, #EFF6FF 100%)' : 'var(--color-surface)'}; border-radius: 16px; box-shadow: ${isSelected ? '0 8px 24px -4px rgba(37,99,235,0.18)' : '0 2px 6px rgba(0,0,0,0.03)'}; transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);">
+              <div class="timetable-card btn-select-browser-sub ${isSelected ? 'border-primary' : ''}" data-sub-id="${s.id}" tabindex="0" role="button" aria-label="Select ${escapeHtml(s.name)}" style="cursor: pointer; padding: 18px; border: ${isSelected ? '2px solid ' + accentColor : '1px solid rgba(255,255,255,0.85)'}; background: ${isSelected ? 'linear-gradient(135deg, rgba(255,255,255,0.92) 0%, ' + accentColor + '18 100%)' : 'rgba(255, 255, 255, 0.78)'}; backdrop-filter: blur(16px) saturate(180%); -webkit-backdrop-filter: blur(16px) saturate(180%); border-radius: 18px; box-shadow: ${isSelected ? '0 12px 32px -4px ' + accentColor + '30, inset 0 1px 0 rgba(255,255,255,1)' : '0 4px 16px rgba(31,38,135,0.05), inset 0 1px 0 rgba(255,255,255,0.95)'}; transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);">
                 <div class="d-flex justify-between align-center mb-2">
-                  <div style="width: 42px; height: 42px; border-radius: 12px; background: ${isSelected ? accentColor : '#F1F5F9'}; color: ${isSelected ? '#FFFFFF' : accentColor}; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: ${isSelected ? '0 4px 12px ' + accentColor + '40' : 'none'};">
+                  <div style="width: 44px; height: 44px; border-radius: 12px; background: ${isSelected ? accentColor : 'rgba(255,255,255,0.8)'}; color: ${isSelected ? '#FFFFFF' : accentColor}; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: ${isSelected ? '0 4px 14px ' + accentColor + '40' : '0 2px 6px rgba(0,0,0,0.04)'};">
                     ${icon}
                   </div>
                   <span class="badge ${isSelected ? 'badge-primary' : 'badge-secondary'}" style="font-size: 11px; font-weight: 700; padding: 4px 10px;">${subPercent}% Mastered</span>
                 </div>
                 <strong style="font-size: 15px; display: block; color: var(--color-text-main); margin-bottom: 2px;">${escapeHtml(s.name)}</strong>
                 <span class="text-xs text-secondary" style="font-size: 11px;">📖 ${escapeHtml(s.book || 'NCERT Book')}</span>
-                <div class="pocket-progress-track mt-3" style="height: 6px; background: #E2E8F0; border-radius: 4px; overflow: hidden;">
+                <div class="pocket-progress-track mt-3" style="height: 6px; background: rgba(0,0,0,0.06); border-radius: 4px; overflow: hidden;">
                   <div class="pocket-progress-fill" style="width: ${subPercent}%; height: 100%; background: ${accentColor}; transition: width 0.4s ease;"></div>
                 </div>
                 <div class="d-flex justify-between align-center mt-3 pt-2" style="border-top: 1px solid rgba(226, 232, 240, 0.6); font-size: 11px;">
@@ -1636,9 +1636,9 @@ function renderCourseBrowser(stage, state) {
           </div>
         </div>
 
-        <div style="display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; flex-direction: column; gap: 20px;">
           ${units.map(unit => `
-            <div class="timetable-card p-3" style="border-radius: 16px; border: 1px solid var(--color-border); box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+            <div class="timetable-card p-4" style="border-radius: 20px; border: 1px solid rgba(255,255,255,0.85); background: rgba(255,255,255,0.8); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); box-shadow: 0 10px 32px 0 rgba(31,38,135,0.08);">
               <div class="d-flex justify-between align-center mb-3 pb-2 border-bottom flex-wrap gap-2">
                 <div>
                   <span class="badge badge-phys" style="font-size: 11px;">${unit.unitId.toUpperCase()}</span>
@@ -1649,8 +1649,8 @@ function renderCourseBrowser(stage, state) {
 
               <div style="display: flex; flex-direction: column; gap: 14px;">
                 ${unit.chapters.map(ch => `
-                  <div style="border: 1px solid var(--color-border); border-radius: 14px; padding: 16px; background: var(--color-surface-subtle);">
-                    <div class="d-flex justify-between align-center mb-3 flex-wrap gap-2" style="background: var(--color-surface); padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(226, 232, 240, 0.8);">
+                  <div style="border: 1px solid rgba(255,255,255,0.8); border-radius: 16px; padding: 18px; background: rgba(248, 250, 252, 0.65); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);">
+                    <div class="d-flex justify-between align-center mb-3 flex-wrap gap-2" style="background: rgba(255, 255, 255, 0.88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.95); box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
                       <div>
                         <strong style="font-size: 15px; color: var(--color-text-main);">Chapter ${ch.number}: ${escapeHtml(ch.title)}</strong>
                         <span class="text-xs text-secondary ml-2">(${ch.topics.length} topics)</span>
@@ -1675,7 +1675,7 @@ function renderCourseBrowser(stage, state) {
                             <div class="skill-node-marker ${markerClass}">
                               ${markerIcon}
                             </div>
-                            <div class="skill-node-content" style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 12px; padding: 12px 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.2s ease;">
+                            <div class="skill-node-content" style="background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid rgba(255, 255, 255, 0.9); border-radius: 14px; padding: 14px 18px; box-shadow: 0 4px 14px rgba(31, 38, 135, 0.04); transition: all 0.25s ease;">
                               <div class="d-flex justify-between align-center flex-wrap gap-2">
                                 <div style="flex: 1; min-width: 200px;">
                                   <div class="d-flex align-center gap-2 mb-1 flex-wrap">
@@ -2887,7 +2887,7 @@ function renderEnhancedMissionMap(stage, state) {
   stage.innerHTML = `
     <div class="catalog-container">
       <!-- Personalized Student Portal & Board Quick Action Banner -->
-      <div class="timetable-card mb-4 p-3 d-flex justify-between align-center flex-wrap gap-3" style="background: linear-gradient(135deg, #EFF6FF 0%, #F0FDF4 100%); border: 1.5px solid #BFDBFE; border-radius: 16px;">
+      <div class="timetable-card mb-4 p-3 d-flex justify-between align-center flex-wrap gap-3" style="background: linear-gradient(135deg, rgba(239, 246, 255, 0.88) 0%, rgba(240, 253, 244, 0.88) 100%); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1.5px solid rgba(191, 219, 254, 0.9); border-radius: 20px; box-shadow: 0 10px 30px rgba(37, 99, 235, 0.08), inset 0 1px 0 rgba(255,255,255,1);">
         <div class="d-flex align-center gap-3">
           <span style="font-size: 32px;">🏫</span>
           <div>

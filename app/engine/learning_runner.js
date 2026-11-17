@@ -368,7 +368,7 @@ export class LearningRunner {
     this._container.innerHTML = `
       <section class="screen-s0-map" role="region" aria-label="Mission Map">
         <!-- Grand Hero Showcase -->
-        <div class="map-hero-showcase ambient-glow-wrapper mb-5" style="position: relative; border-radius: 24px; padding: 36px 32px; background: linear-gradient(135deg, rgba(240, 249, 255, 0.9) 0%, rgba(245, 243, 255, 0.9) 50%, rgba(238, 242, 255, 0.9) 100%); border: 1px solid rgba(226, 232, 240, 0.8); box-shadow: 0 16px 40px -10px rgba(37, 99, 235, 0.08); overflow: hidden;">
+        <div class="map-hero-showcase ambient-glow-wrapper mb-5" style="position: relative; border-radius: 24px; padding: 36px 32px; background: linear-gradient(135deg, rgba(255, 255, 255, 0.88) 0%, rgba(240, 247, 255, 0.82) 100%); backdrop-filter: blur(24px) saturate(190%); -webkit-backdrop-filter: blur(24px) saturate(190%); border: 1px solid rgba(255, 255, 255, 0.9); box-shadow: 0 16px 40px -10px rgba(37, 99, 235, 0.10), inset 0 1px 0 rgba(255, 255, 255, 1); overflow: hidden;">
           <div class="ambient-orb ambient-orb--blue" aria-hidden="true" style="top: -60px; right: 10%;"></div>
           <div class="ambient-orb ambient-orb--purple" aria-hidden="true" style="bottom: -50px; left: 5%;"></div>
           
