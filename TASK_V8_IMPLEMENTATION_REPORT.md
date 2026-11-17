@@ -114,3 +114,4 @@ All modified and created files have been logged with SHA-256 hashes in `TASK_V8_
 - **AST Validator (`TASK_V6_AST_VALIDATOR.py`):** 15/15 checks passed (4 valid, 11 fail-closed caught).
 - **Catalog Validator (`validate_question_world_catalog.py`):** 29/29 rows valid, 0 errors.
 - **Real-Browser CDP Validation (`tests/run_real_browser_validation.mjs`):** All 8 browser integration and offline caching scenarios passed in Chromium.
+

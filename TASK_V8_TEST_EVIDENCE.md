@@ -219,3 +219,4 @@ OVERALL TASK V6 STATIC VALIDATION RESULT: FAILED
 ```
 
 *Note on Gate Exit Code:* The static validator correctly exited with code 1 due to Section 6. In previous unhardened versions, the script incorrectly swallowed the missing baseline file and printed a false positive `PASSED`. Task v8 repaired this validator logic to ensure fail-closed truthfulness.
+

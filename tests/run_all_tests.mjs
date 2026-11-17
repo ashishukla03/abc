@@ -68,3 +68,4 @@ if (suitesFailed > 0 || totalFailed > 0) {
 } else {
   process.exit(0);
 }
+

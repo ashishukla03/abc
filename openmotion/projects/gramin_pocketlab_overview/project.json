@@ -1,0 +1,81 @@
+{
+  "name": "Gramin PocketLab Overview",
+  "slug": "gramin-pocketlab-overview",
+  "version": "1.0.0",
+  "dimensions": {
+    "width": 1920,
+    "height": 1080
+  },
+  "fps": 30,
+  "durationSec": 32,
+  "brandKit": {
+    "background": "#F5F7FB",
+    "surface": "#FFFFFF",
+    "textMain": "#162033",
+    "textSecondary": "#596579",
+    "subjects": {
+      "mathematics": "#275DDB",
+      "biology": "#18794E",
+      "chemistry": "#8B3E98",
+      "physics": "#087E79"
+    }
+  },
+  "scenes": [
+    {
+      "id": "scene_01_identity",
+      "durationSec": 4,
+      "title": "Product Identity & Purpose",
+      "file": "scenes/scene_01_identity.html",
+      "caption": "Gramin PocketLab: Offline-First STEM Micro-Labs for Rural Students"
+    },
+    {
+      "id": "scene_02_journey",
+      "durationSec": 4,
+      "title": "Actual Learner Journey",
+      "file": "scenes/scene_02_journey.html",
+      "caption": "Structured 7-Step Active Learning Cycle: Brief → Predict → Explore → Diagnose → Exit"
+    },
+    {
+      "id": "scene_03_mathematics",
+      "durationSec": 4,
+      "title": "Mathematics: Water Share Challenge",
+      "file": "scenes/scene_03_mathematics.html",
+      "caption": "Mathematics: 12-Unit Canal Water Conservation and 1:2:3 Ratio Partition"
+    },
+    {
+      "id": "scene_04_biology",
+      "durationSec": 4,
+      "title": "Biology: Food Web Explorer",
+      "file": "scenes/scene_04_biology.html",
+      "caption": "Biology: Directional Energy Flow and Trophic Disturbance Scenarios"
+    },
+    {
+      "id": "scene_05_chemistry",
+      "durationSec": 4,
+      "title": "Chemistry: pH Color Lab",
+      "file": "scenes/scene_05_chemistry.html",
+      "caption": "Chemistry: Turmeric & Universal Indicators — Distilled Water Neutrality vs Potability"
+    },
+    {
+      "id": "scene_06_physics",
+      "durationSec": 4,
+      "title": "Physics: Sound Detective",
+      "file": "scenes/scene_06_physics.html",
+      "caption": "Physics: Sound Waveforms — 220 Hz vs 440 Hz in 10 ms Window with Gain Ceiling"
+    },
+    {
+      "id": "scene_07_scope",
+      "durationSec": 4,
+      "title": "Honest Statement of Current Product Scope",
+      "file": "scenes/scene_07_scope.html",
+      "caption": "Current Scope: 4 Hardened Middle Stage STEM Labs; Classes 5–12 in Design"
+    },
+    {
+      "id": "scene_08_closing",
+      "durationSec": 4,
+      "title": "Strong Closing Brand Moment",
+      "file": "scenes/scene_08_closing.html",
+      "caption": "Gramin PocketLab: Empowering Every Village Classroom Offline"
+    }
+  ]
+}

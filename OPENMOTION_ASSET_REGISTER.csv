@@ -1,0 +1,11 @@
+asset_id,file_path,media_type,dimensions,duration_sec,codec,file_size_bytes,captions_available,provenance,intended_use
+VID-OM-001,openmotion/exports/gramin_pocketlab_overview.mp4,video/mp4,1920x1080,35.97,h264/yuv420p,604018,YES,OpenMotion scenes compiled with bundled FFmpeg,32s Overview Video for Hackathon & Marketing
+VID-OM-002,openmotion/exports/gramin_pocketlab_overview.webm,video/webm,1920x1080,35.97,vp8/yuv420p,4399152,YES,Transcoded with bundled FFmpeg libvpx,Web-optimized open video playback
+IMG-OM-001,openmotion/exports/gramin_pocketlab_overview_poster.png,image/png,1920x1080,N/A,PNG,104680,N/A,Captured from Scene 1 via Chrome CDP,Static video poster for lazy loading
+TXT-OM-001,openmotion/exports/gramin_pocketlab_overview.vtt,text/vtt,N/A,32.00,WebVTT,899,YES,Authoritative scene captions,Closed captions track for video accessibility
+HTML-OM-001,openmotion/projects/gramin_pocketlab_overview/player.html,text/html,1920x1080,32.00,HTML5/GSAP,9542,YES,OpenMotion interactive player,Standalone interactive multi-scene playback
+IMG-APP-001,openmotion/assets/screenshot_01_map.png,image/png,1920x1080,N/A,PNG,86280,N/A,Headless Chrome CDP capture of #/map,Real Mission Map visual asset
+IMG-APP-002,openmotion/assets/screenshot_02_math.png,image/png,1920x1080,N/A,PNG,54232,N/A,Headless Chrome CDP capture of #/math/s3_explore,Real Water Share Challenge visual asset
+IMG-APP-003,openmotion/assets/screenshot_03_biology.png,image/png,1920x1080,N/A,PNG,56575,N/A,Headless Chrome CDP capture of #/biology/s3_explore,Real Food Web Explorer visual asset
+IMG-APP-004,openmotion/assets/screenshot_04_chemistry.png,image/png,1920x1080,N/A,PNG,52907,N/A,Headless Chrome CDP capture of #/chemistry/s3_explore,Real pH Color Lab visual asset
+IMG-APP-005,openmotion/assets/screenshot_05_physics.png,image/png,1920x1080,N/A,PNG,53351,N/A,Headless Chrome CDP capture of #/physics/s3_explore,Real Sound Detective visual asset

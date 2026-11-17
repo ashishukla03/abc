@@ -86,3 +86,4 @@ The application UI layout was audited across five canonical viewport breakpoints
 1. **SVG Food Web Complexity on $\le 360\text{ px}$ Screens:** While horizontal scrolling is prevented, multi-node SVG diagrams can feel dense on ultra-compact 360px widths. A collapsible accordion view or step-by-step trophic spotlight is planned for Sprint 2.
 2. **Audio Canvas Fallback:** When Web Audio API is disabled by device security policies, a static diagram fallback renders cleanly, but animated playback feedback is suppressed.
 3. **Hardware Display Variations:** Physical contrast and daylight readability under direct sunlight in rural Indian environments cannot be completely simulated in software and require field testing.
+

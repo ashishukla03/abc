@@ -132,3 +132,4 @@ test('Suite 7: Biology Module (Food Web Explorer) Verification', async (suite) =
     assert.ok(obsPanel.innerHTML.includes('Observed Status (Balanced Baseline)'));
   });
 });
+

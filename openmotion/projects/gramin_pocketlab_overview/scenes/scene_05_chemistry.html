@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Gramin PocketLab — Chemistry: pH Color Lab</title>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #F5F7FB;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        color: #162033;
+      }
+      .frame {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #F5F7FB;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 50px 80px;
+        -webkit-font-smoothing: antialiased;
+      }
+      /* Ambient subtle background grid */
+      .bg-grid {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-size: 60px 60px;
+        background-image:
+          linear-gradient(to right, rgba(22, 32, 51, 0.04) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(22, 32, 51, 0.04) 1px, transparent 1px);
+        pointer-events: none;
+        z-index: 0;
+      }
+      .scene-header {
+        position: relative;
+        z-index: 10;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid #E5E7EB;
+        padding-bottom: 20px;
+      }
+      .brand-lockup {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .brand-badge {
+        background: #8B3E98;
+        color: #FFFFFF;
+        font-weight: 700;
+        font-size: 16px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 8px 18px;
+        border-radius: 9999px;
+      }
+      .brand-title {
+        font-size: 26px;
+        font-weight: 800;
+        color: #162033;
+      }
+      .scene-tag {
+        font-size: 16px;
+        font-weight: 600;
+        color: #596579;
+        background: #FFFFFF;
+        padding: 6px 14px;
+        border-radius: 8px;
+        border: 1px solid #D9E0EB;
+      }
+      .scene-content {
+        position: relative;
+        z-index: 10;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px 0;
+      }
+      .scene-footer {
+        position: relative;
+        z-index: 10;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid #E5E7EB;
+        padding-top: 16px;
+        color: #596579;
+        font-size: 16px;
+      }
+      .footer-caption {
+        font-weight: 600;
+        color: #162033;
+        background: #FFFFFF;
+        padding: 8px 18px;
+        border-radius: 8px;
+        border-left: 4px solid #8B3E98;
+      }
+      /* Responsive Content Utilities */
+      .card {
+        background: #FFFFFF;
+        border-radius: 16px;
+        border: 1px solid #D9E0EB;
+        box-shadow: 0 10px 25px -5px rgba(22, 32, 51, 0.06);
+        padding: 32px;
+      }
+      .screenshot-container {
+        border-radius: 12px;
+        overflow: hidden;
+        border: 2px solid #D9E0EB;
+        box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+        background: #FFFFFF;
+      }
+      .screenshot-img {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+    </style>
+    <!-- GSAP for timeline seeking -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  </head>
+  <body>
+    <div class="frame" id="frame">
+      <div class="bg-grid"></div>
+
+      <header class="scene-header">
+        <div class="brand-lockup">
+          <span class="brand-badge">CHEMISTRY</span>
+          <span class="brand-title">Gramin PocketLab</span>
+        </div>
+        <div class="scene-tag">16:9 • 1920×1080 • Scene: scene_05_chemistry</div>
+      </header>
+
+      <main class="scene-content">
+        
+<div style="display: flex; gap: 40px; align-items: center; width: 100%; max-width: 1700px;">
+  <div style="flex: 1;">
+    <div style="background: #F5EBF7; color: #8B3E98; font-weight: 800; font-size: 16px; padding: 6px 16px; border-radius: 9999px; display: inline-block; margin-bottom: 16px;">
+      MIDDLE STAGE CHEMISTRY • ACIDS, BASES & SALTS
+    </div>
+    <h2 class="chem-title" style="font-size: 40px; font-weight: 800; color: #162033; margin-bottom: 16px;">
+      pH Color Lab
+    </h2>
+    <p class="chem-desc" style="font-size: 20px; color: #596579; margin-bottom: 24px;">
+      Testing natural and synthetic indicators against household solutions with strict water safety boundaries.
+    </p>
+    <div style="background: #FFFFFF; border: 1px solid #D9E0EB; border-radius: 12px; padding: 20px;">
+      <div style="font-weight: 700; color: #162033; font-size: 18px; margin-bottom: 10px;">Gated Testing & Safety Boundary:</div>
+      <ul style="padding-left: 20px; color: #596579; font-size: 16px; line-height: 1.6;">
+        <li><strong>Explicit Gating:</strong> Requires beaker & indicator selection + Dip Paper trigger</li>
+        <li><strong>Indicators:</strong> Turmeric paper (natural) & Universal Indicator (spectrum)</li>
+        <li><strong>Water Safety Notice:</strong> Neutrality (pH 7.0) does NOT establish biological potability</li>
+      </ul>
+    </div>
+  </div>
+  <div style="flex: 1.3;">
+    <div class="screenshot-container chem-preview">
+      <img src="../../assets/screenshot_04_chemistry.png" alt="Chemistry pH Color Lab" class="screenshot-img" />
+    </div>
+  </div>
+</div>
+
+      </main>
+
+      <footer class="scene-footer">
+        <div class="footer-caption">Chemistry: Turmeric & Universal Indicators — Distilled Water Neutrality vs Potability</div>
+        <div class="footer-meta">Offline-First STEM Learning Ecosystem • Classes 5–12</div>
+      </footer>
+    </div>
+
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      
+tl.fromTo('.chem-title', { y: 25, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out' }, 0.2);
+tl.fromTo('.chem-desc', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out' }, 0.4);
+tl.fromTo('.chem-preview', { scale: 0.92, opacity: 0, y: 30 }, { scale: 1, opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }, 0.4);
+
+
+      // OpenMotion Scene Contract
+      window.__SCENE_TIMELINE__ = tl;
+      window.__SCENE_DURATION__ = 4.0;
+    </script>
+  </body>
+</html>
