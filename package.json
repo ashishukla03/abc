@@ -3,6 +3,11 @@
   "version": "1.0.0",
   "type": "module",
   "description": "Gramin PocketLab — Automated Verification and Test Suite",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
   "dependencies": {
     "clsx": "^2.1.1",
     "framer-motion": "^14.14.0",

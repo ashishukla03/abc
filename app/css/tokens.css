@@ -8,68 +8,68 @@
 
 :root {
   /* ==========================================================================
-     1. Surface & Background Colors
+     1. Surface & Background Colors (Dark Obsidian Cinematic Glassmorphism)
      ========================================================================== */
-  --color-bg-app: #F5F7FB;          /* Soft cool slate background */
-  --color-surface: #FFFFFF;         /* Crisp card and modal surface */
-  --color-surface-subtle: #F0F4F8;  /* Subtle tinted surface for secondary panels */
-  --color-surface-dark: #0F172A;    /* Dark container for oscilloscope display */
-  --color-surface-dark-grid: #1E293B;
+  --color-bg-app: #050713;          /* Dark Obsidian Nebula background */
+  --color-surface: rgba(15, 23, 42, 0.78);         /* Crisp dark glass card surface */
+  --color-surface-subtle: rgba(30, 41, 59, 0.65);  /* Subtle dark surface */
+  --color-surface-dark: #070B19;    /* Dark container for oscilloscope display */
+  --color-surface-dark-grid: #131D38;
 
   /* Glassmorphism Surface & Specular Highlights */
-  --glass-bg: rgba(255, 255, 255, 0.78);
-  --glass-bg-subtle: rgba(255, 255, 255, 0.62);
-  --glass-bg-elevated: rgba(255, 255, 255, 0.88);
-  --glass-bg-dark: rgba(15, 23, 42, 0.82);
-  --glass-border: rgba(255, 255, 255, 0.82);
-  --glass-border-subtle: rgba(226, 232, 240, 0.7);
-  --glass-border-dark: rgba(255, 255, 255, 0.14);
-  --glass-blur: blur(20px) saturate(180%);
-  --glass-blur-sm: blur(12px) saturate(160%);
-  --glass-blur-lg: blur(28px) saturate(200%);
-  --glass-shadow: 0 10px 32px 0 rgba(31, 38, 135, 0.08), 0 1px 3px 0 rgba(0, 0, 0, 0.03);
-  --glass-shadow-lg: 0 20px 48px -8px rgba(31, 38, 135, 0.14), 0 4px 12px 0 rgba(0, 0, 0, 0.04);
-  --glass-highlight: inset 0 1px 0 0 rgba(255, 255, 255, 0.95);
+  --glass-bg: rgba(15, 23, 42, 0.78);
+  --glass-bg-subtle: rgba(15, 23, 42, 0.58);
+  --glass-bg-elevated: rgba(30, 41, 59, 0.88);
+  --glass-bg-dark: rgba(7, 11, 25, 0.92);
+  --glass-border: rgba(255, 255, 255, 0.14);
+  --glass-border-subtle: rgba(255, 255, 255, 0.08);
+  --glass-border-dark: rgba(255, 255, 255, 0.20);
+  --glass-blur: blur(24px) saturate(190%);
+  --glass-blur-sm: blur(14px) saturate(170%);
+  --glass-blur-lg: blur(32px) saturate(210%);
+  --glass-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+  --glass-shadow-lg: 0 24px 64px -12px rgba(0, 0, 0, 0.8), inset 0 1px 1.5px rgba(255, 255, 255, 0.25);
+  --glass-highlight: inset 0 1px 0 0 rgba(255, 255, 255, 0.22);
 
   /* ==========================================================================
      2. Border & Divider Colors
      ========================================================================== */
-  --color-border: #D9E0EB;          /* Structural card dividers (1.38:1 on white) */
-  --color-border-control: #6B7280;  /* Essential control borders (4.83:1 on white, passes WCAG 3:1) */
-  --color-border-subtle: #E5E7EB;   /* Low-contrast separators */
-  --color-border-focus: #275DDB;    /* Unmissable focus indicator ring */
+  --color-border: rgba(255, 255, 255, 0.12);          /* Structural card dividers */
+  --color-border-control: rgba(255, 255, 255, 0.25);  /* Essential control borders */
+  --color-border-subtle: rgba(255, 255, 255, 0.08);   /* Low-contrast separators */
+  --color-border-focus: #6366F1;    /* Unmissable focus indicator ring */
 
   /* ==========================================================================
-     3. Typography Colors (High Contrast WCAG AA / AAA)
+     3. Typography Colors (High Contrast WCAG AA / AAA on Dark Canvas)
      ========================================================================== */
-  --color-text-main: #162033;       /* High-contrast deep navy (13.84:1 on white, WCAG AAA) */
-  --color-text-secondary: #596579;  /* Supporting copy (5.32:1 on white, WCAG AA) */
+  --color-text-main: #F8FAFC;       /* Crisp luminescent white */
+  --color-text-secondary: #94A3B8;  /* Supporting metallic slate */
   --color-text-muted: #64748B;      /* Supplementary meta text */
-  --color-text-inverse: #FFFFFF;    /* White text on dark/accent surfaces */
+  --color-text-inverse: #050713;    /* Dark text on bright accent buttons */
   --color-text-on-dark: #F8FAFC;    /* High contrast text on dark canvas containers */
 
   /* ==========================================================================
-     4. Subject Identity Accents (All pass WCAG AA >= 4.5:1 with white text)
+     4. Subject Identity Accents (Vibrant Neon Glow on Dark Backdrop)
      ========================================================================== */
   /* Mathematics: Water Share Challenge */
-  --color-math: #275DDB;            /* Cobalt Blue (4.68:1 on white text) */
-  --color-math-bg: #EBF1FD;         /* 10% tint for cards/badges */
-  --color-math-dark: #1A46A8;       /* High-contrast text on math-bg */
+  --color-math: #38BDF8;            /* Vibrant Sky Blue */
+  --color-math-bg: rgba(56, 189, 248, 0.15);         /* 15% tint for cards/badges */
+  --color-math-dark: #BAE6FD;       /* High-contrast text on math-bg */
 
   /* Biology: Food Web Explorer */
-  --color-bio: #18794E;             /* Forest Green (4.82:1 on white text) */
-  --color-bio-bg: #E8F5EE;          /* 10% tint for cards/badges */
-  --color-bio-dark: #0E472E;        /* High-contrast text on bio-bg */
+  --color-bio: #34D399;             /* Emerald Neon */
+  --color-bio-bg: rgba(52, 211, 153, 0.15);          /* 15% tint for cards/badges */
+  --color-bio-dark: #A7F3D0;        /* High-contrast text on bio-bg */
 
   /* Chemistry: pH Color Lab */
-  --color-chem: #8B3E98;            /* Plum Purple (4.62:1 on white text) */
-  --color-chem-bg: #F5EBF7;         /* 10% tint for cards/badges */
-  --color-chem-dark: #5C2765;       /* High-contrast text on chem-bg */
+  --color-chem: #C084FC;            /* Vivid Fuchsia Purple */
+  --color-chem-bg: rgba(192, 132, 252, 0.15);        /* 15% tint for cards/badges */
+  --color-chem-dark: #E9D5FF;       /* High-contrast text on chem-bg */
 
   /* Physics (Flagship): Sound Detective */
-  --color-phys: #087E79;            /* Deep Teal (4.74:1 on white text) */
-  --color-phys-bg: #E6F5F4;         /* 10% tint for cards/badges */
-  --color-phys-dark: #05504D;       /* High-contrast text on phys-bg */
+  --color-phys: #2DD4BF;            /* Cyan / Deep Teal */
+  --color-phys-bg: rgba(45, 212, 191, 0.15);         /* 15% tint for cards/badges */
+  --color-phys-dark: #99F6E4;       /* High-contrast text on phys-bg */
 
   /* Active Subject Dynamic Accent (default to Physics, updated via data-subject) */
   --color-subject-accent: var(--color-phys);
@@ -80,28 +80,28 @@
      5. Feedback & State Colors
      ========================================================================== */
   /* Correct / Success */
-  --color-correct: #18794E;
-  --color-correct-bg: #E8F5EE;
-  --color-correct-border: #18794E;
-  --color-correct-text: #0E472E;
+  --color-correct: #10B981;
+  --color-correct-bg: rgba(16, 185, 129, 0.18);
+  --color-correct-border: #10B981;
+  --color-correct-text: #34D399;
 
   /* Incorrect / Alert */
-  --color-incorrect: #C5221F;
-  --color-incorrect-bg: #FDF2F2;
-  --color-incorrect-border: #C5221F;
-  --color-incorrect-text: #771412;
+  --color-incorrect: #EF4444;
+  --color-incorrect-bg: rgba(239, 68, 68, 0.18);
+  --color-incorrect-border: #EF4444;
+  --color-incorrect-text: #F87171;
 
   /* Scaffolding Warning / Invariant Alert */
-  --color-warning: #B45309;         /* Amber-700 (4.51:1 contrast on white) */
-  --color-warning-bg: #FEF3C7;      /* Amber-100 */
-  --color-warning-border: #F59E0B;  /* Amber-500 */
-  --color-warning-text: #78350F;    /* Amber-900 (High contrast on #FEF3C7) */
+  --color-warning: #F59E0B;
+  --color-warning-bg: rgba(245, 158, 11, 0.18);
+  --color-warning-border: #F59E0B;
+  --color-warning-text: #FCD34D;
 
   /* Information / Scientific Notice */
-  --color-info: #1D4ED8;            /* Blue-700 */
-  --color-info-bg: #EFF6FF;         /* Blue-50 */
-  --color-info-border: #3B82F6;     /* Blue-500 */
-  --color-info-text: #1E3A8A;       /* Blue-900 */
+  --color-info: #60A5FA;
+  --color-info-bg: rgba(96, 165, 250, 0.18);
+  --color-info-border: #60A5FA;
+  --color-info-text: #BFDBFE;
 
   /* Focus Indicator (WCAG 2.1 Focus Visible Criterion) */
   --color-focus: #275DDB;

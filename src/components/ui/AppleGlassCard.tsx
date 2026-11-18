@@ -1,6 +1,9 @@
 import React, { ReactNode } from 'react';
 import { motion, HTMLMotionProps } from 'framer-motion';
 
+export const GLASS_CARD_FORMULA =
+  'bg-slate-900/60 backdrop-blur-3xl backdrop-saturate-[1.8] border border-white/[0.14] shadow-[0_16px_45px_-10px_rgba(0,0,0,0.75),inset_0_1.5px_1px_rgba(255,255,255,0.18)] rounded-3xl p-6 transition-all duration-300 text-slate-100';
+
 export type GlassVariant = 'default' | 'physics' | 'chemistry' | 'biology' | 'math' | 'darkSlate' | 'amber';
 
 export interface AppleGlassCardProps extends HTMLMotionProps<'article'> {
@@ -11,42 +14,14 @@ export interface AppleGlassCardProps extends HTMLMotionProps<'article'> {
   glowColor?: string;
 }
 
-const variantStyles: Record<GlassVariant, { bg: string; border: string; glow: string }> = {
-  default: {
-    bg: 'linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(240, 247, 255, 0.75) 100%)',
-    border: '1px solid rgba(255, 255, 255, 0.85)',
-    glow: 'rgba(37, 99, 235, 0.12)'
-  },
-  physics: {
-    bg: 'linear-gradient(135deg, rgba(238, 242, 255, 0.90) 0%, rgba(224, 242, 254, 0.82) 100%)',
-    border: '1.5px solid rgba(59, 130, 246, 0.35)',
-    glow: 'rgba(37, 99, 235, 0.22)'
-  },
-  chemistry: {
-    bg: 'linear-gradient(135deg, rgba(250, 245, 255, 0.90) 0%, rgba(253, 242, 248, 0.82) 100%)',
-    border: '1.5px solid rgba(168, 85, 247, 0.35)',
-    glow: 'rgba(147, 51, 234, 0.22)'
-  },
-  biology: {
-    bg: 'linear-gradient(135deg, rgba(236, 253, 245, 0.90) 0%, rgba(240, 253, 250, 0.82) 100%)',
-    border: '1.5px solid rgba(16, 185, 129, 0.35)',
-    glow: 'rgba(16, 185, 129, 0.22)'
-  },
-  math: {
-    bg: 'linear-gradient(135deg, rgba(254, 243, 199, 0.90) 0%, rgba(255, 247, 237, 0.82) 100%)',
-    border: '1.5px solid rgba(245, 158, 11, 0.35)',
-    glow: 'rgba(217, 119, 6, 0.22)'
-  },
-  darkSlate: {
-    bg: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
-    border: '1.5px solid rgba(71, 85, 105, 0.5)',
-    glow: 'rgba(16, 185, 129, 0.25)'
-  },
-  amber: {
-    bg: 'linear-gradient(135deg, rgba(254, 243, 199, 0.95) 0%, rgba(254, 249, 195, 0.85) 100%)',
-    border: '1.5px solid rgba(245, 158, 11, 0.4)',
-    glow: 'rgba(245, 158, 11, 0.25)'
-  }
+const variantTints: Record<GlassVariant, string> = {
+  default: '',
+  physics: 'bg-blue-950/30 border-blue-400/35 shadow-[0_0_30px_rgba(59,130,246,0.15)]',
+  chemistry: 'bg-purple-950/30 border-purple-400/35 shadow-[0_0_30px_rgba(168,85,247,0.15)]',
+  biology: 'bg-emerald-950/30 border-emerald-400/35 shadow-[0_0_30px_rgba(16,185,129,0.15)]',
+  math: 'bg-amber-950/30 border-amber-400/35 shadow-[0_0_30px_rgba(245,158,11,0.15)]',
+  darkSlate: 'bg-slate-950/80 border-slate-700/80 shadow-[0_0_30px_rgba(0,0,0,0.9)]',
+  amber: 'bg-amber-950/35 border-amber-400/40 shadow-[0_0_30px_rgba(245,158,11,0.2)]',
 };
 
 export const AppleGlassCard: React.FC<AppleGlassCardProps> = ({
@@ -57,28 +32,17 @@ export const AppleGlassCard: React.FC<AppleGlassCardProps> = ({
   style,
   ...rest
 }) => {
-  const v = variantStyles[variant];
+  const tint = variantTints[variant];
 
   return (
     <motion.article
-      whileHover={interactive ? { y: -5, scale: 1.012, transition: { duration: 0.25, ease: 'easeOut' } } : undefined}
+      whileHover={interactive ? { y: -4, scale: 1.015, transition: { duration: 0.25 } } : undefined}
       whileTap={interactive ? { scale: 0.985 } : undefined}
-      style={{
-        background: v.bg,
-        border: v.border,
-        boxShadow: `0 16px 40px -10px ${v.glow}, inset 0 1.5px 1px rgba(255, 255, 255, 0.95), inset 0 -1.5px 2px rgba(79, 70, 229, 0.08)`,
-        backdropFilter: 'blur(24px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-        borderRadius: '20px',
-        position: 'relative',
-        overflow: 'hidden',
-        ...style
-      }}
-      className={`apple-glass-card glass-sheen ${className}`}
+      style={style}
+      className={`${GLASS_CARD_FORMULA} ${tint} ${className}`}
       {...rest}
     >
       {children}
     </motion.article>
   );
 };
-

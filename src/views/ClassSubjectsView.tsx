@@ -1,130 +1,189 @@
-import React from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { BookOpen, ArrowRight, ArrowLeft, Play, Sparkles, Layers, GraduationCap } from 'lucide-react';
-import { useSessionStore } from '../store/useSessionStore';
-import { Subject3DArt } from '../components/ui/Subject3DArt';
+import { BookOpen, ArrowRight, Sparkles, Beaker, ChevronRight, Compass, Filter } from 'lucide-react';
+import { useAppStore } from '../store/useAppStore';
+import { ncertCurriculum } from '../data/curriculumData';
+import { GLASS_CARD_FORMULA } from '../components/ui/AppleGlassCard';
+import { Interactive3DCard } from '../components/ui/Interactive3DCard';
 
 export const ClassSubjectsView: React.FC = () => {
-  const navigate = useNavigate();
-  const { classId } = useParams<{ classId: string }>();
-  const { selectedClass, setSelectedClass, getCurrentCurriculum } = useSessionStore();
+  const { currentClass, theme } = useAppStore();
+  const isDark = theme === 'dark';
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
-  const numClass = Number(classId) || selectedClass;
-  const curriculum = getCurrentCurriculum();
+  const subjectsData = ncertCurriculum[currentClass] || [];
+  const subjects = Array.isArray(subjectsData) ? subjectsData : subjectsData.subjects || [];
+
+  const filteredSubjects = subjects.filter((s: any) => {
+    if (selectedCategory === 'all') return true;
+    return (s.category || '').toLowerCase() === selectedCategory.toLowerCase();
+  });
+
+  const categories = [
+    { id: 'all', label: 'All Subjects' },
+    { id: 'physics', label: 'Physics' },
+    { id: 'chemistry', label: 'Chemistry' },
+    { id: 'mathematics', label: 'Mathematics' },
+    { id: 'biology', label: 'Biology' },
+  ];
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.08,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20, scale: 0.97 },
+    show: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: 0.4,
+        ease: 'easeOut',
+      },
+    },
+  };
 
   return (
-    <div className="space-y-6">
-      {/* Header with Royal Opalescent Glass */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="glass-header rounded-3xl p-6 sm:p-8 flex flex-wrap items-center justify-between gap-4"
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="space-y-8 text-white"
+    >
+      {/* Header section with Glass Card Formula */}
+      <Interactive3DCard
+        className={`${GLASS_CARD_FORMULA} !bg-slate-900/80 border-white/15 text-white`}
+        glowColor="rgba(56, 189, 248, 0.35)"
       >
-        <div>
-          <button
-            onClick={() => navigate('/')}
-            className="inline-flex items-center gap-1.5 text-xs font-black text-slate-500 hover:text-indigo-600 mb-2 transition-colors cursor-pointer active-click-pulse"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" /> Back to Question Worlds
-          </button>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-              Class {numClass} Enrolled Subjects
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 text-xs font-black mb-2 shadow-sm">
+              <Compass className="w-3.5 h-3.5 animate-spin" style={{ animationDuration: '10s' }} />
+              <span>NCERT Class {currentClass} Modules</span>
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-black tracking-tight">
+              Class {currentClass} Subject Hub
             </h1>
-            <span className="px-3 py-1 rounded-full text-xs font-black bg-indigo-100 text-indigo-950 border border-indigo-200">
-              {curriculum.standardBoard}
-            </span>
+            <p className="text-sm font-medium mt-1 text-slate-300">
+              Select any core STEM subject to explore chapter timelines, progressive 3D inquiry labs, and mastery milestones.
+            </p>
           </div>
-          <p className="text-xs text-slate-600 font-medium mt-1">
-            Browse verified NCERT board syllabus, interactive virtual simulations, and chapter test banks.
-          </p>
+
+          <div className="flex items-center gap-2 px-4 py-2 rounded-2xl border border-white/15 bg-slate-800/80 text-xs font-bold text-slate-200">
+            <Sparkles className="w-4 h-4 text-amber-400" />
+            <span>{subjects.length} Subjects Active</span>
+          </div>
         </div>
 
-        {/* Quick Class Selector Dropdown / Pills */}
-        <div className="flex items-center gap-1.5 p-1 bg-slate-900/5 rounded-2xl border border-white/80">
-          {[5, 6, 7, 8, 9, 10, 11, 12].map((lvl) => (
-            <motion.button
-              key={lvl}
-              whileHover={{ scale: 1.08 }}
-              whileTap={{ scale: 0.94 }}
-              onClick={() => {
-                setSelectedClass(lvl);
-                navigate(`/class/${lvl}/subjects`);
-              }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer active-click-pulse ${
-                selectedClass === lvl
-                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                  : 'bg-white/80 text-slate-600 hover:bg-white border border-slate-200'
+        {/* Category Filters */}
+        <div className="flex items-center gap-2 mt-6 pt-4 border-t border-white/10 overflow-x-auto scrollbar-none">
+          <span className="text-xs font-black uppercase tracking-wider text-cyan-400 flex items-center gap-1 shrink-0">
+            <Filter className="w-3.5 h-3.5" /> Filter:
+          </span>
+          {categories.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => setSelectedCategory(cat.id)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 ${
+                selectedCategory === cat.id
+                  ? 'bg-gradient-to-r from-indigo-600 to-cyan-600 text-white shadow-md border border-white/20'
+                  : 'bg-slate-800/80 text-slate-400 hover:text-white border border-white/10'
               }`}
             >
-              Cl {lvl}
-            </motion.button>
+              {cat.label}
+            </button>
           ))}
         </div>
-      </motion.div>
+      </Interactive3DCard>
 
-      {/* Bento Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {curriculum.subjects.map((sub, idx) => (
-          <motion.div
-            key={sub.id}
-            initial={{ opacity: 0, y: 25 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: idx * 0.08, duration: 0.45 }}
-            whileHover={{ y: -6, scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className={`p-7 rounded-3xl border ${sub.colorTheme.border} ${sub.colorTheme.bgTint} glass-panel shadow-glass flex flex-col justify-between cursor-pointer active-click-pulse`}
-            onClick={() => navigate(`/subject/${sub.id}`)}
-          >
-            <div>
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <span className={`px-3 py-1 rounded-full text-[11px] font-black tracking-wider uppercase border ${sub.colorTheme.badgeBg}`}>
-                    {sub.category.toUpperCase()} • CLASS {numClass}
-                  </span>
-                  <h3 className="text-2xl font-black text-slate-900 mt-2">{sub.name}</h3>
-                </div>
-                <div className="w-16 h-16 flex-shrink-0 flex items-center justify-center transform group-hover:scale-110 transition-transform">
-                  <Subject3DArt category={sub.category as any} size={64} />
-                </div>
-              </div>
+      {/* 2-Column Bento Grid with cascading Framer Motion */}
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+        className="grid grid-cols-1 md:grid-cols-2 gap-6"
+      >
+        {filteredSubjects.map((subject: any) => {
+          const totalChapters = subject.chapters?.length || 0;
+          const totalTopics =
+            subject.chapters?.reduce(
+              (acc: number, ch: any) => acc + (ch.topics?.length || 0),
+              0
+            ) || 0;
 
-              <div className="space-y-2 mt-4">
-                <span className="text-xs font-black text-slate-700 uppercase tracking-wide">Course Chapters:</span>
-                <div className="space-y-2">
-                  {sub.chapters.map((ch) => (
-                    <div key={ch.id} className="p-3.5 rounded-2xl bg-white/80 border border-white/90 text-xs flex items-center justify-between shadow-sm">
-                      <span className="font-extrabold text-slate-800">Ch {ch.number}: {ch.title}</span>
-                      <span className="text-[11px] font-mono font-black text-indigo-600 px-2 py-0.5 rounded-md bg-indigo-50">{ch.topics.length} topics</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-6 pt-4 border-t border-slate-200/60 flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-500">
-                NCERT Certified Blueprint
-              </span>
-
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate(`/subject/${sub.id}`);
-                }}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-900 text-white font-black text-xs shadow-md shadow-slate-900/20 hover:bg-indigo-600 transition-all cursor-pointer"
+          return (
+            <motion.div key={subject.id} variants={itemVariants} className="h-full">
+              <Interactive3DCard
+                className={`h-full ${GLASS_CARD_FORMULA} !bg-slate-900/75 border-white/15 text-white group cursor-pointer`}
+                glowColor="rgba(56, 189, 248, 0.35)"
               >
-                <span>View Timeline</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </motion.button>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-    </div>
+                <Link to={`/subject/${subject.id}`} className="block h-full">
+                  <div className="flex flex-col justify-between h-full space-y-6">
+                    {/* Subject Header */}
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="space-y-1.5">
+                        <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full border bg-slate-800/90 border-white/20 text-cyan-300">
+                          {subject.category || 'STEM'}
+                        </span>
+                        <h2 className="text-xl font-black group-hover:text-cyan-400 transition-colors pt-1">
+                          {subject.name}
+                        </h2>
+                      </div>
+
+                      <div className="w-10 h-10 rounded-2xl border border-white/20 bg-slate-800/80 text-cyan-300 flex items-center justify-center transition-all shadow-md group-hover:scale-110 group-hover:bg-gradient-to-tr group-hover:from-indigo-600 group-hover:to-cyan-500 group-hover:text-white">
+                        <ArrowRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
+                      </div>
+                    </div>
+
+                    {/* Chapters Preview */}
+                    <div className="space-y-2">
+                      <div className="text-xs font-bold uppercase tracking-wide text-slate-400">
+                        Core Chapters ({totalChapters})
+                      </div>
+                      <div className="space-y-1.5">
+                        {subject.chapters?.slice(0, 2).map((ch: any) => (
+                          <div
+                            key={ch.id}
+                            className="px-3 py-2 rounded-xl border border-white/10 bg-slate-800/60 text-xs font-bold flex items-center justify-between"
+                          >
+                            <span className="truncate pr-2 text-slate-200">
+                              Ch {ch.number}: {ch.title}
+                            </span>
+                            <span className="text-[10px] text-cyan-400 font-extrabold shrink-0">
+                              {ch.topics?.length || 0} topics
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Card Footer */}
+                    <div className="pt-4 border-t border-white/10 flex items-center justify-between text-xs font-bold text-slate-300">
+                      <div className="flex items-center gap-1.5">
+                        <Beaker className="w-4 h-4 text-cyan-400" />
+                        <span>{totalTopics} Inquiry Lab Topics</span>
+                      </div>
+                      <span className="text-cyan-400 group-hover:underline flex items-center gap-1 font-black">
+                        Open Timeline <ChevronRight className="w-3.5 h-3.5" />
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              </Interactive3DCard>
+            </motion.div>
+          );
+        })}
+      </motion.div>
+    </motion.div>
   );
 };
+
+export default ClassSubjectsView;

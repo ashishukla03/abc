@@ -1,622 +1,1196 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Play, RotateCcw, Volume2, Sparkles, CheckCircle2, Sliders, Info, Layers, Eye, Droplet, Pi, Activity } from 'lucide-react';
-import { useSessionStore } from '../store/useSessionStore';
-import { CURRICULUM_DATABASE } from '../data/curriculumData';
+import {
+  ChevronLeft,
+  Sparkles,
+  Sliders,
+  Volume2,
+  VolumeX,
+  Play,
+  RotateCcw,
+  CheckCircle2,
+  HelpCircle,
+  ChevronDown,
+  Activity,
+  Flame,
+  Award,
+  Atom,
+  Eye,
+  Zap,
+  Sun,
+  TestTube,
+  Layers,
+  Compass,
+  PieChart,
+} from 'lucide-react';
+import { useAppStore } from '../store/useAppStore';
+import { CURRICULUM_DATABASE, TopicActivity } from '../data/curriculumData';
+import { GLASS_CARD_FORMULA } from '../components/ui/AppleGlassCard';
+import { Interactive3DCard } from '../components/ui/Interactive3DCard';
+import { QuantumHoloCore3D } from '../components/ui/QuantumHoloCore3D';
+import { Spatial3DViewer } from '../components/ui/Spatial3DViewer';
+import { TopicQuizModal } from '../components/modals/TopicQuizModal';
+
+export type LabModuleType = 'sound-wave' | 'optics' | 'ph-indicator' | 'electric-circuit' | 'fractions' | 'calculus' | 'cell-explorer';
 
 export const InquiryLabView: React.FC = () => {
   const { topicId } = useParams<{ topicId: string }>();
   const navigate = useNavigate();
-  const { completeLab, addXP } = useSessionStore();
+  const { markTopicStatus, updateCompetency, getTopicStatus, currentClass, addXP } = useAppStore();
 
-  // Find the topic across curriculum database
-  let foundTopic: any = null;
+  let foundTopic: TopicActivity | null = null;
   let foundSubject: any = null;
 
-  Object.values(CURRICULUM_DATABASE).forEach((cur) => {
-    cur.subjects.forEach((sub) => {
-      sub.chapters.forEach((ch) => {
+  for (const cur of Object.values(CURRICULUM_DATABASE)) {
+    for (const sub of cur.subjects) {
+      for (const ch of sub.chapters) {
         const t = ch.topics.find((item) => item.id === topicId);
         if (t) {
           foundTopic = t;
           foundSubject = sub;
+          break;
         }
-      });
-    });
-  });
+      }
+      if (foundTopic) break;
+    }
+    if (foundTopic) break;
+  }
 
-  const topic = foundTopic || {
-    id: 'p7-ch13-t1',
-    title: 'Sound Detective: Pitch vs Frequency Oscilloscope',
-    shortDesc: 'Vary frequency and amplitude to observe continuous sound wave transformations.',
-    ncertCode: 'NCERT Cl 7/8 Science Ch 13',
-    labModuleId: 'sound-wave'
+  const topic: TopicActivity = foundTopic || {
+    id: topicId || 'p10-ch12-t1',
+    title: 'Sound & Electromagnetic Wave Inquiry Oscilloscope',
+    shortDesc: 'Observe continuous harmonic wave transformations by modulating frequency, amplitude, and phase.',
+    durationMinutes: 15,
+    ncertCode: 'NCERT STEM Lab',
+    hasInquiryLab: true,
+    status: 'ready_to_learn',
+    testQuestions: [],
   };
 
-  const moduleId = topic.labModuleId || 'sound-wave';
-
-  // Common completion state
-  const [isCompleted, setIsCompleted] = useState(false);
-
-  const handleFinishLab = () => {
-    setIsCompleted(true);
-    completeLab(topic.id, (foundSubject?.category || 'physics') as any);
+  // Determine initial module from topic metadata or keywords
+  const determineInitialModule = (): LabModuleType => {
+    if (topic.labModuleId) return topic.labModuleId as LabModuleType;
+    const title = (topic.title + ' ' + (topic.shortDesc || '')).toLowerCase();
+    if (title.includes('optic') || title.includes('light') || title.includes('refraction') || title.includes('reflection')) return 'optics';
+    if (title.includes('acid') || title.includes('base') || title.includes('ph') || title.includes('turmeric') || title.includes('chem')) return 'ph-indicator';
+    if (title.includes('circuit') || title.includes('current') || title.includes('ohm') || title.includes('electric')) return 'electric-circuit';
+    if (title.includes('fraction') || title.includes('part') || title.includes('decimal')) return 'fractions';
+    if (title.includes('calculus') || title.includes('derivative') || title.includes('integral')) return 'calculus';
+    if (title.includes('cell') || title.includes('organelle') || title.includes('plant') || title.includes('bio')) return 'cell-explorer';
+    return 'sound-wave';
   };
 
-  // --- 1. Sound Wave Lab State ---
-  const [frequency, setFrequency] = useState(440); // 110 - 880 Hz
-  const [amplitude, setAmplitude] = useState(50); // 10 - 100
-  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [activeModule, setActiveModule] = useState<LabModuleType>(determineInitialModule());
+  const [show3DHolo, setShow3DHolo] = useState<boolean>(false);
+  const [spatialEngine, setSpatialEngine] = useState<'spatial' | 'holo'>('spatial');
+  const [isQuizModalOpen, setIsQuizModalOpen] = useState<boolean>(false);
+  const currentStatus = getTopicStatus(topic.id, 'ready');
+  const [labCompleted, setLabCompleted] = useState<boolean>(currentStatus === 'mastered');
+  const [activeHintIndex, setActiveHintIndex] = useState<number | null>(null);
 
-  const handleToggleSound = () => {
-    if (!isPlayingAudio) {
-      setIsPlayingAudio(true);
+  // ==========================================
+  // 1. SOUND WAVE OSCILLOSCOPE SIMULATION STATE
+  // ==========================================
+  const [frequency, setFrequency] = useState<number>(3); // 1 to 8 Hz
+  const [amplitude, setAmplitude] = useState<number>(50); // 10 to 80 px
+  const [phaseOffset, setPhaseOffset] = useState<number>(0);
+  const [isPlaying, setIsPlaying] = useState<boolean>(true);
+  const [isAudioActive, setIsAudioActive] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!isPlaying) return;
+    const interval = setInterval(() => {
+      setPhaseOffset((prev) => (prev + 0.08) % (2 * Math.PI));
+    }, 30);
+    return () => clearInterval(interval);
+  }, [isPlaying]);
+
+  const toggleSound = () => {
+    if (isAudioActive) {
+      setIsAudioActive(false);
+    } else {
+      setIsAudioActive(true);
       try {
-        const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(frequency, audioCtx.currentTime);
-        gain.gain.setValueAtTime(amplitude / 500, audioCtx.currentTime);
-
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-
-        setTimeout(() => {
-          osc.stop();
-          audioCtx.close();
-          setIsPlayingAudio(false);
-        }, 800);
+        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+        if (AudioCtx) {
+          const ctx = new AudioCtx();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(frequency * 110, ctx.currentTime);
+          gain.gain.setValueAtTime(0.04, ctx.currentTime);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start();
+          setTimeout(() => {
+            gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.2);
+            setTimeout(() => {
+              osc.stop();
+              ctx.close();
+              setIsAudioActive(false);
+            }, 1200);
+          }, 1000);
+        }
       } catch (e) {
-        setTimeout(() => setIsPlayingAudio(false), 800);
+        setIsAudioActive(false);
       }
     }
   };
 
-  // --- 2. Fractions Pizza/Chapati Lab State ---
-  const [totalSlices, setTotalSlices] = useState<number>(4);
-  const [selectedSlices, setSelectedSlices] = useState<number>(2);
+  // ==========================================
+  // 2. RAY OPTICS & SNELL'S LAW SIMULATION STATE
+  // ==========================================
+  const [incidenceAngle, setIncidenceAngle] = useState<number>(35); // degrees
+  const [opticsMode, setOpticsMode] = useState<'air-to-glass' | 'glass-to-air'>('glass-to-air');
+  const n1 = opticsMode === 'air-to-glass' ? 1.0 : 1.5;
+  const n2 = opticsMode === 'air-to-glass' ? 1.5 : 1.0;
+  // Critical Angle for TIR (denser to rarer only)
+  const criticalAngleDeg = n1 > n2 ? Math.asin(n2 / n1) * (180 / Math.PI) : null;
+  const isTIR = criticalAngleDeg !== null && incidenceAngle >= criticalAngleDeg;
+  // Refracted Angle via Snell's Law
+  const sinR = (n1 / n2) * Math.sin((incidenceAngle * Math.PI) / 180);
+  const refractedAngleDeg = !isTIR && sinR <= 1 ? Math.asin(sinR) * (180 / Math.PI) : null;
 
-  // --- 3. Optics Snell's Law Lab State ---
-  const [incidenceAngle, setIncidenceAngle] = useState(30); // 0 to 80 deg
-  const n1 = 1.0; // Air
-  const n2 = 1.52; // Crown Glass
-  const radI = (incidenceAngle * Math.PI) / 180;
-  // Snell: sin(r) = (n1/n2)*sin(i)
-  const sinR = (n1 / n2) * Math.sin(radI);
-  const radR = Math.asin(Math.min(1, sinR));
-  const refractionAngle = Math.round((radR * 180) / Math.PI);
-  // Glass to air critical angle
-  const criticalAngle = Math.round((Math.asin(n1 / n2) * 180) / Math.PI); // ~41 deg
+  // ==========================================
+  // 3. CHEMISTRY pH INDICATOR SIMULATION STATE
+  // ==========================================
+  const [pHValue, setPHValue] = useState<number>(7.0);
+  const [selectedIndicator, setSelectedIndicator] = useState<'turmeric' | 'litmus' | 'phenolphthalein' | 'universal'>('turmeric');
 
-  // --- 4. Chemistry pH Indicator Lab State ---
-  const [selectedLiquid, setSelectedLiquid] = useState<'lemon' | 'vinegar' | 'water' | 'soap' | 'bleach'>('lemon');
-  const liquidData = {
-    lemon: { name: 'Fresh Lemon Juice', ph: 2.2, type: 'Strong Acid', color: '#EF4444', turmeric: '#EAB308', litmus: '#DC2626' },
-    vinegar: { name: 'Vinegar (Dilute Acetic Acid)', ph: 3.0, type: 'Weak Acid', color: '#F97316', turmeric: '#FACC15', litmus: '#EA580C' },
-    water: { name: 'Pure Distilled Water', ph: 7.0, type: 'Neutral', color: '#10B981', turmeric: '#FDE047', litmus: '#8B5CF6' },
-    soap: { name: 'Bathing Soap / Detergent', ph: 9.5, type: 'Mild Base', color: '#3B82F6', turmeric: '#991B1B', litmus: '#2563EB' },
-    bleach: { name: 'Lime Water / Bleach', ph: 12.5, type: 'Strong Base', color: '#8B5CF6', turmeric: '#7F1D1D', litmus: '#1D4ED8' }
+  const getSolutionColor = () => {
+    if (selectedIndicator === 'turmeric') {
+      // Turmeric is yellow in acid/neutral (pH <= 7.8), deep red in base (pH > 7.8)
+      if (pHValue >= 8.2) return 'rgba(185, 28, 28, 0.85)'; // deep reddish-brown
+      if (pHValue >= 7.5) return 'rgba(217, 119, 6, 0.85)'; // amber-orange transition
+      return 'rgba(234, 179, 8, 0.85)'; // bright yellow
+    }
+    if (selectedIndicator === 'litmus') {
+      if (pHValue < 6.8) return 'rgba(239, 68, 68, 0.85)'; // red in acid
+      if (pHValue > 7.4) return 'rgba(59, 130, 246, 0.85)'; // blue in base
+      return 'rgba(168, 85, 247, 0.8)'; // purple in neutral
+    }
+    if (selectedIndicator === 'phenolphthalein') {
+      if (pHValue >= 8.5) return 'rgba(236, 72, 153, 0.88)'; // vivid pink/magenta
+      return 'rgba(241, 245, 249, 0.25)'; // colorless
+    }
+    // Universal indicator
+    if (pHValue < 3) return 'rgba(239, 68, 68, 0.85)'; // red
+    if (pHValue < 6) return 'rgba(249, 115, 22, 0.85)'; // orange
+    if (pHValue <= 8) return 'rgba(34, 197, 94, 0.85)'; // green (neutral)
+    if (pHValue <= 11) return 'rgba(59, 130, 246, 0.85)'; // blue
+    return 'rgba(147, 51, 234, 0.85)'; // purple/violet
   };
 
-  // --- 5. Riemann Sum Calculus Lab State ---
-  const [partitionsN, setPartitionsN] = useState<number>(8);
-  // Curve: f(x) = x^2 from 0 to 2. Exact integral = 8/3 ≈ 2.6667
-  const deltaX = 2 / partitionsN;
-  let riemannSum = 0;
-  for (let i = 0; i < partitionsN; i++) {
-    const xMid = (i + 0.5) * deltaX;
-    riemannSum += Math.pow(xMid, 2) * deltaX;
-  }
-  const exactIntegral = 8 / 3;
-  const integralError = Math.abs(riemannSum - exactIntegral);
+  // ==========================================
+  // 4. OHM'S LAW ELECTRIC CIRCUIT STATE
+  // ==========================================
+  const [circuitVoltage, setCircuitVoltage] = useState<number>(12); // Volts
+  const [circuitResistance, setCircuitResistance] = useState<number>(6); // Ohms
+  const circuitCurrent = circuitVoltage / (circuitResistance || 1); // Amperes
+  const circuitPower = circuitVoltage * circuitCurrent; // Watts
 
-  // SVG Sound wave path
-  const waveWidth = 540;
-  const waveHeight = 160;
-  const centerY = waveHeight / 2;
-  const cycles = (frequency / 110) * 2;
-  const ampPixels = (amplitude / 100) * (waveHeight * 0.4);
-  let pathD = `M 0 ${centerY}`;
-  for (let x = 0; x <= waveWidth; x += 3) {
-    const angle = (x / waveWidth) * cycles * 2 * Math.PI;
-    const y = centerY - Math.sin(angle) * ampPixels;
-    pathD += ` L ${x} ${y.toFixed(2)}`;
-  }
+  // ==========================================
+  // 5. FRACTIONS GEOMETRY SLICE STATE
+  // ==========================================
+  const [fractionNum, setFractionNum] = useState<number>(3);
+  const [fractionDenom, setFractionDenom] = useState<number>(4);
+
+  // ==========================================
+  // 6. CELL ORGANELLE EXPLORER STATE
+  // ==========================================
+  const [cellType, setCellType] = useState<'plant' | 'animal'>('plant');
+  const [activeOrganelle, setActiveOrganelle] = useState<string>('nucleus');
+
+  const organellesData: Record<string, { title: string; desc: string; function: string }> = {
+    nucleus: {
+      title: 'Nucleus & Chromatin',
+      desc: 'Double-membrane command center containing genomic DNA.',
+      function: 'Directs transcription, enzyme synthesis, and cell division.',
+    },
+    chloroplast: {
+      title: 'Chloroplast (Plastid)',
+      desc: 'Double-membraned organelle packed with green thylakoids and chlorophyll.',
+      function: 'Captures photons to synthesize glucose via Photosynthesis (6CO₂ + 6H₂O → C₆H₁₂O₆ + 6O₂).',
+    },
+    mitochondria: {
+      title: 'Mitochondria (Powerhouse)',
+      desc: 'Folded inner cristae membranes with ATP synthase complexes.',
+      function: 'Performs Krebs Cycle & oxidative phosphorylation to generate cellular energy (ATP).',
+    },
+    cellwall: {
+      title: 'Cellulose Cell Wall',
+      desc: 'Rigid outer polysaccharide layer encasing the plasma membrane.',
+      function: 'Provides structural rigidity and withstands osmotic turgor pressure.',
+    },
+    vacuole: {
+      title: 'Large Central Vacuole',
+      desc: 'Liquid-filled tonoplast sac occupying up to 90% of plant cell volume.',
+      function: 'Stores nutrients, regulates cellular pH, and maintains turgidity.',
+    },
+  };
+
+  const handleCompleteMastery = () => {
+    markTopicStatus(topic.id, 'mastered');
+    updateCompetency(foundSubject?.name || 'Physics', 98);
+    addXP(100, '3D Lab Mastery');
+    setLabCompleted(true);
+  };
+
+  // 3-Step Graduated Hints for active module
+  const hintsByModule: Record<LabModuleType, Array<{ level: number; title: string; content: string }>> = {
+    'sound-wave': [
+      { level: 1, title: 'Intuition: Pitch vs Loudness', content: 'Striking a fork harder increases Amplitude (volume), NOT Frequency. Frequency dictates how many cycles occur each second.' },
+      { level: 2, title: 'The Wave Speed Relationship', content: 'Wave speed v = f · λ is constant in a given medium. If frequency f doubles, wavelength λ is cut in half!' },
+      { level: 3, title: 'Energy Scaling Law', content: 'Wave kinetic energy flux scales with E ∝ f² · A². Resonant frequency amplification concentrates acoustic power at specific harmonics.' },
+    ],
+    'optics': [
+      { level: 1, title: 'Intuition: The Bending of Rays', content: 'When light moves into an optically rarer medium (glass into air), it speeds up and bends AWAY from the normal line.' },
+      { level: 2, title: 'Snell’s Law Calculation', content: 'n₁ · sin(θ₁) = n₂ · sin(θ₂). When sin(θ₂) exceeds 1, light cannot refract across the boundary at all.' },
+      { level: 3, title: 'Critical Angle & Total Internal Reflection', content: 'For glass (n=1.5) to air (n=1.0), the critical angle is θ_c = arcsin(1/1.5) ≈ 41.8°. Any incident angle greater than this undergoes 100% Total Internal Reflection with zero light leakage!' },
+    ],
+    'ph-indicator': [
+      { level: 1, title: 'Intuition: Natural Color Sensors', content: 'Turmeric paper is a natural yellow indicator. It stays yellow in acids (lemon juice), but turns deep red when touched by alkaline bases (soap).' },
+      { level: 2, title: 'Molecular Mechanism', content: 'Curcumin pigment undergoes deprotonation above pH 8.0, transforming its chemical chromophore into a deep reddish quinoid structure.' },
+      { level: 3, title: 'Neutralization Principle', content: 'Adding an acid (H⁺) to a red soap-stained turmeric cloth neutralizes the base, driving the equilibrium back to bright yellow curcumin!' },
+    ],
+    'electric-circuit': [
+      { level: 1, title: 'Intuition: Voltage Pushes Electrons', content: 'Voltage is electrical pressure. Resistance acts like a constriction in a water pipe that impedes current flow.' },
+      { level: 2, title: 'Ohm’s Law Equation', content: 'V = I · R. If you increase resistance while voltage remains constant at 12V, current (Amperes) drops in inverse proportion.' },
+      { level: 3, title: 'Power Dissipation', content: 'Electrical power P = V · I = I² · R. Lamp brightness depends on power in Watts dissipated across the filament.' },
+    ],
+    'fractions': [
+      { level: 1, title: 'Intuition: Slicing the Whole', content: 'The denominator shows how many equal pieces make up one whole. The numerator tells you how many pieces you have.' },
+      { level: 2, title: 'Equivalent Fractions', content: '2/4, 3/6, and 4/8 all represent the exact same amount of space (50%) as 1/2!' },
+      { level: 3, title: 'Decimal & Percentage Conversion', content: 'Divide the numerator by the denominator: 3 / 4 = 0.75 = 75% of the total unit.' },
+    ],
+    'calculus': [
+      { level: 1, title: 'Intuition: Slope at a Single Point', content: 'A straight line has a constant slope, but a curve changes steepness at every instant.' },
+      { level: 2, title: 'The Secant to Tangent Transition', content: 'As the gap Δx shrinks to zero, the secant line passing through two points morphs into the instantaneous tangent line.' },
+      { level: 3, title: 'Formal Derivative Limit', content: 'f\'(x) = lim (Δx → 0) [f(x + Δx) - f(x)] / Δx. For f(x) = x², f\'(x) = 2x.' },
+    ],
+    'cell-explorer': [
+      { level: 1, title: 'Intuition: The Plant Armor', content: 'Plants stand upright without bones because each plant cell is encased in a rigid cellulose cell wall!' },
+      { level: 2, title: 'Energy Converters: Chloroplasts vs Mitochondria', content: 'Chloroplasts capture sunlight to build glucose (photosynthesis), while mitochondria break down glucose to generate ATP energy.' },
+      { level: 3, title: 'Turgor Pressure & Vacuoles', content: 'The large central vacuole absorbs water, creating hydrostatic pressure against the cell wall that prevents wilting.' },
+    ],
+  };
+
+  const activeHints = hintsByModule[activeModule] || hintsByModule['sound-wave'];
 
   return (
-    <div className="space-y-6">
-      {/* Top Navigation & Header */}
-      <div className="glass-panel rounded-3xl p-6 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <button
-            onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-indigo-600 mb-2 transition-colors cursor-pointer"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" /> Back to Subject
-          </button>
-          <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wider uppercase bg-indigo-100 text-indigo-800 border border-indigo-200">
-              Interactive STEM Inquiry Lab
-            </span>
-            <span className="text-xs font-mono font-medium text-slate-400">{topic.ncertCode}</span>
-          </div>
-          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight mt-1">{topic.title}</h1>
-        </div>
-
-        <div className="flex items-center gap-3">
-          {isCompleted ? (
-            <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-emerald-500 text-white font-bold text-sm shadow-lg shadow-emerald-500/20">
-              <CheckCircle2 className="w-4 h-4" /> Lab Completed (+150 XP)
-            </div>
-          ) : (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.98 }}
+      className="space-y-8 text-white"
+    >
+      {/* Breadcrumb & Lab Header Glass Card */}
+      <Interactive3DCard
+        className={`${GLASS_CARD_FORMULA} !bg-slate-900/80 border-white/15 text-white`}
+        glowColor="rgba(6, 182, 212, 0.35)"
+      >
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-2">
             <button
-              onClick={handleFinishLab}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 text-white font-bold text-sm shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:scale-[1.02] active:scale-[0.98] transition cursor-pointer"
+              onClick={() => navigate(-1)}
+              className="inline-flex items-center gap-1.5 text-xs font-black px-3 py-1.5 rounded-xl border border-white/15 bg-slate-800/80 text-cyan-300 hover:bg-slate-700 shadow-sm transition-all cursor-pointer"
             >
-              <Sparkles className="w-4 h-4" /> Finish & Log Lab Discovery
+              <ChevronLeft className="w-3.5 h-3.5" />
+              <span>Back to Syllabus Timeline</span>
             </button>
-          )}
-        </div>
-      </div>
-
-      {/* Main Interactive Lab Module Display */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column: Interactive Canvas Visualizer (2 Cols) */}
-        <div className="lg:col-span-2 glass-panel rounded-3xl p-6 flex flex-col justify-between min-h-[440px] relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
-
-          {/* Header of Canvas */}
-          <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
-            <div className="flex items-center gap-2">
-              <Activity className="w-5 h-5 text-indigo-600 animate-pulse" />
-              <span className="text-sm font-bold text-slate-800 uppercase tracking-wider">Live Dynamic Simulation Rig</span>
+            <div className="flex items-center gap-2 pt-1">
+              <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-400/40">
+                {topic.ncertCode || 'NCERT INQUIRY LAB'}
+              </span>
+              <span className="text-xs font-bold text-slate-400">
+                Class {currentClass} • Interactive STEM 3D Sandbox
+              </span>
             </div>
-            <div className="text-xs font-mono font-semibold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600">
-              Module: {moduleId.toUpperCase()}
-            </div>
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight">{topic.title}</h1>
+            <p className="text-xs sm:text-sm font-medium text-slate-300 max-w-2xl">
+              {topic.shortDesc}
+            </p>
           </div>
 
-          {/* --- VIEW 1: SOUND WAVE OSCILLOSCOPE --- */}
-          {moduleId === 'sound-wave' && (
-            <div className="flex-1 flex flex-col items-center justify-center p-4">
-              <div className="w-full max-w-xl bg-slate-950 rounded-2xl p-4 shadow-inner border border-slate-800 relative overflow-hidden">
-                <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px] opacity-40" />
-                <svg width="100%" height="160" viewBox={`0 0 ${waveWidth} ${waveHeight}`} className="relative z-10 overflow-visible">
-                  <line x1="0" y1={centerY} x2={waveWidth} y2={centerY} stroke="#334155" strokeWidth="1" strokeDasharray="4 4" />
-                  <line x1={waveWidth / 2} y1="0" x2={waveWidth / 2} y2={waveHeight} stroke="#334155" strokeWidth="1" strokeDasharray="4 4" />
-                  <motion.path
-                    d={pathD}
-                    fill="none"
-                    stroke="#06B6D4"
-                    strokeWidth="3.5"
-                    strokeLinecap="round"
-                    initial={{ pathLength: 0 }}
-                    animate={{ pathLength: 1 }}
-                    transition={{ duration: 0.3 }}
-                    className="drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]"
-                  />
-                </svg>
-                <div className="mt-2 flex items-center justify-between text-[11px] font-mono text-cyan-400">
-                  <span>Frequency: {frequency} Hz</span>
-                  <span>Wavelength: {(343 / frequency).toFixed(2)} m</span>
-                  <span>Amplitude: {amplitude}%</span>
-                </div>
-              </div>
+          <div className="flex items-center gap-3 flex-wrap">
+            {/* Take Topic Diagnostic Test */}
+            {topic.testQuestions && topic.testQuestions.length > 0 && (
+              <button
+                onClick={() => setIsQuizModalOpen(true)}
+                className="px-4 py-2.5 rounded-2xl bg-slate-800/90 hover:bg-slate-700 text-indigo-300 hover:text-white border border-indigo-400/40 font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Diagnostic Quiz ({topic.testQuestions.length} Qs)</span>
+              </button>
+            )}
 
-              <div className="mt-4 flex items-center gap-3">
+            {/* 3D Core View Toggle */}
+            <button
+              onClick={() => setShow3DHolo(!show3DHolo)}
+              className={`px-4 py-2.5 rounded-2xl border text-xs font-black flex items-center gap-2 shadow-md transition-all cursor-pointer ${
+                show3DHolo
+                  ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-white/20'
+                  : 'bg-slate-800 text-cyan-300 border-white/15 hover:bg-slate-700'
+              }`}
+            >
+              <Atom className="w-4 h-4 animate-spin" style={{ animationDuration: '8s' }} />
+              <span>{show3DHolo ? 'Hide 3D Core' : 'View 3D Core'}</span>
+            </button>
+
+            {/* Mark Mastered */}
+            {labCompleted ? (
+              <div className="px-4 py-2.5 rounded-2xl bg-amber-400/20 border border-amber-300/50 text-amber-300 font-black text-xs flex items-center gap-2 shadow-sm">
+                <Award className="w-4 h-4 text-amber-400" />
+                <span>Mastered (+100 XP)</span>
+              </div>
+            ) : (
+              <button
+                onClick={handleCompleteMastery}
+                className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white font-black text-xs flex items-center gap-2 shadow-lg shadow-cyan-500/30 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <span>Mark Mastered & Earn XP</span>
+              </button>
+            )}
+          </div>
+        </div>
+      </Interactive3DCard>
+
+      {/* Optional Interactive 3D Spatial Canvas */}
+      <AnimatePresence>
+        {show3DHolo && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.35 }}
+            className="space-y-3"
+          >
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <span className="text-xs font-black uppercase text-cyan-400 tracking-wider flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                3D Spatial Lab Visualization:
+              </span>
+              <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-slate-900/80 border border-white/15">
                 <button
-                  onClick={handleToggleSound}
-                  disabled={isPlayingAudio}
-                  className="flex items-center gap-2 px-5 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-600 text-white font-bold text-xs shadow-md shadow-cyan-500/20 cursor-pointer disabled:opacity-50"
+                  onClick={() => setSpatialEngine('spatial')}
+                  className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    spatialEngine === 'spatial'
+                      ? 'bg-gradient-to-r from-indigo-600 to-cyan-600 text-white shadow-md'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
                 >
-                  <Volume2 className="w-4 h-4" /> {isPlayingAudio ? 'Synthesizing Tone...' : 'Play Audible Sine Tone'}
+                  3D Spatial Apparatus
+                </button>
+                <button
+                  onClick={() => setSpatialEngine('holo')}
+                  className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    spatialEngine === 'holo'
+                      ? 'bg-gradient-to-r from-indigo-600 to-cyan-600 text-white shadow-md'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Quantum Holo Core
                 </button>
               </div>
             </div>
-          )}
 
-          {/* --- VIEW 2: FRACTIONS PIZZA/CHAPATI CUTTER --- */}
-          {moduleId === 'fractions' && (
-            <div className="flex-1 flex flex-col items-center justify-center p-4">
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-8 w-full max-w-lg">
-                {/* SVG Visual Pie */}
-                <div className="relative w-48 h-48">
-                  <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
-                    {Array.from({ length: totalSlices }).map((_, i) => {
-                      const sliceAngle = 360 / totalSlices;
-                      const startAngle = (i * sliceAngle * Math.PI) / 180;
-                      const endAngle = (((i + 1) * sliceAngle) * Math.PI) / 180;
-                      const x1 = 50 + 45 * Math.cos(startAngle);
-                      const y1 = 50 + 45 * Math.sin(startAngle);
-                      const x2 = 50 + 45 * Math.cos(endAngle);
-                      const y2 = 50 + 45 * Math.sin(endAngle);
-                      const isSelected = i < selectedSlices;
-
-                      return (
-                        <path
-                          key={i}
-                          d={`M 50 50 L ${x1} ${y1} A 45 45 0 0 1 ${x2} ${y2} Z`}
-                          fill={isSelected ? '#F59E0B' : '#F1F5F9'}
-                          stroke="#CBD5E1"
-                          strokeWidth="1.5"
-                          className="transition-colors duration-200 cursor-pointer hover:opacity-90"
-                          onClick={() => setSelectedSlices(i + 1)}
-                        />
-                      );
-                    })}
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="w-10 h-10 rounded-full bg-white/90 shadow-md flex items-center justify-center text-xs font-black text-amber-600">
-                      {selectedSlices}/{totalSlices}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Mathematical Fraction Comparison */}
-                <div className="space-y-3 bg-amber-50/80 border border-amber-200 p-5 rounded-2xl flex-1">
-                  <div className="text-xs font-bold text-amber-900 uppercase">Fraction Analysis</div>
-                  <div className="text-3xl font-black text-amber-600 font-mono">
-                    {selectedSlices} / {totalSlices}
-                  </div>
-                  <div className="text-sm font-semibold text-slate-700">
-                    Decimal Value: <span className="font-mono text-indigo-600">{(selectedSlices / totalSlices).toFixed(2)}</span>
-                  </div>
-                  <div className="text-xs text-slate-600 leading-relaxed">
-                    Percentage: <span className="font-bold text-emerald-600">{((selectedSlices / totalSlices) * 100).toFixed(0)}%</span> of the whole roti.
-                    {selectedSlices / totalSlices === 0.5 && (
-                      <span className="block mt-1 font-bold text-amber-800">✨ Exactly One Half (1/2)!</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* --- VIEW 3: OPTICS SNELL'S LAW & TIR --- */}
-          {moduleId === 'optics' && (
-            <div className="flex-1 flex flex-col items-center justify-center p-4">
-              <div className="w-full max-w-lg bg-slate-900 rounded-2xl p-4 border border-slate-800 relative overflow-hidden">
-                <svg viewBox="0 0 400 240" className="w-full h-48">
-                  {/* Interface Boundary: Air (top) and Glass (bottom) */}
-                  <rect x="0" y="0" width="400" height="120" fill="#0f172a" />
-                  <rect x="0" y="120" width="400" height="120" fill="#1e293b" />
-                  <line x1="0" y1="120" x2="400" y2="120" stroke="#38bdf8" strokeWidth="2" strokeDasharray="3 3" />
-                  <line x1="200" y1="20" x2="200" y2="220" stroke="#64748b" strokeWidth="1" strokeDasharray="4 4" />
-
-                  {/* Incident Ray in Air (from top left to origin at 200,120) */}
-                  {(() => {
-                    const rayLen = 100;
-                    const originX = 200;
-                    const originY = 120;
-                    const startX = originX - rayLen * Math.sin(radI);
-                    const startY = originY - rayLen * Math.cos(radI);
-
-                    // Refracted Ray into Glass
-                    const endX = originX + rayLen * Math.sin(radR);
-                    const endY = originY + rayLen * Math.cos(radR);
-
-                    return (
-                      <g>
-                        {/* Incident laser */}
-                        <line x1={startX} y1={startY} x2={originX} y2={originY} stroke="#EF4444" strokeWidth="3" className="drop-shadow-[0_0_8px_rgba(239,68,68,0.8)]" />
-                        {/* Refracted laser */}
-                        <line x1={originX} y1={originY} x2={endX} y2={endY} stroke="#10B981" strokeWidth="3" className="drop-shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
-                        <circle cx={originX} cy={originY} r="4" fill="#FBBF24" />
-                      </g>
-                    );
-                  })()}
-
-                  <text x="15" y="30" fill="#94a3b8" fontSize="11" fontFamily="monospace">Medium 1: Air (n₁ = 1.00)</text>
-                  <text x="15" y="225" fill="#38bdf8" fontSize="11" fontFamily="monospace">Medium 2: Dense Glass (n₂ = 1.52)</text>
-                </svg>
-
-                <div className="mt-3 flex items-center justify-between text-xs font-mono text-slate-300">
-                  <span>Incidence Angle (i): <b className="text-red-400">{incidenceAngle}°</b></span>
-                  <span>Refraction Angle (r): <b className="text-emerald-400">{refractionAngle}°</b></span>
-                  <span>sin(i)/sin(r) = 1.52</span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* --- VIEW 4: CHEMISTRY PH INDICATOR TEST TUBES --- */}
-          {moduleId === 'ph-indicator' && (
-            <div className="flex-1 flex flex-col items-center justify-center p-4">
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-8 w-full max-w-lg">
-                {/* Visual Test Tube */}
-                <div className="relative flex flex-col items-center">
-                  <div className="w-16 h-48 border-4 border-slate-300 rounded-b-full rounded-t-md p-1 bg-white/50 backdrop-blur-md shadow-lg relative flex flex-col justify-end overflow-hidden">
-                    <motion.div
-                      className="w-full rounded-b-full transition-colors duration-500 shadow-inner"
-                      style={{ height: '70%', backgroundColor: liquidData[selectedLiquid].turmeric }}
-                      animate={{ scale: [0.98, 1, 0.98] }}
-                      transition={{ repeat: Infinity, duration: 3 }}
-                    />
-                    <div className="absolute top-4 left-1/2 -translate-x-1/2 text-[9px] font-mono text-slate-400 font-bold">
-                      TURMERIC
-                    </div>
-                  </div>
-                  <div className="mt-2 text-xs font-bold text-slate-700">Turmeric Reagent</div>
-                </div>
-
-                <div className="relative flex flex-col items-center">
-                  <div className="w-16 h-48 border-4 border-slate-300 rounded-b-full rounded-t-md p-1 bg-white/50 backdrop-blur-md shadow-lg relative flex flex-col justify-end overflow-hidden">
-                    <motion.div
-                      className="w-full rounded-b-full transition-colors duration-500 shadow-inner"
-                      style={{ height: '70%', backgroundColor: liquidData[selectedLiquid].litmus }}
-                      animate={{ scale: [0.98, 1, 0.98] }}
-                      transition={{ repeat: Infinity, duration: 3 }}
-                    />
-                    <div className="absolute top-4 left-1/2 -translate-x-1/2 text-[9px] font-mono text-slate-400 font-bold">
-                      LITMUS
-                    </div>
-                  </div>
-                  <div className="mt-2 text-xs font-bold text-slate-700">Litmus Reagent</div>
-                </div>
-
-                {/* pH Scale Indicator readout */}
-                <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl flex-1 space-y-2">
-                  <div className="text-xs font-bold uppercase text-slate-500">Liquid Sample Profile</div>
-                  <div className="text-base font-black text-slate-800">{liquidData[selectedLiquid].name}</div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold px-2 py-0.5 rounded-md text-white" style={{ backgroundColor: liquidData[selectedLiquid].color }}>
-                      pH {liquidData[selectedLiquid].ph}
-                    </span>
-                    <span className="text-xs font-semibold text-slate-600">{liquidData[selectedLiquid].type}</span>
-                  </div>
-                  <div className="text-xs text-slate-500 pt-2 border-t border-slate-200">
-                    Observation: {liquidData[selectedLiquid].ph < 7 ? 'Acids keep turmeric bright yellow.' : 'Alkaline bases turn yellow turmeric deep red!'}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* --- VIEW 5: RIEMANN SUM CALCULUS --- */}
-          {moduleId === 'calculus' && (
-            <div className="flex-1 flex flex-col items-center justify-center p-4">
-              <div className="w-full max-w-lg bg-slate-900 rounded-2xl p-4 border border-slate-800 relative">
-                <svg viewBox="0 0 320 180" className="w-full h-44">
-                  {/* Axes */}
-                  <line x1="30" y1="150" x2="300" y2="150" stroke="#64748b" strokeWidth="1.5" />
-                  <line x1="30" y1="20" x2="30" y2="150" stroke="#64748b" strokeWidth="1.5" />
-
-                  {/* Riemann Rectangles */}
-                  {Array.from({ length: partitionsN }).map((_, i) => {
-                    const rectW = 250 / partitionsN;
-                    const xL = 30 + i * rectW;
-                    const xVal = ((i + 0.5) / partitionsN) * 2;
-                    const yVal = Math.pow(xVal, 2); // 0 to 4
-                    const rectH = (yVal / 4) * 120;
-                    const yT = 150 - rectH;
-
-                    return (
-                      <rect
-                        key={i}
-                        x={xL}
-                        y={yT}
-                        width={rectW - 1}
-                        height={rectH}
-                        fill="#F59E0B"
-                        opacity="0.6"
-                        stroke="#D97706"
-                        strokeWidth="1"
-                      />
-                    );
-                  })}
-
-                  {/* Smooth curve f(x) = x^2 */}
-                  <path
-                    d={`M 30 150 Q 155 140 280 30`}
-                    fill="none"
-                    stroke="#38BDF8"
-                    strokeWidth="3"
-                  />
-                </svg>
-
-                <div className="mt-3 flex items-center justify-between text-xs font-mono text-slate-300">
-                  <span>Partitions N: <b className="text-amber-400">{partitionsN}</b></span>
-                  <span>Riemann Sum: <b className="text-amber-400">{riemannSum.toFixed(4)}</b></span>
-                  <span>Exact ∫: <b className="text-cyan-400">{exactIntegral.toFixed(4)}</b></span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Footer note */}
-          <div className="text-[11px] text-slate-500 font-medium pt-3 border-t border-slate-100 flex items-center justify-between">
-            <span>Offline Web-Audio & Vector Graphics Engine</span>
-            <span>NCERT Lab Standard</span>
-          </div>
-        </div>
-
-        {/* Right Column: Interactive Sliders & Scientific Variables */}
-        <div className="space-y-6">
-          <div className="glass-panel rounded-3xl p-6">
-            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
-              <Sliders className="w-4 h-4 text-indigo-600" /> Lab Variables Control
-            </h3>
-
-            {/* Variable Controls for Sound */}
-            {moduleId === 'sound-wave' && (
-              <div className="space-y-5">
-                <div>
-                  <div className="flex justify-between text-xs font-bold text-slate-700 mb-1.5">
-                    <span>Frequency (Pitch)</span>
-                    <span className="font-mono text-cyan-600">{frequency} Hz</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="110"
-                    max="880"
-                    step="10"
-                    value={frequency}
-                    onChange={(e) => setFrequency(Number(e.target.value))}
-                    className="w-full accent-cyan-500 cursor-pointer"
-                  />
-                  <div className="flex justify-between text-[10px] text-slate-400 mt-1">
-                    <span>110 Hz (Low Bass)</span>
-                    <span>880 Hz (High Treble)</span>
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between text-xs font-bold text-slate-700 mb-1.5">
-                    <span>Amplitude (Loudness)</span>
-                    <span className="font-mono text-indigo-600">{amplitude}%</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="10"
-                    max="100"
-                    step="5"
-                    value={amplitude}
-                    onChange={(e) => setAmplitude(Number(e.target.value))}
-                    className="w-full accent-indigo-600 cursor-pointer"
-                  />
-                </div>
-              </div>
+            {spatialEngine === 'spatial' ? (
+              <Spatial3DViewer
+                height={320}
+                initialModel={
+                  activeModule === 'optics'
+                    ? 'prism-rainbow'
+                    : activeModule === 'ph-indicator'
+                    ? 'molecule-h2o'
+                    : activeModule === 'cell-explorer'
+                    ? 'dna-helix'
+                    : activeModule === 'electric-circuit'
+                    ? 'magnetic-dipole'
+                    : 'solar-system'
+                }
+              />
+            ) : (
+              <QuantumHoloCore3D height={320} />
             )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-            {/* Variable Controls for Fractions */}
-            {moduleId === 'fractions' && (
-              <div className="space-y-5">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-2">Total Denominator Slices</label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {[2, 4, 8].map((n) => (
+      {/* LAB MODULE SELECTOR TABS */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+        <span className="text-xs font-black uppercase text-cyan-400 tracking-wider flex items-center gap-1 shrink-0">
+          <Layers className="w-4 h-4" /> Switch Virtual Lab:
+        </span>
+        {[
+          { id: 'sound-wave', label: 'Sound Waves', icon: Activity },
+          { id: 'optics', label: 'Ray Optics & TIR', icon: Sun },
+          { id: 'ph-indicator', label: 'Chemistry pH Reagents', icon: TestTube },
+          { id: 'electric-circuit', label: 'Ohm’s Circuit V=IR', icon: Zap },
+          { id: 'fractions', label: 'Fractions Geometry', icon: PieChart },
+          { id: 'cell-explorer', label: 'Cell Organelle 3D', icon: Atom },
+        ].map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeModule === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveModule(tab.id as LabModuleType)}
+              className={`px-3.5 py-2 rounded-2xl text-xs font-bold flex items-center gap-1.5 transition-all shrink-0 cursor-pointer ${
+                isActive
+                  ? 'bg-gradient-to-r from-indigo-600 to-cyan-600 text-white shadow-md shadow-indigo-500/30 border border-white/20'
+                  : 'bg-slate-900/80 hover:bg-slate-800 text-slate-300 border border-white/10'
+              }`}
+            >
+              <Icon className="w-3.5 h-3.5" />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ========================================================= */}
+      {/* ACTIVE LAB SIMULATION BENCH                               */}
+      {/* ========================================================= */}
+      <div className={`${GLASS_CARD_FORMULA} !bg-slate-900/75 border-white/15 text-white overflow-hidden`}>
+        {/* ========================================================= */}
+        {/* 1. SOUND WAVE OSCILLOSCOPE                                */}
+        {/* ========================================================= */}
+        {activeModule === 'sound-wave' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <div className="flex items-center gap-2">
+                <Activity className="w-4 h-4 text-cyan-400" />
+                <span className="text-xs font-black uppercase tracking-wider">
+                  Harmonic Oscilloscope • Continuous Sine Wave
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-mono font-bold text-cyan-400">
+                  f = {frequency} Hz | A = {amplitude} px | λ = {(100 / frequency).toFixed(1)} cm
+                </span>
+                <button
+                  onClick={() => setIsPlaying(!isPlaying)}
+                  className="px-3 py-1 rounded-xl border border-white/15 bg-slate-800 hover:bg-slate-700 text-xs font-bold cursor-pointer"
+                >
+                  {isPlaying ? 'Pause' : 'Resume'}
+                </button>
+              </div>
+            </div>
+
+            {/* Oscilloscope Canvas */}
+            <div className="relative w-full rounded-2xl bg-slate-950/95 border border-cyan-500/30 shadow-[0_0_30px_rgba(6,182,212,0.15)] overflow-hidden p-2">
+              <div
+                className="absolute inset-0 opacity-25 pointer-events-none"
+                style={{
+                  backgroundImage:
+                    'linear-gradient(to right, rgba(56, 189, 248, 0.4) 1px, transparent 1px), linear-gradient(to bottom, rgba(56, 189, 248, 0.4) 1px, transparent 1px)',
+                  backgroundSize: '40px 40px',
+                }}
+              />
+              <svg viewBox="0 0 800 240" className="w-full h-48 sm:h-64 overflow-visible" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="waveLineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#818CF8" />
+                    <stop offset="35%" stopColor="#38BDF8" />
+                    <stop offset="70%" stopColor="#34D399" />
+                    <stop offset="100%" stopColor="#F472B6" />
+                  </linearGradient>
+                </defs>
+                <line x1="0" y1="120" x2="800" y2="120" stroke="rgba(148, 163, 184, 0.25)" strokeDasharray="4,4" strokeWidth="1.5" />
+                <path
+                  d={Array.from({ length: 201 }, (_, i) => {
+                    const x = i * 4;
+                    const normX = (x / 800) * 2 * Math.PI * frequency;
+                    const y = 120 - amplitude * Math.sin(normX + phaseOffset);
+                    return `${i === 0 ? 'M' : 'L'} ${x} ${y.toFixed(2)}`;
+                  }).join(' ')}
+                  fill="none"
+                  stroke="url(#waveLineGrad)"
+                  strokeWidth="4"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </div>
+
+            {/* Controls */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-white/10">
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs font-black">
+                  <span>Frequency (Pitch)</span>
+                  <span className="text-cyan-400 font-mono">{frequency} Hz</span>
+                </div>
+                <input
+                  type="range"
+                  min="1"
+                  max="8"
+                  value={frequency}
+                  onChange={(e) => setFrequency(Number(e.target.value))}
+                  className="w-full accent-cyan-400 cursor-pointer"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs font-black">
+                  <span>Amplitude (Loudness)</span>
+                  <span className="text-cyan-400 font-mono">{amplitude} px</span>
+                </div>
+                <input
+                  type="range"
+                  min="10"
+                  max="75"
+                  step="5"
+                  value={amplitude}
+                  onChange={(e) => setAmplitude(Number(e.target.value))}
+                  className="w-full accent-cyan-400 cursor-pointer"
+                />
+              </div>
+
+              <div className="space-y-2 flex flex-col justify-between">
+                <div className="flex justify-between text-xs font-black">
+                  <span>Harmonic Sound Probe</span>
+                  <span className="text-slate-400 text-[11px]">Audio API</span>
+                </div>
+                <button
+                  onClick={toggleSound}
+                  className={`w-full py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 border transition-all cursor-pointer ${
+                    isAudioActive
+                      ? 'bg-emerald-500 text-white border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.5)]'
+                      : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-white/15'
+                  }`}
+                >
+                  {isAudioActive ? <Volume2 className="w-4 h-4 animate-bounce" /> : <VolumeX className="w-4 h-4" />}
+                  <span>{isAudioActive ? 'Playing Sine Tone...' : 'Play Acoustic Sine Tone'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================= */}
+        {/* 2. RAY OPTICS & SNELL'S LAW REFRACTION / TIR BENCH       */}
+        {/* ========================================================= */}
+        {activeModule === 'optics' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <div className="flex items-center gap-2">
+                <Sun className="w-4 h-4 text-amber-400" />
+                <span className="text-xs font-black uppercase tracking-wider">
+                  Ray Optics Bench • Refraction & Total Internal Reflection (TIR)
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className={`text-xs font-bold px-3 py-1 rounded-full border ${
+                  isTIR
+                    ? 'bg-rose-500/20 text-rose-300 border-rose-400/40 shadow-[0_0_12px_rgba(244,63,94,0.4)] animate-pulse'
+                    : 'bg-cyan-500/20 text-cyan-300 border-cyan-400/40'
+                }`}>
+                  {isTIR ? '🚨 TOTAL INTERNAL REFLECTION (TIR)' : 'Refraction Active'}
+                </span>
+              </div>
+            </div>
+
+            {/* Interactive Ray Optics Graphical Bench */}
+            <div className="relative w-full rounded-2xl bg-slate-950/95 border border-amber-500/30 p-4 overflow-hidden">
+              <svg viewBox="0 0 600 300" className="w-full h-56 sm:h-72">
+                <defs>
+                  <linearGradient id="incidentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#F59E0B" />
+                    <stop offset="100%" stopColor="#FBBF24" />
+                  </linearGradient>
+                  <linearGradient id="refractedGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#38BDF8" />
+                    <stop offset="100%" stopColor="#818CF8" />
+                  </linearGradient>
+                  <linearGradient id="tirGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#F43F5E" />
+                    <stop offset="100%" stopColor="#FB7185" />
+                  </linearGradient>
+                </defs>
+
+                {/* Medium Backgrounds */}
+                <rect x="0" y="0" width="600" height="150" fill={opticsMode === 'glass-to-air' ? 'rgba(30, 41, 59, 0.7)' : 'rgba(15, 23, 42, 0.4)'} />
+                <rect x="0" y="150" width="600" height="150" fill={opticsMode === 'glass-to-air' ? 'rgba(15, 23, 42, 0.4)' : 'rgba(30, 41, 59, 0.7)'} />
+
+                {/* Boundary Interface & Labels */}
+                <line x1="0" y1="150" x2="600" y2="150" stroke="#38BDF8" strokeWidth="2" strokeDasharray="6,4" />
+                <line x1="300" y1="20" x2="300" y2="280" stroke="rgba(255,255,255,0.3)" strokeDasharray="3,3" strokeWidth="1.5" />
+
+                <text x="20" y="40" fill="#94A3B8" fontSize="12" fontWeight="bold">
+                  {opticsMode === 'glass-to-air' ? 'Medium 1: Glass (n₁ = 1.50) [Optically Denser]' : 'Medium 1: Air (n₁ = 1.00)'}
+                </text>
+                <text x="20" y="270" fill="#94A3B8" fontSize="12" fontWeight="bold">
+                  {opticsMode === 'glass-to-air' ? 'Medium 2: Air (n₂ = 1.00) [Optically Rarer]' : 'Medium 2: Glass (n₂ = 1.50)'}
+                </text>
+
+                {/* Light Source & Incident Ray */}
+                {(() => {
+                  const radI = (incidenceAngle * Math.PI) / 180;
+                  const length = 160;
+                  const startX = 300 - length * Math.sin(radI);
+                  const startY = 150 - length * Math.cos(radI);
+
+                  return (
+                    <>
+                      {/* Laser Pointer Emitting Node */}
+                      <circle cx={startX} cy={startY} r="8" fill="#F59E0B" className="animate-pulse" />
+                      <line x1={startX} y1={startY} x2="300" y2="150" stroke="url(#incidentGrad)" strokeWidth="4" strokeLinecap="round" />
+                    </>
+                  );
+                })()}
+
+                {/* Normal Angle Arc */}
+                <path d="M 300 110 A 40 40 0 0 0 280 120" fill="none" stroke="#FBBF24" strokeWidth="2" />
+                <text x="250" y="115" fill="#FBBF24" fontSize="11" fontWeight="bold">θ₁ = {incidenceAngle}°</text>
+
+                {/* Refracted Ray or TIR Reflected Ray */}
+                {isTIR ? (
+                  // Total Internal Reflection Ray
+                  (() => {
+                    const radI = (incidenceAngle * Math.PI) / 180;
+                    const length = 160;
+                    const endX = 300 + length * Math.sin(radI);
+                    const endY = 150 - length * Math.cos(radI);
+                    return (
+                      <>
+                        <line x1="300" y1="150" x2={endX} y2={endY} stroke="url(#tirGrad)" strokeWidth="4.5" strokeLinecap="round" />
+                        <text x="320" y="100" fill="#FB7185" fontSize="11" fontWeight="bold">100% TIR Reflection (θ_r = {incidenceAngle}°)</text>
+                      </>
+                    );
+                  })()
+                ) : (
+                  // Refracted Ray into Medium 2
+                  refractedAngleDeg !== null && (() => {
+                    const radR = (refractedAngleDeg * Math.PI) / 180;
+                    const length = 150;
+                    const endX = 300 + length * Math.sin(radR);
+                    const endY = 150 + length * Math.cos(radR);
+                    return (
+                      <>
+                        <line x1="300" y1="150" x2={endX} y2={endY} stroke="url(#refractedGrad)" strokeWidth="4" strokeLinecap="round" />
+                        <text x="320" y="200" fill="#38BDF8" fontSize="11" fontWeight="bold">θ₂ = {refractedAngleDeg.toFixed(1)}°</text>
+                      </>
+                    );
+                  })()
+                )}
+
+                {/* Interface Impact Point Spark */}
+                <circle cx="300" cy="150" r="5" fill="#FFFFFF" />
+              </svg>
+            </div>
+
+            {/* Optics Controls */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-white/10">
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs font-black">
+                  <span>Incident Angle (θ₁)</span>
+                  <span className="text-amber-400 font-mono">{incidenceAngle}°</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="85"
+                  value={incidenceAngle}
+                  onChange={(e) => setIncidenceAngle(Number(e.target.value))}
+                  className="w-full accent-amber-400 cursor-pointer"
+                />
+                <div className="flex justify-between text-[10px] text-slate-400 font-bold">
+                  <span>Normal (0°)</span>
+                  <span>Grazing (85°)</span>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs font-black">
+                  <span>Optical Interface Mode</span>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setOpticsMode('glass-to-air')}
+                    className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                      opticsMode === 'glass-to-air'
+                        ? 'bg-amber-500/20 text-amber-300 border-amber-400/50'
+                        : 'bg-slate-800 text-slate-400 border-white/10'
+                    }`}
+                  >
+                    Glass → Air (TIR)
+                  </button>
+                  <button
+                    onClick={() => setOpticsMode('air-to-glass')}
+                    className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                      opticsMode === 'air-to-glass'
+                        ? 'bg-cyan-500/20 text-cyan-300 border-cyan-400/50'
+                        : 'bg-slate-800 text-slate-400 border-white/10'
+                    }`}
+                  >
+                    Air → Glass
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-2xl bg-slate-800/80 border border-white/10 text-xs space-y-1">
+                <span className="text-cyan-400 font-black">Physics Diagnostic:</span>
+                <p className="text-[11px] text-slate-300">
+                  {criticalAngleDeg ? (
+                    <>Critical Angle θ_c = <strong>{criticalAngleDeg.toFixed(1)}°</strong>. At θ₁ &gt; θ_c, light undergoes complete Total Internal Reflection!</>
+                  ) : (
+                    <>Light transitions into denser medium; angle of refraction bends towards normal.</>
+                  )}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================= */}
+        {/* 3. CHEMISTRY pH INDICATOR & TITRATION BENCH              */}
+        {/* ========================================================= */}
+        {activeModule === 'ph-indicator' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <div className="flex items-center gap-2">
+                <TestTube className="w-4 h-4 text-purple-400" />
+                <span className="text-xs font-black uppercase tracking-wider">
+                  Chemistry Lab • Natural Turmeric & Litmus Acid-Base Indicators
+                </span>
+              </div>
+              <span className="text-xs font-mono font-bold text-cyan-400">
+                pH = {pHValue.toFixed(1)} | [H⁺] = 10⁻{pHValue.toFixed(1)} M
+              </span>
+            </div>
+
+            {/* Virtual Chemical Beaker & Reagent Simulation */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+              {/* Beaker Graphic */}
+              <div className="md:col-span-5 flex flex-col items-center justify-center p-6 rounded-2xl bg-slate-950/90 border border-purple-500/30">
+                <div className="relative w-40 h-52 border-4 border-t-0 border-white/60 rounded-b-3xl overflow-hidden flex items-end justify-center shadow-xl">
+                  {/* Graduated markings */}
+                  <div className="absolute left-2 top-8 w-4 h-0.5 bg-white/40" />
+                  <div className="absolute left-2 top-16 w-6 h-0.5 bg-white/40" />
+                  <div className="absolute left-2 top-24 w-4 h-0.5 bg-white/40" />
+                  <div className="absolute left-2 top-32 w-6 h-0.5 bg-white/40" />
+
+                  {/* Liquid inside beaker */}
+                  <motion.div
+                    animate={{ backgroundColor: getSolutionColor() }}
+                    transition={{ duration: 0.4 }}
+                    className="w-full h-36 rounded-b-2xl relative shadow-inner flex items-center justify-center"
+                  >
+                    <div className="absolute top-2 w-full h-2 bg-white/20 rounded-full" />
+                    <span className="text-white font-black text-sm drop-shadow-md">
+                      pH {pHValue.toFixed(1)}
+                    </span>
+                  </motion.div>
+                </div>
+                <div className="text-center mt-3 text-xs font-bold text-slate-300">
+                  {pHValue < 6.8 ? 'Acidic Solution (H⁺ excess)' : pHValue > 7.4 ? 'Alkaline Base (OH⁻ excess)' : 'Neutral Solution (Pure Water)'}
+                </div>
+              </div>
+
+              {/* Indicator Controls & Household Presets */}
+              <div className="md:col-span-7 space-y-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between text-xs font-black">
+                    <span>Solution pH Level</span>
+                    <span className="text-purple-400 font-mono font-bold">{pHValue.toFixed(1)} / 14.0</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="14"
+                    step="0.1"
+                    value={pHValue}
+                    onChange={(e) => setPHValue(Number(e.target.value))}
+                    className="w-full accent-purple-400 cursor-pointer"
+                  />
+                  <div className="flex justify-between text-[10px] text-slate-400 font-bold">
+                    <span>Strong Acid (pH 0)</span>
+                    <span>Neutral (pH 7)</span>
+                    <span>Strong Base (pH 14)</span>
+                  </div>
+                </div>
+
+                {/* Reagent Selector */}
+                <div className="space-y-1.5">
+                  <span className="text-xs font-bold text-slate-300">Selected Indicator Reagent:</span>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { id: 'turmeric', label: 'Natural Turmeric (Curcumin)' },
+                      { id: 'litmus', label: 'Litmus Paper (Red/Blue)' },
+                      { id: 'phenolphthalein', label: 'Phenolphthalein' },
+                      { id: 'universal', label: 'Universal Indicator' },
+                    ].map((ind) => (
                       <button
-                        key={n}
-                        onClick={() => {
-                          setTotalSlices(n);
-                          if (selectedSlices > n) setSelectedSlices(n);
-                        }}
-                        className={`py-2 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
-                          totalSlices === n
-                            ? 'bg-amber-500 text-white border-amber-600 shadow-md shadow-amber-500/20'
-                            : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                        key={ind.id}
+                        onClick={() => setSelectedIndicator(ind.id as any)}
+                        className={`p-2 rounded-xl text-xs font-bold border transition-all cursor-pointer text-left ${
+                          selectedIndicator === ind.id
+                            ? 'bg-purple-600 text-white border-purple-400 shadow-md'
+                            : 'bg-slate-800 text-slate-300 border-white/10 hover:bg-slate-700'
                         }`}
                       >
-                        {n} Slices
+                        {ind.label}
                       </button>
                     ))}
                   </div>
                 </div>
 
-                <div>
-                  <div className="flex justify-between text-xs font-bold text-slate-700 mb-1.5">
-                    <span>Shaded Slices (Numerator)</span>
-                    <span className="font-mono text-amber-600">{selectedSlices} of {totalSlices}</span>
+                {/* Quick Household Presets */}
+                <div className="space-y-1.5 pt-2">
+                  <span className="text-xs font-bold text-slate-300">Real-World NCERT Samples:</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      { label: 'Lemon Juice', ph: 2.2 },
+                      { label: 'Vinegar', ph: 2.8 },
+                      { label: 'Pure Water', ph: 7.0 },
+                      { label: 'Baking Soda', ph: 8.5 },
+                      { label: 'Soap Solution', ph: 10.0 },
+                      { label: 'Lime Water', ph: 11.5 },
+                    ].map((item) => (
+                      <button
+                        key={item.label}
+                        onClick={() => setPHValue(item.ph)}
+                        className="px-2.5 py-1 rounded-lg text-[11px] font-bold border border-white/15 bg-slate-800/80 hover:bg-slate-700 text-slate-200 transition-all cursor-pointer"
+                      >
+                        {item.label} (pH {item.ph})
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================= */}
+        {/* 4. OHM'S LAW ELECTRIC CIRCUIT V = IR                     */}
+        {/* ========================================================= */}
+        {activeModule === 'electric-circuit' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <div className="flex items-center gap-2">
+                <Zap className="w-4 h-4 text-amber-400" />
+                <span className="text-xs font-black uppercase tracking-wider">
+                  Virtual Circuit Board • Ohm’s Law V = I × R
+                </span>
+              </div>
+              <div className="flex items-center gap-3 font-mono text-xs font-bold text-cyan-400">
+                <span>V = {circuitVoltage}V</span> | <span>R = {circuitResistance}Ω</span> | <span>I = {circuitCurrent.toFixed(2)}A</span>
+              </div>
+            </div>
+
+            {/* Interactive Circuit Schematic */}
+            <div className="relative w-full rounded-2xl bg-slate-950/95 border border-amber-500/30 p-6 overflow-hidden">
+              <svg viewBox="0 0 600 240" className="w-full h-52 sm:h-64">
+                {/* Copper Wires */}
+                <rect x="80" y="40" width="440" height="160" fill="none" stroke="#F59E0B" strokeWidth="3" rx="16" />
+
+                {/* Battery on Left */}
+                <rect x="65" y="100" width="30" height="40" fill="#1E293B" stroke="#38BDF8" strokeWidth="2" rx="6" />
+                <line x1="72" y1="110" x2="88" y2="110" stroke="#EF4444" strokeWidth="3" />
+                <line x1="76" y1="130" x2="84" y2="130" stroke="#38BDF8" strokeWidth="2" />
+                <text x="50" y="95" fill="#38BDF8" fontSize="11" fontWeight="bold">{circuitVoltage}V Battery</text>
+
+                {/* Resistor on Top */}
+                <rect x="250" y="30" width="100" height="20" fill="#78350F" stroke="#FDE68A" strokeWidth="2" rx="4" />
+                <text x="270" y="24" fill="#FDE68A" fontSize="11" fontWeight="bold">{circuitResistance} Ω Resistor</text>
+
+                {/* Lamp on Right */}
+                <circle
+                  cx="520"
+                  cy="120"
+                  r="24"
+                  fill={`rgba(251, 191, 36, ${Math.min(1, Math.max(0.1, circuitPower / 40))})`}
+                  stroke="#F59E0B"
+                  strokeWidth="2.5"
+                  className={circuitCurrent > 0.1 ? 'animate-pulse' : ''}
+                />
+                <text x="505" y="125" fill="#FFFFFF" fontSize="12" fontWeight="bold">💡</text>
+                <text x="490" y="165" fill="#FBBF24" fontSize="10" fontWeight="bold">{circuitPower.toFixed(1)}W Lamp</text>
+
+                {/* Digital Ammeter on Bottom */}
+                <rect x="250" y="185" width="100" height="30" fill="#0F172A" stroke="#34D399" strokeWidth="2" rx="6" />
+                <text x="268" y="205" fill="#34D399" fontSize="13" fontWeight="bold" fontFamily="monospace">
+                  {circuitCurrent.toFixed(2)} A
+                </text>
+              </svg>
+            </div>
+
+            {/* Circuit Sliders */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-white/10">
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs font-black">
+                  <span>Battery Potential Difference (Voltage)</span>
+                  <span className="text-cyan-400 font-mono">{circuitVoltage} Volts</span>
+                </div>
+                <input
+                  type="range"
+                  min="1"
+                  max="24"
+                  value={circuitVoltage}
+                  onChange={(e) => setCircuitVoltage(Number(e.target.value))}
+                  className="w-full accent-cyan-400 cursor-pointer"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs font-black">
+                  <span>Conductor Resistance (R)</span>
+                  <span className="text-amber-400 font-mono">{circuitResistance} Ohms</span>
+                </div>
+                <input
+                  type="range"
+                  min="1"
+                  max="20"
+                  value={circuitResistance}
+                  onChange={(e) => setCircuitResistance(Number(e.target.value))}
+                  className="w-full accent-amber-400 cursor-pointer"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================= */}
+        {/* 5. FRACTIONS GEOMETRY SLICES BENCH                        */}
+        {/* ========================================================= */}
+        {activeModule === 'fractions' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <div className="flex items-center gap-2">
+                <PieChart className="w-4 h-4 text-amber-400" />
+                <span className="text-xs font-black uppercase tracking-wider">
+                  Mathematics Fractions Sandbox • Visual Geometric Slices
+                </span>
+              </div>
+              <span className="text-xs font-mono font-bold text-amber-400">
+                {fractionNum} / {fractionDenom} = {((fractionNum / fractionDenom) * 100).toFixed(0)}%
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+              {/* Pie Chart Display */}
+              <div className="md:col-span-5 flex flex-col items-center justify-center p-6 rounded-2xl bg-slate-950/90 border border-amber-500/30">
+                <svg viewBox="0 0 200 200" className="w-44 h-44">
+                  <circle cx="100" cy="100" r="80" fill="rgba(255,255,255,0.08)" stroke="#F59E0B" strokeWidth="2" />
+                  {/* Slices */}
+                  {Array.from({ length: fractionDenom }, (_, idx) => {
+                    const startAngle = (idx * 2 * Math.PI) / fractionDenom - Math.PI / 2;
+                    const endAngle = ((idx + 1) * 2 * Math.PI) / fractionDenom - Math.PI / 2;
+                    const x1 = 100 + 80 * Math.cos(startAngle);
+                    const y1 = 100 + 80 * Math.sin(startAngle);
+                    const x2 = 100 + 80 * Math.cos(endAngle);
+                    const y2 = 100 + 80 * Math.sin(endAngle);
+                    const isFilled = idx < fractionNum;
+
+                    return (
+                      <path
+                        key={idx}
+                        d={`M 100 100 L ${x1} ${y1} A 80 80 0 0 1 ${x2} ${y2} Z`}
+                        fill={isFilled ? '#F59E0B' : 'transparent'}
+                        stroke="#0F172A"
+                        strokeWidth="2"
+                        className="transition-all"
+                      />
+                    );
+                  })}
+                </svg>
+                <div className="text-center mt-3 text-sm font-black text-amber-300">
+                  {fractionNum} of {fractionDenom} equal partitions taken
+                </div>
+              </div>
+
+              {/* Fraction Sliders */}
+              <div className="md:col-span-7 space-y-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between text-xs font-black">
+                    <span>Numerator (Parts Taken)</span>
+                    <span className="text-amber-400 font-mono">{fractionNum}</span>
                   </div>
                   <input
                     type="range"
                     min="1"
-                    max={totalSlices}
-                    value={selectedSlices}
-                    onChange={(e) => setSelectedSlices(Number(e.target.value))}
-                    className="w-full accent-amber-500 cursor-pointer"
+                    max={fractionDenom}
+                    value={fractionNum}
+                    onChange={(e) => setFractionNum(Number(e.target.value))}
+                    className="w-full accent-amber-400 cursor-pointer"
                   />
                 </div>
-              </div>
-            )}
 
-            {/* Variable Controls for Optics */}
-            {moduleId === 'optics' && (
-              <div className="space-y-5">
-                <div>
-                  <div className="flex justify-between text-xs font-bold text-slate-700 mb-1.5">
-                    <span>Incident Laser Angle (i)</span>
-                    <span className="font-mono text-red-500">{incidenceAngle}°</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="5"
-                    max="80"
-                    step="1"
-                    value={incidenceAngle}
-                    onChange={(e) => setIncidenceAngle(Number(e.target.value))}
-                    className="w-full accent-red-500 cursor-pointer"
-                  />
-                  <div className="flex justify-between text-[10px] text-slate-400 mt-1">
-                    <span>0° (Normal incidence)</span>
-                    <span>80° (Grazing ray)</span>
-                  </div>
-                </div>
-
-                <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 text-xs text-blue-900 leading-relaxed">
-                  Notice that when light enters dense glass, the ray bends <b>towards the normal</b> (r &lt; i).
-                </div>
-              </div>
-            )}
-
-            {/* Variable Controls for pH Indicator */}
-            {moduleId === 'ph-indicator' && (
-              <div className="space-y-4">
-                <label className="block text-xs font-bold text-slate-700">Choose Household Reagent</label>
                 <div className="space-y-2">
-                  {(['lemon', 'vinegar', 'water', 'soap', 'bleach'] as const).map((key) => (
-                    <button
-                      key={key}
-                      onClick={() => setSelectedLiquid(key)}
-                      className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold border transition-all flex items-center justify-between cursor-pointer ${
-                        selectedLiquid === key
-                          ? 'bg-purple-600 text-white border-purple-700 shadow-md shadow-purple-500/20'
-                          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
-                      }`}
-                    >
-                      <span>{liquidData[key].name}</span>
-                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-black/10">pH {liquidData[key].ph}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Variable Controls for Calculus */}
-            {moduleId === 'calculus' && (
-              <div className="space-y-5">
-                <div>
-                  <div className="flex justify-between text-xs font-bold text-slate-700 mb-1.5">
-                    <span>Number of Partitions (N)</span>
-                    <span className="font-mono text-amber-600">{partitionsN} slices</span>
+                  <div className="flex justify-between text-xs font-black">
+                    <span>Denominator (Total Partitions)</span>
+                    <span className="text-cyan-400 font-mono">{fractionDenom}</span>
                   </div>
                   <input
                     type="range"
-                    min="4"
-                    max="64"
-                    step="4"
-                    value={partitionsN}
-                    onChange={(e) => setPartitionsN(Number(e.target.value))}
-                    className="w-full accent-amber-500 cursor-pointer"
+                    min="2"
+                    max="12"
+                    value={fractionDenom}
+                    onChange={(e) => {
+                      const newDenom = Number(e.target.value);
+                      setFractionDenom(newDenom);
+                      if (fractionNum > newDenom) setFractionNum(newDenom);
+                    }}
+                    className="w-full accent-cyan-400 cursor-pointer"
                   />
-                  <div className="flex justify-between text-[10px] text-slate-400 mt-1">
-                    <span>N=4 (Rough sum)</span>
-                    <span>N=64 (Near exact ∫)</span>
-                  </div>
                 </div>
 
-                <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 leading-relaxed font-mono">
-                  Approximation Error: {integralError.toFixed(5)}
+                <div className="p-3 rounded-2xl bg-slate-800/80 border border-white/10 text-xs space-y-1">
+                  <span className="text-cyan-400 font-black">Equivalent Form:</span>
+                  <p className="text-[11px] text-slate-300">
+                    Decimal Value: <strong>{(fractionNum / fractionDenom).toFixed(3)}</strong> • Fraction Percentage: <strong>{((fractionNum / fractionDenom) * 100).toFixed(1)}%</strong>
+                  </p>
                 </div>
               </div>
-            )}
+            </div>
           </div>
+        )}
 
-          {/* Scientific Concept Explainer Callout */}
-          <div className="glass-panel rounded-3xl p-6 bg-gradient-to-br from-indigo-50/50 to-white/70 border border-indigo-100">
-            <h4 className="text-xs font-bold text-indigo-900 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-              <Info className="w-4 h-4 text-indigo-600" /> Scientific Core Takeaway
-            </h4>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              {topic.shortDesc}
+        {/* ========================================================= */}
+        {/* 6. CELL ORGANELLE EXPLORER                                */}
+        {/* ========================================================= */}
+        {activeModule === 'cell-explorer' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <div className="flex items-center gap-2">
+                <Atom className="w-4 h-4 text-emerald-400" />
+                <span className="text-xs font-black uppercase tracking-wider">
+                  Biology 3D Sandbox • Plant vs Animal Cell Structure
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setCellType('plant')}
+                  className={`px-3 py-1 rounded-xl text-xs font-bold border cursor-pointer ${
+                    cellType === 'plant' ? 'bg-emerald-600 text-white border-emerald-400' : 'bg-slate-800 text-slate-300'
+                  }`}
+                >
+                  Plant Cell
+                </button>
+                <button
+                  onClick={() => setCellType('animal')}
+                  className={`px-3 py-1 rounded-xl text-xs font-bold border cursor-pointer ${
+                    cellType === 'animal' ? 'bg-indigo-600 text-white border-indigo-400' : 'bg-slate-800 text-slate-300'
+                  }`}
+                >
+                  Animal Cell
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+              {/* Organelle Click Palette */}
+              <div className="md:col-span-5 flex flex-wrap gap-2">
+                {Object.entries(organellesData).map(([key, data]) => (
+                  <button
+                    key={key}
+                    onClick={() => setActiveOrganelle(key)}
+                    className={`w-full p-3 rounded-2xl text-left border transition-all cursor-pointer ${
+                      activeOrganelle === key
+                        ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white border-emerald-400 shadow-md'
+                        : 'bg-slate-800/80 text-slate-300 border-white/10 hover:bg-slate-700'
+                    }`}
+                  >
+                    <div className="font-bold text-xs">{data.title}</div>
+                    <div className="text-[10px] text-slate-300 truncate">{data.desc}</div>
+                  </button>
+                ))}
+              </div>
+
+              {/* Organelle Deep Dive Card */}
+              <div className="md:col-span-7 p-6 rounded-2xl bg-slate-950/90 border border-emerald-500/30 space-y-3">
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                    Organelle Profile
+                  </span>
+                  <h3 className="text-lg font-black text-white">{organellesData[activeOrganelle]?.title}</h3>
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  {organellesData[activeOrganelle]?.desc}
+                </p>
+                <div className="pt-2 border-t border-white/10">
+                  <span className="text-xs font-bold text-emerald-400 block mb-1">Biological Function:</span>
+                  <p className="text-xs text-slate-200">
+                    {organellesData[activeOrganelle]?.function}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 3-STEP GRADUATED HINTS ACCORDION */}
+      <div className={`${GLASS_CARD_FORMULA} !bg-slate-900/75 border-white/15 text-white`}>
+        <div className="flex items-center gap-2.5 pb-4 border-b border-white/10 mb-4">
+          <div className="w-8 h-8 rounded-xl bg-amber-400/20 text-amber-400 flex items-center justify-center font-black">
+            <HelpCircle className="w-4.5 h-4.5" />
+          </div>
+          <div>
+            <h2 className="text-base font-black">3-Step Graduated Inquiry Hints</h2>
+            <p className="text-xs font-medium text-slate-400">
+              Scaffolded prompts from initial conceptual spark to complete mathematical derivation
             </p>
           </div>
         </div>
+
+        <div className="space-y-3">
+          {activeHints.map((hint, idx) => {
+            const isOpen = activeHintIndex === idx;
+
+            return (
+              <motion.div
+                key={hint.level}
+                layout
+                className="rounded-2xl border border-white/15 bg-slate-800/60 overflow-hidden"
+              >
+                <button
+                  onClick={() => setActiveHintIndex(isOpen ? null : idx)}
+                  className="w-full px-5 py-3.5 flex items-center justify-between text-left cursor-pointer hover:bg-slate-800/90 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="w-6 h-6 rounded-full bg-gradient-to-r from-indigo-600 to-cyan-600 text-white text-xs font-black flex items-center justify-center shadow-md">
+                      {hint.level}
+                    </span>
+                    <span className="text-xs sm:text-sm font-extrabold">{hint.title}</span>
+                  </div>
+                  <motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                    <ChevronDown className="w-4 h-4 text-slate-400" />
+                  </motion.div>
+                </button>
+
+                <AnimatePresence>
+                  {isOpen && (
+                    <motion.div
+                      layout
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="px-5 pb-4 pt-1 text-xs sm:text-sm font-medium border-t border-white/10 bg-slate-900/40 text-slate-300 leading-relaxed"
+                    >
+                      {hint.content}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            );
+          })}
+        </div>
       </div>
-    </div>
+
+      {/* Topic Diagnostic Quiz Modal Trigger */}
+      {topic.testQuestions && topic.testQuestions.length > 0 && (
+        <TopicQuizModal
+          activity={topic}
+          subjectCategory={foundSubject?.category || 'physics'}
+          isOpen={isQuizModalOpen}
+          onClose={() => setIsQuizModalOpen(false)}
+        />
+      )}
+    </motion.div>
   );
 };
+
+export default InquiryLabView;

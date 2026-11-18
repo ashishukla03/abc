@@ -1,163 +1,357 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Sparkles, Compass, ShieldCheck, Flame, BookOpen, ArrowRight, Play, CheckCircle, Orbit, Atom, Layers, Crown, Star } from 'lucide-react';
-import { useSessionStore } from '../store/useSessionStore';
-import { Subject3DArt } from '../components/ui/Subject3DArt';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Sparkles,
+  Trophy,
+  ArrowRight,
+  Zap,
+  Target,
+  BookOpen,
+  Layers,
+  Award,
+  Atom,
+  Film,
+  Activity,
+  Compass,
+  FileCheck,
+  School,
+  Bot,
+  User,
+  Sun,
+  RotateCw,
+} from 'lucide-react';
+import { useAppStore } from '../store/useAppStore';
+import { CompetencyRadar } from '../components/ui/CompetencyRadar';
+import { QuantumHoloCore3D } from '../components/ui/QuantumHoloCore3D';
+import { Spatial3DViewer } from '../components/ui/Spatial3DViewer';
+import { Interactive3DCard } from '../components/ui/Interactive3DCard';
+import { CinematicFilmModal } from '../components/ui/CinematicFilmModal';
+import { AITutorModal } from '../components/modals/AITutorModal';
+import { GLASS_CARD_FORMULA } from '../components/ui/AppleGlassCard';
+import { ncertCurriculum } from '../data/curriculumData';
 
 export const DashboardView: React.FC = () => {
-  const navigate = useNavigate();
-  const { selectedClass, curriculumStage, getCurrentCurriculum, userProfile } = useSessionStore();
-  const curriculum = getCurrentCurriculum();
+  const { user, currentClass, updateCompetency, addXP } = useAppStore();
+  const [isFilmOpen, setIsFilmOpen] = useState(false);
+  const [isAITutorOpen, setIsAITutorOpen] = useState(false);
+  const [active3DEngine, setActive3DEngine] = useState<'holo' | 'spatial'>('spatial');
+
+  const subjectsForClass = ncertCurriculum[currentClass] || [];
+  const subjectList = Array.isArray(subjectsForClass)
+    ? subjectsForClass
+    : subjectsForClass.subjects || [];
+
+  const xpForNextLevel = user.level * 250;
+  const xpCurrentLevelBase = (user.level - 1) * 250;
+  const progressPercent = Math.min(
+    100,
+    Math.max(0, Math.round(((user.xp - xpCurrentLevelBase) / (xpForNextLevel - xpCurrentLevelBase)) * 100))
+  );
 
   return (
-    <div className="space-y-8">
-      {/* Grand Hero Showcase with Royal Opal Glass and Ambient Futuristic Sheen */}
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-        className="relative overflow-hidden rounded-3xl p-8 sm:p-12 glass-royal-card border border-white/95"
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -16 }}
+      transition={{ duration: 0.35, ease: 'easeOut' }}
+      className="space-y-8 text-white"
+    >
+      {/* Hero Welcome Glass Card */}
+      <Interactive3DCard
+        className={`${GLASS_CARD_FORMULA} !bg-slate-900/80 border-white/15 text-white`}
+        glowColor="rgba(56, 189, 248, 0.35)"
       >
-        {/* Subtle decorative background glow orbs */}
-        <div className="absolute top-0 right-10 w-96 h-96 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-10 -left-10 w-80 h-80 bg-amber-400/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="space-y-2.5">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-indigo-500/25 via-cyan-500/25 to-teal-500/25 border border-cyan-400/40 text-cyan-300 text-xs font-black shadow-[0_0_12px_rgba(6,182,212,0.2)]">
+              <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-spin" style={{ animationDuration: '6s' }} />
+              <span>Learner Model • Active NCERT Session</span>
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-black tracking-tight">
+              Welcome back,{' '}
+              <span className="bg-gradient-to-r from-cyan-400 via-indigo-300 to-fuchsia-400 bg-clip-text text-transparent">
+                {user.name}
+              </span>
+              !
+            </h1>
+            <p className="text-sm font-semibold flex items-center gap-2 text-slate-300 flex-wrap">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse" />
+              <span>{user.school}</span>
+              <span className="opacity-40">•</span>
+              <span className="text-cyan-400 font-bold">Class {currentClass} Scholar</span>
+              <span className="opacity-40">•</span>
+              <span className="text-amber-400 font-bold">Level {user.level}</span>
+            </p>
 
-        <div className="max-w-3xl mx-auto text-center relative z-10">
-          <motion.div
-            initial={{ scale: 0.85, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.1, duration: 0.45 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-indigo-500/15 via-purple-500/10 to-amber-500/15 border border-indigo-200/90 mb-5 shadow-sm"
-          >
-            <Crown className="w-4 h-4 text-amber-500 fill-amber-500 animate-pulse" />
-            <span className="text-xs font-black text-indigo-950 tracking-wider uppercase font-mono">
-              {curriculum.stageLabel} • {curriculum.gradeBandName}
-            </span>
-            <Star className="w-3.5 h-3.5 text-indigo-600 fill-indigo-600" />
-          </motion.div>
+            {/* Quick XP Progress Pill */}
+            <div className="pt-2 max-w-md space-y-1">
+              <div className="flex justify-between text-[11px] font-bold text-slate-400">
+                <span>XP to Level {user.level + 1}</span>
+                <span className="text-cyan-300 font-mono">{user.xp} / {xpForNextLevel} XP</span>
+              </div>
+              <div className="w-full h-2 rounded-full bg-slate-800 border border-white/10 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-indigo-500"
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
+            </div>
+          </div>
 
-          <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-slate-900 leading-[1.08] mb-4">
-            Gramin <span className="bg-gradient-to-r from-indigo-600 via-indigo-700 to-cyan-500 bg-clip-text text-transparent">PocketLab</span>
-          </h1>
-          <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto mb-8 leading-relaxed font-semibold">
-            Explore authentic science experiments and mathematics investigations designed specifically for offline rural schools. Aligned to official NCERT standards with zero internet dependency.
-          </p>
+          <div className="flex items-center gap-3 flex-wrap">
+            {/* Watch Film Button */}
+            <button
+              onClick={() => setIsFilmOpen(true)}
+              className="inline-flex items-center gap-2 px-4 py-3 rounded-2xl bg-slate-800/90 hover:bg-slate-800 text-cyan-300 hover:text-white border border-cyan-400/40 shadow-[0_0_15px_rgba(6,182,212,0.25)] font-bold text-xs transition-all hover:scale-105 active:scale-95 cursor-pointer"
+            >
+              <Film className="w-4 h-4 text-cyan-400 animate-pulse" />
+              <span>Overview Film</span>
+            </button>
 
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <motion.div
-              whileHover={{ scale: 1.05, y: -2 }}
-              whileTap={{ scale: 0.95 }}
-              className="inline-flex items-center gap-2 px-4.5 py-2.5 rounded-2xl text-xs font-black bg-emerald-500/15 text-emerald-950 border border-emerald-300/80 shadow-sm backdrop-blur-md cursor-pointer active-click-pulse"
+            {/* Total XP Card Link */}
+            <Link
+              to="/profile"
+              className="px-5 py-3 rounded-2xl border border-white/15 bg-slate-800/80 hover:bg-slate-800 backdrop-blur-xl shadow-lg flex items-center gap-3.5 transition-all hover:scale-105 group"
             >
-              <CheckCircle className="w-4 h-4 text-emerald-600" />
-              {curriculum.subjects.length} Flagship NCERT Laboratories
-            </motion.div>
-            <motion.div
-              whileHover={{ scale: 1.05, y: -2 }}
-              whileTap={{ scale: 0.95 }}
-              className="inline-flex items-center gap-2 px-4.5 py-2.5 rounded-2xl text-xs font-black bg-teal-500/15 text-teal-950 border border-teal-300/80 shadow-sm backdrop-blur-md cursor-pointer active-click-pulse"
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500/30 to-orange-500/30 border border-amber-400/40 text-amber-300 flex items-center justify-center font-black shadow-[0_0_12px_rgba(245,158,11,0.3)]">
+                <Trophy className="w-5 h-5 text-amber-400 group-hover:rotate-12 transition-transform" />
+              </div>
+              <div>
+                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total XP</div>
+                <div className="text-xl font-black tracking-tight text-white">{user.xp.toLocaleString()}</div>
+              </div>
+            </Link>
+
+            <Link
+              to="/courses"
+              className="inline-flex items-center gap-2 px-5 py-3.5 rounded-2xl bg-gradient-to-r from-indigo-600 via-cyan-600 to-teal-500 hover:from-indigo-500 hover:to-cyan-400 text-white font-black text-sm shadow-[0_8px_25px_rgba(79,70,229,0.45)] border border-white/20 transition-all hover:scale-105 active:scale-95"
             >
-              <ShieldCheck className="w-4 h-4 text-teal-600" />
-              100% Offline IndexedDB & Audio Engine
-            </motion.div>
-            <motion.div
-              whileHover={{ scale: 1.05, y: -2 }}
-              whileTap={{ scale: 0.95 }}
-              className="inline-flex items-center gap-2 px-4.5 py-2.5 rounded-2xl text-xs font-black bg-amber-500/15 text-amber-950 border border-amber-300/80 shadow-sm backdrop-blur-md cursor-pointer active-click-pulse"
-            >
-              <Flame className="w-4 h-4 text-amber-500 fill-amber-500" />
-              {userProfile.streakDays}-Day Learning Streak Active
-            </motion.div>
+              <span>Explore Subjects</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
         </div>
-      </motion.div>
+      </Interactive3DCard>
 
-      {/* Core Subjects Grid with 3D-styled glass bento cards and motion graphics */}
-      <section>
-        <div className="flex items-center justify-between mb-5">
-          <div>
-            <h2 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-              <Layers className="w-6 h-6 text-indigo-600" /> Core STEM Field Laboratories
+      {/* QUICK LAUNCH BENTO GRID */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <Link
+          to="/courses"
+          className="p-4 rounded-2xl bg-slate-900/70 border border-white/15 hover:border-cyan-400/50 shadow-md transition-all hover:translate-y-[-2px] group"
+        >
+          <div className="w-10 h-10 rounded-xl bg-indigo-500/20 text-cyan-400 flex items-center justify-center mb-2.5 group-hover:scale-110 transition-transform">
+            <BookOpen className="w-5 h-5" />
+          </div>
+          <h3 className="text-sm font-black text-white group-hover:text-cyan-300 transition-colors">Class Subjects</h3>
+          <p className="text-[11px] text-slate-400 mt-0.5">Explore chapter timelines & 3D labs</p>
+        </Link>
+
+        <Link
+          to="/exams"
+          className="p-4 rounded-2xl bg-slate-900/70 border border-white/15 hover:border-purple-400/50 shadow-md transition-all hover:translate-y-[-2px] group"
+        >
+          <div className="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-300 flex items-center justify-center mb-2.5 group-hover:scale-110 transition-transform">
+            <FileCheck className="w-5 h-5" />
+          </div>
+          <h3 className="text-sm font-black text-white group-hover:text-purple-300 transition-colors">Mock Exams</h3>
+          <p className="text-[11px] text-slate-400 mt-0.5">Board-calibrated timed simulators</p>
+        </Link>
+
+        <Link
+          to="/school"
+          className="p-4 rounded-2xl bg-slate-900/70 border border-white/15 hover:border-emerald-400/50 shadow-md transition-all hover:translate-y-[-2px] group"
+        >
+          <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-2.5 group-hover:scale-110 transition-transform">
+            <School className="w-5 h-5" />
+          </div>
+          <h3 className="text-sm font-black text-white group-hover:text-emerald-300 transition-colors">School Hub</h3>
+          <p className="text-[11px] text-slate-400 mt-0.5">Live timetable & daily study tasks</p>
+        </Link>
+
+        <button
+          onClick={() => setIsAITutorOpen(true)}
+          className="p-4 rounded-2xl bg-slate-900/70 border border-white/15 hover:border-cyan-400/50 shadow-md transition-all hover:translate-y-[-2px] text-left group cursor-pointer"
+        >
+          <div className="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-300 flex items-center justify-center mb-2.5 group-hover:scale-110 transition-transform">
+            <Bot className="w-5 h-5" />
+          </div>
+          <h3 className="text-sm font-black text-white group-hover:text-cyan-300 transition-colors">AI STEM Tutor</h3>
+          <p className="text-[11px] text-slate-400 mt-0.5">Instant doubt solver & formulas</p>
+        </button>
+      </div>
+
+      {/* 3D SPATIAL SHOWCASE SELECTOR */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.8)] animate-ping" />
+            <h2 className="text-base font-black text-white flex items-center gap-2">
+              <Atom className="w-5 h-5 text-cyan-400" />
+              <span>Interactive 3D Spatial Canvas Engine</span>
             </h2>
-            <p className="text-xs text-slate-500 font-semibold">Interactive dynamic simulators tailored to Class {selectedClass} curriculum:</p>
           </div>
-          <span className="px-3.5 py-1.5 rounded-full text-xs font-black bg-indigo-50 text-indigo-900 border border-indigo-200 shadow-sm">
-            Class {selectedClass} Active
-          </span>
+
+          <div className="flex items-center gap-2 p-1 rounded-2xl bg-slate-900/80 border border-white/15">
+            <button
+              onClick={() => setActive3DEngine('spatial')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                active3DEngine === 'spatial'
+                  ? 'bg-gradient-to-r from-indigo-600 to-cyan-600 text-white shadow-md'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Sun className="w-3.5 h-3.5" />
+              <span>Spatial Physics & Chemistry Models</span>
+            </button>
+            <button
+              onClick={() => setActive3DEngine('holo')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                active3DEngine === 'holo'
+                  ? 'bg-gradient-to-r from-indigo-600 to-cyan-600 text-white shadow-md'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Atom className="w-3.5 h-3.5" />
+              <span>Quantum Holo-Core</span>
+            </button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {curriculum.subjects.map((sub, idx) => {
-            const firstChapter = sub.chapters[0];
-            const firstTopic = firstChapter?.topics[0];
+        {/* 3D Canvas Switcher */}
+        {active3DEngine === 'spatial' ? (
+          <Spatial3DViewer height={360} initialModel="prism-rainbow" />
+        ) : (
+          <QuantumHoloCore3D height={360} />
+        )}
+      </div>
 
-            return (
-              <motion.article
-                key={sub.id}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.09, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                whileHover={{ y: -7, scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className={`relative overflow-hidden rounded-3xl p-7 border ${sub.colorTheme.border} ${sub.colorTheme.bgTint} glass-panel shadow-glass flex flex-col justify-between group cursor-pointer active-click-pulse`}
-                onClick={() => navigate(`/subject/${sub.id}`)}
-              >
-                {/* Background Ambient Glow */}
-                <div className={`absolute -right-10 -bottom-10 w-52 h-52 rounded-full blur-3xl opacity-25 pointer-events-none bg-gradient-to-tr ${sub.colorTheme.gradient}`} />
-
+      {/* Grid: Mathematical Competency Radar & Active Metrics */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Left Column: Mathematical Competency Radar */}
+        <div className="lg:col-span-7">
+          <Interactive3DCard
+            className={`${GLASS_CARD_FORMULA} !bg-slate-900/75 border-white/15 text-white`}
+            glowColor="rgba(99, 102, 241, 0.35)"
+          >
+            <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500/25 to-cyan-500/25 border border-indigo-400/40 text-cyan-300 flex items-center justify-center">
+                  <Target className="w-4.5 h-4.5" />
+                </div>
                 <div>
-                  <div className="flex items-start justify-between gap-4 mb-4">
-                    <div>
-                      <span className={`inline-block px-3 py-1 rounded-full text-[11px] font-black tracking-wider uppercase border mb-2.5 ${sub.colorTheme.badgeBg}`}>
-                        {sub.category.toUpperCase()} • CLASS {selectedClass}
-                      </span>
-                      <h3 className="text-2xl font-black text-slate-900 group-hover:text-indigo-700 transition-colors">
-                        {sub.name}
-                      </h3>
-                      <p className="text-xs text-slate-600 mt-1 font-medium leading-relaxed">
-                        {firstChapter ? `Chapter ${firstChapter.number}: ${firstChapter.title}` : 'Comprehensive STEM Curriculum'}
-                      </p>
-                    </div>
-
-                    <div className="w-20 h-20 flex-shrink-0 flex items-center justify-center transform group-hover:scale-115 group-hover:rotate-6 transition-all duration-300">
-                      <Subject3DArt category={sub.category as any} size={76} />
-                    </div>
-                  </div>
-
-                  <div className="p-4 rounded-2xl bg-white/80 border border-white/95 text-xs space-y-1.5 mb-6 shadow-sm backdrop-blur-md">
-                    <div className="font-extrabold text-slate-800 flex items-center gap-1.5">
-                      <Atom className="w-3.5 h-3.5 text-indigo-600 animate-spin" style={{ animationDuration: '8s' }} />
-                      <span>Featured Inquiry Topic:</span>
-                    </div>
-                    <div className="text-slate-600 font-semibold">{firstTopic?.title || 'Interactive laboratory experiments'}</div>
-                  </div>
+                  <h2 className="text-base font-black text-white">Mathematical Competency Radar</h2>
+                  <p className="text-xs font-medium text-slate-400">
+                    Calculated from diagnostic checks, mock exams, and inquiry labs
+                  </p>
                 </div>
+              </div>
+              <span className="text-xs font-bold px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 shadow-[0_0_10px_rgba(16,185,129,0.25)]">
+                Live Vector Matrix
+              </span>
+            </div>
 
-                <div className="pt-4 border-t border-slate-200/60 flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-500 flex items-center gap-1">
-                    <BookOpen className="w-3.5 h-3.5 text-indigo-600" />
-                    {sub.chapters.length} Chapters • {sub.chapters.reduce((acc, c) => acc + c.topics.length, 0)} Topics
-                  </span>
+            {/* SVG Radar Display */}
+            <div className="py-2 flex justify-center items-center">
+              <CompetencyRadar competencies={user.competencies} size={310} />
+            </div>
 
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/subject/${sub.id}`);
-                    }}
-                    className="flex items-center gap-1.5 px-4.5 py-2 rounded-xl bg-slate-900 text-white font-black text-xs shadow-md shadow-slate-900/20 group-hover:bg-indigo-600 group-hover:shadow-indigo-600/35 transition-all cursor-pointer"
+            {/* Interactive score adjustment test panel */}
+            <div className="mt-4 pt-4 border-t border-white/10">
+              <div className="text-xs font-black mb-2 flex items-center gap-1.5 text-slate-300">
+                <Zap className="w-3.5 h-3.5 text-amber-400 animate-bounce" />
+                <span>Simulate Real-Time Mastery Gain (Updates Global Store):</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {Object.keys(user.competencies).map((subj) => (
+                  <button
+                    key={subj}
+                    onClick={() => updateCompetency(subj, 95)}
+                    className="px-3 py-1.5 rounded-xl text-xs font-bold border border-white/20 bg-slate-800/80 hover:bg-slate-700 text-cyan-300 shadow-sm transition-all hover:scale-105 active:scale-95 cursor-pointer"
                   >
-                    <span>Enter Subject</span>
-                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1.5 transition-transform" />
-                  </motion.button>
-                </div>
-              </motion.article>
-            );
-          })}
+                    Boost {subj} (+XP)
+                  </button>
+                ))}
+              </div>
+            </div>
+          </Interactive3DCard>
         </div>
-      </section>
-    </div>
+
+        {/* Right Column: Class Snapshot & Subject Overview */}
+        <div className="lg:col-span-5">
+          <Interactive3DCard
+            className={`${GLASS_CARD_FORMULA} !bg-slate-900/75 border-white/15 text-white flex flex-col justify-between`}
+            glowColor="rgba(6, 182, 212, 0.35)"
+          >
+            <div>
+              <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500/25 to-teal-500/25 border border-cyan-400/40 text-cyan-300 flex items-center justify-center">
+                    <Layers className="w-4.5 h-4.5" />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-black text-white">Class {currentClass} NCERT</h2>
+                    <p className="text-xs font-medium text-slate-400">
+                      {subjectList.length} syllabus modules active
+                    </p>
+                  </div>
+                </div>
+                <Link to="/courses" className="text-xs font-bold text-cyan-400 hover:text-cyan-300">
+                  View All →
+                </Link>
+              </div>
+
+              {/* Subject preview list */}
+              <div className="space-y-3">
+                {subjectList.slice(0, 4).map((subject: any) => (
+                  <Link
+                    key={subject.id}
+                    to={`/subject/${subject.id}`}
+                    className="p-3.5 rounded-2xl border border-white/10 bg-slate-800/60 hover:bg-slate-800/95 flex items-center justify-between transition-all hover:translate-x-1.5 group shadow-sm"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-9 h-9 rounded-xl ${
+                          subject.colorTint || 'bg-indigo-500/20'
+                        } border border-white/20 flex items-center justify-center text-sm font-black text-cyan-300 shadow-sm`}
+                      >
+                        {subject.name.charAt(0)}
+                      </div>
+                      <div>
+                        <div className="text-xs font-extrabold text-slate-100 group-hover:text-cyan-400 transition-colors">
+                          {subject.name}
+                        </div>
+                        <div className="text-[11px] font-medium text-slate-400">
+                          {subject.chapters?.length || 1} Chapters • 3D Inquiry Lab
+                        </div>
+                      </div>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-cyan-400 transition-colors" />
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-white/10">
+              <Link
+                to="/courses"
+                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-indigo-600 via-cyan-600 to-teal-500 hover:from-indigo-500 hover:to-cyan-400 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-[0_8px_20px_rgba(6,182,212,0.3)] transition-all hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <BookOpen className="w-4 h-4" />
+                <span>Open Subject Bento Grid</span>
+              </Link>
+            </div>
+          </Interactive3DCard>
+        </div>
+      </div>
+
+      {/* Cinematic Film Modal Component */}
+      <CinematicFilmModal isOpen={isFilmOpen} onClose={() => setIsFilmOpen(false)} />
+
+      {/* AI Tutor Modal */}
+      <AITutorModal isOpen={isAITutorOpen} onClose={() => setIsAITutorOpen(false)} />
+    </motion.div>
   );
 };
+
+export default DashboardView;

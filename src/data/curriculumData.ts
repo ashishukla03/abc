@@ -1005,3 +1005,75 @@ export const CURRICULUM_DATABASE: Record<number, ClassCurriculum> = {
     ]
   }
 };
+
+export interface UserProfile {
+  name: string;
+  school: string;
+  classId: number;
+  xp: number;
+  competencies: {
+    Mathematics: number;
+    Physics: number;
+    Chemistry: number;
+    Biology: number;
+    Computing: number;
+    [key: string]: number;
+  };
+  streakDays?: number;
+  avatar?: string;
+  board?: string;
+}
+
+export const userProfile: UserProfile = {
+  name: 'Aarav Sharma',
+  school: 'PM SHRI Kendriya Vidyalaya',
+  classId: 10,
+  xp: 1450,
+  competencies: {
+    Mathematics: 88,
+    Physics: 92,
+    Chemistry: 78,
+    Biology: 85,
+    Computing: 95
+  },
+  streakDays: 14,
+  avatar: '👨‍🎓',
+  board: 'CBSE (NCERT Aligned)'
+};
+
+export const ncertCurriculum: Record<number | string, any> = Object.fromEntries(
+  Object.entries(CURRICULUM_DATABASE).map(([classLevel, data]) => {
+    const subjects = data.subjects.map(s => ({
+      ...s,
+      colorTint: s.colorTheme?.bgTint || 'bg-blue-500/10',
+      units: [
+        {
+          id: `unit-${s.id}-1`,
+          title: `${s.name} — Unit 1: Theory, Models & Inquiry Labs`,
+          chapters: s.chapters.map(ch => ({
+            ...ch,
+            topics: ch.topics.map(t => ({
+              ...t,
+              status: (t.status === 'mastered' ? 'mastered' : t.status === 'ready_to_learn' || t.status === 'in_progress' ? 'ready' : 'locked') as 'mastered' | 'ready' | 'locked'
+            }))
+          }))
+        }
+      ],
+      chapters: s.chapters.map(ch => ({
+        ...ch,
+        topics: ch.topics.map(t => ({
+          ...t,
+          status: (t.status === 'mastered' ? 'mastered' : t.status === 'ready_to_learn' || t.status === 'in_progress' ? 'ready' : 'locked') as 'mastered' | 'ready' | 'locked'
+        }))
+      }))
+    }));
+
+    const arrayWithMetadata = Object.assign([...subjects], {
+      ...data,
+      subjects
+    });
+
+    return [Number(classLevel), arrayWithMetadata];
+  })
+);
+

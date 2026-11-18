@@ -1,171 +1,146 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Compass, BookOpen, School, FileCheck, Bot, User, Flame, Wifi, Sparkles, Crown } from 'lucide-react';
-import { useSessionStore } from '../../store/useSessionStore';
+import {
+  Compass,
+  BookOpen,
+  Sparkles,
+  GraduationCap,
+  ChevronDown,
+  Moon,
+  Sun,
+  FileCheck,
+  School,
+  User,
+} from 'lucide-react';
+import { useAppStore } from '../../store/useAppStore';
 
 export const TopNavbar: React.FC = () => {
-  const { curriculumStage, selectedClass, setCurriculumStage, setSelectedClass, userProfile } = useSessionStore();
+  const { user, currentClass, setCurrentClass, theme, toggleTheme } = useAppStore();
 
-  const stages: { key: 'Prep' | 'Middle' | 'Sec' | 'Senior'; label: string; classRange: number }[] = [
-    { key: 'Prep', label: 'Prep (Cl 5)', classRange: 5 },
-    { key: 'Middle', label: 'Middle (6–8)', classRange: 7 },
-    { key: 'Sec', label: 'Sec (9–10)', classRange: 10 },
-    { key: 'Senior', label: 'Senior (11–12)', classRange: 12 },
+  const classOptions = [5, 6, 7, 8, 9, 10, 11, 12];
+
+  const navLinks = [
+    { to: '/', label: 'Dashboard', icon: Compass, end: true },
+    { to: '/courses', label: 'Subjects', icon: BookOpen },
+    { to: '/exams', label: 'Mock Exams', icon: FileCheck },
+    { to: '/school', label: 'School Hub', icon: School },
   ];
 
   return (
-    <header className="sticky top-3 z-40 mx-auto max-w-7xl px-4 sm:px-6 mb-6">
-      <div className="glass-header rounded-2xl px-4 py-3 sm:px-6 flex flex-wrap items-center justify-between gap-4">
-        {/* Brand & Stage Selector */}
-        <div className="flex items-center gap-6">
-          <NavLink to="/" className="flex items-center gap-3 text-indigo-700 font-black text-lg tracking-tight group">
+    <header className="sticky top-4 z-40 mx-auto max-w-7xl px-3 sm:px-6 mb-6">
+      <div className="bg-slate-900/80 backdrop-blur-3xl backdrop-saturate-[1.8] border border-white/[0.16] shadow-[0_16px_40px_-10px_rgba(0,0,0,0.8),inset_0_1.5px_1px_rgba(255,255,255,0.2)] rounded-3xl p-3 sm:px-6 transition-all duration-300 flex flex-wrap items-center justify-between gap-3">
+        {/* Brand & Class Selector */}
+        <div className="flex items-center gap-3 sm:gap-5 flex-wrap">
+          <NavLink to="/" className="flex items-center gap-2.5 font-black text-lg tracking-tight group">
             <motion.div
               whileHover={{ rotate: 18, scale: 1.12 }}
               whileTap={{ scale: 0.92 }}
-              className="relative w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-700 via-indigo-600 to-cyan-400 flex items-center justify-center text-white shadow-[0_8px_20px_rgba(79,70,229,0.35)]"
+              className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 flex items-center justify-center text-white shadow-[0_8px_25px_rgba(79,70,229,0.6)] border border-white/30 shrink-0"
             >
               <Compass className="w-5 h-5 drop-shadow-md" />
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-amber-400 rounded-full border-2 border-white shadow-sm" />
+              <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-cyan-400 rounded-full border-2 border-slate-900 shadow-sm animate-ping" />
             </motion.div>
             <div className="flex flex-col">
               <div className="flex items-center gap-1.5">
-                <span className="bg-gradient-to-r from-slate-900 via-indigo-950 to-indigo-700 bg-clip-text text-transparent font-black tracking-tight text-base leading-tight">
+                <span className="bg-gradient-to-r from-white via-indigo-200 to-cyan-300 bg-clip-text text-transparent font-black tracking-tight text-sm sm:text-base leading-tight">
                   Gramin PocketLab
                 </span>
-                <Crown className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                <span className="text-[9px] bg-gradient-to-r from-indigo-500/30 to-cyan-500/30 text-cyan-300 font-extrabold px-1.5 py-0.5 rounded-full border border-cyan-400/40 shadow-[0_0_12px_rgba(6,182,212,0.3)] hidden sm:inline-block">
+                  VisionOS
+                </span>
               </div>
-              <span className="text-[9px] font-extrabold text-indigo-600 uppercase tracking-widest leading-none mt-0.5">
-                Royal K-12 STEM Edition
+              <span className="text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase tracking-wider leading-none mt-0.5">
+                Quantum STEM Engine
               </span>
             </div>
           </NavLink>
 
-          {/* Royal Glass Animated Stage Pills */}
-          <div className="flex items-center gap-1 p-1 bg-slate-900/5 backdrop-blur-xl rounded-xl border border-white/80 shadow-inner">
-            {stages.map((st) => {
-              const isSelected = curriculumStage === st.key;
-              return (
-                <motion.button
-                  key={st.key}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setCurriculumStage(st.key)}
-                  className={`relative px-3.5 py-1.5 text-xs font-bold rounded-lg transition-colors z-10 cursor-pointer active-click-pulse ${
-                    isSelected ? 'text-indigo-950 font-black' : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  {isSelected && (
-                    <motion.div
-                      layoutId="activeStagePill"
-                      className="absolute inset-0 bg-white rounded-lg shadow-[0_4px_16px_rgba(79,70,229,0.14),inset_0_1.5px_1px_rgba(255,255,255,1)] -z-10 border border-indigo-100"
-                      transition={{ type: 'spring', stiffness: 440, damping: 32 }}
-                    />
-                  )}
-                  {st.label}
-                </motion.button>
-              );
-            })}
+          {/* Dynamic Class Selector */}
+          <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 py-1.5 rounded-2xl border border-white/15 bg-slate-800/80 backdrop-blur-xl text-slate-200 shadow-inner">
+            <GraduationCap className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+            <label htmlFor="class-selector" className="text-[11px] font-bold text-slate-300 hidden sm:inline">
+              Grade:
+            </label>
+            <div className="relative">
+              <select
+                id="class-selector"
+                value={currentClass}
+                onChange={(e) => setCurrentClass(Number(e.target.value))}
+                className="appearance-none font-black text-xs rounded-xl px-2.5 py-1 pr-6 border border-white/20 bg-slate-950 text-white cursor-pointer hover:border-cyan-400/60 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-colors"
+                title="Select NCERT Grade Band"
+              >
+                {classOptions.map((c) => (
+                  <option key={c} value={c} className="bg-slate-950 text-white font-bold">
+                    Class {c}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="w-3.5 h-3.5 text-cyan-400 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
           </div>
         </div>
 
-        {/* Global Nav Links with tactile hover lifts and click ripple */}
-        <nav className="flex items-center gap-1.5">
-          <NavLink
-            to="/"
-            end
-            className={({ isActive }) =>
-              `flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all active-click-pulse ${
-                isActive
-                  ? 'bg-gradient-to-r from-indigo-600 via-indigo-700 to-indigo-800 text-white shadow-lg shadow-indigo-600/35 font-extrabold scale-[1.02]'
-                  : 'text-slate-600 hover:bg-white/80 hover:text-slate-900 hover:scale-[1.03]'
-              }`
-            }
-          >
-            <Compass className="w-4 h-4" />
-            <span>Question Worlds</span>
-          </NavLink>
+        {/* Navigation Routes */}
+        <nav className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+          {navLinks.map((item) => {
+            const Icon = item.icon;
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                className={({ isActive }) =>
+                  `flex items-center gap-1.5 px-3 py-1.5 sm:py-2 rounded-2xl text-xs font-bold transition-all duration-200 ${
+                    isActive
+                      ? 'bg-gradient-to-r from-indigo-600 to-cyan-600 text-white shadow-lg shadow-indigo-500/35 border border-white/30'
+                      : 'text-slate-300 hover:bg-white/10 hover:text-white'
+                  }`
+                }
+              >
+                <Icon className="w-3.5 h-3.5" />
+                <span>{item.label}</span>
+              </NavLink>
+            );
+          })}
 
-          <NavLink
-            to={`/class/${selectedClass}/subjects`}
-            className={({ isActive }) =>
-              `flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all active-click-pulse ${
-                isActive
-                  ? 'bg-gradient-to-r from-indigo-600 via-indigo-700 to-indigo-800 text-white shadow-lg shadow-indigo-600/35 font-extrabold scale-[1.02]'
-                  : 'text-slate-600 hover:bg-white/80 hover:text-slate-900 hover:scale-[1.03]'
-              }`
-            }
+          {/* Theme Toggle Button */}
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-2xl border border-white/15 bg-slate-800/80 hover:bg-slate-700/80 text-cyan-300 hover:text-white shadow-sm transition-all cursor-pointer"
+            title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
           >
-            <BookOpen className="w-4 h-4" />
-            <span>Courses</span>
-          </NavLink>
+            {theme === 'dark' ? (
+              <Sun className="w-4 h-4 text-amber-400 animate-spin" style={{ animationDuration: '20s' }} />
+            ) : (
+              <Moon className="w-4 h-4 text-cyan-400" />
+            )}
+          </button>
 
-          <NavLink
-            to="/hub"
-            className={({ isActive }) =>
-              `flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all active-click-pulse ${
-                isActive
-                  ? 'bg-gradient-to-r from-indigo-600 via-indigo-700 to-indigo-800 text-white shadow-lg shadow-indigo-600/35 font-extrabold scale-[1.02]'
-                  : 'text-slate-600 hover:bg-white/80 hover:text-slate-900 hover:scale-[1.03]'
-              }`
-            }
-          >
-            <School className="w-4 h-4" />
-            <span>School Hub</span>
-          </NavLink>
-
-          <NavLink
-            to="/mock-exams"
-            className={({ isActive }) =>
-              `flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all active-click-pulse ${
-                isActive
-                  ? 'bg-gradient-to-r from-indigo-600 via-indigo-700 to-indigo-800 text-white shadow-lg shadow-indigo-600/35 font-extrabold scale-[1.02]'
-                  : 'text-slate-600 hover:bg-white/80 hover:text-slate-900 hover:scale-[1.03]'
-              }`
-            }
-          >
-            <FileCheck className="w-4 h-4" />
-            <span>Mock Exams</span>
-          </NavLink>
-
+          {/* User Profile Pill Link */}
           <NavLink
             to="/profile"
             className={({ isActive }) =>
-              `flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all active-click-pulse ${
-                isActive
-                  ? 'bg-gradient-to-r from-indigo-600 via-indigo-700 to-indigo-800 text-white shadow-lg shadow-indigo-600/35 font-extrabold scale-[1.02]'
-                  : 'text-slate-600 hover:bg-white/80 hover:text-slate-900 hover:scale-[1.03]'
+              `flex items-center gap-2 pl-2 border-l border-white/15 transition-all ${
+                isActive ? 'opacity-100 scale-105' : 'hover:opacity-90'
               }`
             }
           >
-            <User className="w-4 h-4" />
-            <span>Profile</span>
+            <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-2xl bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-400/40 text-amber-300 text-xs font-black shadow-[0_0_12px_rgba(245,158,11,0.2)]">
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <span>{user.xp} XP</span>
+            </div>
+
+            <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-2xl border border-white/15 bg-slate-800/80 text-xs font-bold text-slate-200 shadow-sm hover:border-cyan-400/50">
+              <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-indigo-500 to-cyan-500 text-white flex items-center justify-center text-[10px]">
+                {user.avatar || '🎓'}
+              </div>
+              <span className="font-semibold max-w-[90px] sm:max-w-[120px] truncate hidden sm:inline">
+                {user.name}
+              </span>
+            </div>
           </NavLink>
         </nav>
-
-        {/* User Badges & Streak */}
-        <div className="flex items-center gap-2.5">
-          <motion.div
-            whileHover={{ scale: 1.08 }}
-            whileTap={{ scale: 0.94 }}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-500/15 border border-amber-300/80 text-amber-900 text-xs font-black shadow-sm cursor-pointer"
-          >
-            <Flame className="w-4 h-4 text-amber-500 animate-pulse fill-amber-500" />
-            <span>{userProfile.streakDays}d Streak</span>
-          </motion.div>
-
-          <div className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-500/15 border border-emerald-300/80 text-emerald-800 text-xs font-black">
-            <Wifi className="w-3.5 h-3.5 text-emerald-600" />
-            <span className="hidden sm:inline">Offline Sync</span>
-          </div>
-
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            className="px-3.5 py-1.5 rounded-xl bg-indigo-600/10 border border-indigo-200 text-indigo-950 text-xs font-black font-mono shadow-sm"
-          >
-            {userProfile.totalXp} XP
-          </motion.div>
-        </div>
       </div>
     </header>
   );

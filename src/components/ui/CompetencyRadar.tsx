@@ -1,150 +1,154 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useAppStore } from '../../store/useAppStore';
 
-interface CompetencyRadarProps {
-  scores: {
-    physics: number;
-    math: number;
-    chemistry: number;
-    biology: number;
-    social: number;
-    computing: number;
-  };
+export interface CompetencyRadarProps {
+  competencies: Record<string, number>;
   size?: number;
 }
 
-export const CompetencyRadar: React.FC<CompetencyRadarProps> = ({ scores, size = 260 }) => {
+export const CompetencyRadar: React.FC<CompetencyRadarProps> = ({ competencies, size = 320 }) => {
+  const { theme } = useAppStore();
+  const isDark = theme === 'dark';
+
   const center = size / 2;
   const radius = size * 0.38;
 
-  const axes = [
-    { key: 'physics', label: 'Physics', angle: -90, color: '#2563EB' },
-    { key: 'chemistry', label: 'Chemistry', angle: -30, color: '#7C3AED' },
-    { key: 'biology', label: 'Biology', angle: 30, color: '#059669' },
-    { key: 'math', label: 'Math', angle: 90, color: '#D97706' },
-    { key: 'computing', label: 'Coding', angle: 150, color: '#0D9488' },
-    { key: 'social', label: 'Social', angle: 210, color: '#E11D48' },
-  ];
+  const subjects = Object.keys(competencies);
+  const total = subjects.length;
 
-  // Convert polar coordinates to Cartesian
-  const getCoordinates = (angleDeg: number, distance: number) => {
-    const angleRad = (angleDeg * Math.PI) / 180;
+  const getCoordinates = (index: number, distance: number) => {
+    const angleRad = (index * 2 * Math.PI) / total - Math.PI / 2;
     return {
       x: center + distance * Math.cos(angleRad),
       y: center + distance * Math.sin(angleRad),
     };
   };
 
-  // Generate web rings
   const rings = [0.25, 0.5, 0.75, 1.0];
 
-  // Generate polygon points
-  const points = axes.map((axis) => {
-    const score = (scores as any)[axis.key] || 50;
-    const dist = (score / 100) * radius;
-    const coord = getCoordinates(axis.angle, dist);
-    return `${coord.x},${coord.y}`;
-  }).join(' ');
+  const vertices = subjects.map((subject, index) => {
+    const rawScore = competencies[subject] ?? 70;
+    const normalizedScore = Math.max(10, Math.min(100, rawScore));
+    const distance = (normalizedScore / 100) * radius;
+    const coords = getCoordinates(index, distance);
+    return { subject, score: rawScore, ...coords };
+  });
+
+  const polygonPointsString = vertices.map((v) => `${v.x.toFixed(1)},${v.y.toFixed(1)}`).join(' ');
 
   return (
-    <div className="relative flex flex-col items-center">
+    <div className="relative flex flex-col items-center justify-center p-2">
       <svg width={size} height={size} className="overflow-visible">
         <defs>
-          <radialGradient id="radarFillGrad" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#4F46E5" stopOpacity="0.45" />
-            <stop offset="70%" stopColor="#3B82F6" stopOpacity="0.25" />
-            <stop offset="100%" stopColor="#06B6D4" stopOpacity="0.10" />
+          <radialGradient id="radarFillGradDark" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#06B6D4" stopOpacity="0.6" />
+            <stop offset="60%" stopColor="#6366F1" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="#A855F7" stopOpacity="0.1" />
           </radialGradient>
-          <filter id="radarGlow" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="3" result="blur" />
-            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          <radialGradient id="radarFillGradLight" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#4F46E5" stopOpacity="0.5" />
+            <stop offset="70%" stopColor="#3B82F6" stopOpacity="0.25" />
+            <stop offset="100%" stopColor="#06B6D4" stopOpacity="0.08" />
+          </radialGradient>
+          <filter id="vertexGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow dx="0" dy="0" stdDeviation="5" floodColor={isDark ? '#22D3EE' : '#4F46E5'} floodOpacity="0.9" />
           </filter>
         </defs>
 
-        {/* Web Rings */}
-        {rings.map((ringFactor, i) => {
-          const ringPoints = axes.map((a) => {
-            const coord = getCoordinates(a.angle, radius * ringFactor);
-            return `${coord.x},${coord.y}`;
-          }).join(' ');
+        {/* Concentric grid web */}
+        {rings.map((ringScale, idx) => {
+          const ringPoints = Array.from({ length: total })
+            .map((_, i) => {
+              const c = getCoordinates(i, radius * ringScale);
+              return `${c.x.toFixed(1)},${c.y.toFixed(1)}`;
+            })
+            .join(' ');
 
           return (
             <polygon
-              key={i}
+              key={`ring-${idx}`}
               points={ringPoints}
-              fill="none"
-              stroke="rgba(148, 163, 184, 0.3)"
-              strokeDasharray={i === rings.length - 1 ? undefined : '3 3'}
+              fill={
+                isDark
+                  ? idx % 2 === 0
+                    ? 'rgba(255,255,255,0.04)'
+                    : 'rgba(255,255,255,0.015)'
+                  : idx % 2 === 0
+                  ? 'rgba(255,255,255,0.45)'
+                  : 'rgba(241,245,249,0.25)'
+              }
+              stroke={isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(148, 163, 184, 0.35)'}
               strokeWidth="1"
+              strokeDasharray={idx < 3 ? '3,3' : undefined}
             />
           );
         })}
 
-        {/* Axis Lines */}
-        {axes.map((a, i) => {
-          const end = getCoordinates(a.angle, radius);
+        {/* Spokes from center to outer bounds */}
+        {subjects.map((_, i) => {
+          const end = getCoordinates(i, radius);
           return (
             <line
-              key={i}
+              key={`spoke-${i}`}
               x1={center}
               y1={center}
               x2={end.x}
               y2={end.y}
-              stroke="rgba(148, 163, 184, 0.35)"
-              strokeWidth="1"
+              stroke={isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(148, 163, 184, 0.35)'}
+              strokeWidth="1.2"
             />
           );
         })}
 
-        {/* Animated Data Polygon */}
+        {/* Dynamic Mathematical Competency Polygon */}
         <motion.polygon
-          points={points}
-          fill="url(#radarFillGrad)"
-          stroke="#4F46E5"
-          strokeWidth="2.5"
-          filter="url(#radarGlow)"
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, ease: 'easeOut' }}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
+          points={polygonPointsString}
+          fill={isDark ? 'url(#radarFillGradDark)' : 'url(#radarFillGradLight)'}
+          stroke={isDark ? '#22D3EE' : '#4F46E5'}
+          strokeWidth="2.5"
+          strokeLinejoin="round"
         />
 
-        {/* Vertex Dots & Value Labels */}
-        {axes.map((axis, i) => {
-          const score = (scores as any)[axis.key] || 50;
-          const dist = (score / 100) * radius;
-          const coord = getCoordinates(axis.angle, dist);
-          const labelCoord = getCoordinates(axis.angle, radius + 22);
-
+        {/* Vertices points and labels */}
+        {vertices.map((v, i) => {
+          const labelCoords = getCoordinates(i, radius + 28);
           return (
-            <g key={i}>
-              <motion.circle
-                cx={coord.x}
-                cy={coord.y}
-                r="4.5"
-                fill={axis.color}
+            <g key={`vertex-${v.subject}`}>
+              <circle
+                cx={v.x}
+                cy={v.y}
+                r="5.5"
+                fill={isDark ? '#22D3EE' : '#4F46E5'}
                 stroke="#FFFFFF"
                 strokeWidth="2"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.2 + i * 0.05 }}
+                filter="url(#vertexGlow)"
               />
+
               <text
-                x={labelCoord.x}
-                y={labelCoord.y}
+                x={labelCoords.x}
+                y={labelCoords.y - 4}
                 textAnchor="middle"
                 dominantBaseline="central"
-                className="text-[11px] font-bold fill-slate-600 select-none tracking-tight"
+                className={`text-[11px] font-extrabold tracking-tight ${
+                  isDark ? 'fill-slate-200' : 'fill-slate-800'
+                }`}
               >
-                {axis.label}
+                {v.subject}
               </text>
               <text
-                x={labelCoord.x}
-                y={labelCoord.y + 11}
+                x={labelCoords.x}
+                y={labelCoords.y + 10}
                 textAnchor="middle"
                 dominantBaseline="central"
-                className="text-[10px] font-extrabold fill-indigo-600 select-none font-mono"
+                className={`text-[10px] font-black ${
+                  isDark ? 'fill-cyan-400' : 'fill-indigo-600'
+                }`}
               >
-                {score}%
+                {v.score}%
               </text>
             </g>
           );
@@ -153,4 +157,3 @@ export const CompetencyRadar: React.FC<CompetencyRadarProps> = ({ scores, size =
     </div>
   );
 };
-

@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Gramin PocketLab Overview — OpenMotion Master Player</title>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        background: #0F172A;
+        color: #F8FAFC;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        padding: 24px;
+      }
+      .player-header {
+        width: 100%;
+        max-width: 1280px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+      }
+      .viewport-stage {
+        width: 100%;
+        max-width: 1280px;
+        aspect-ratio: 16 / 9;
+        background: #000;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        position: relative;
+      }
+      iframe {
+        width: 1920px;
+        height: 1080px;
+        border: none;
+        transform-origin: top left;
+      }
+      .controls-bar {
+        width: 100%;
+        max-width: 1280px;
+        background: #1E293B;
+        border-radius: 12px;
+        padding: 16px 24px;
+        margin-top: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .scrub-row {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .scrub-slider {
+        flex: 1;
+        cursor: pointer;
+        height: 8px;
+        accent-color: #275DDB;
+      }
+      .btn-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .btn {
+        background: #275DDB;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-weight: 700;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      .btn:hover { background: #1A46A8; }
+      .scene-selector {
+        background: #0F172A;
+        color: #F8FAFC;
+        border: 1px solid #334155;
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-size: 14px;
+      }
+      .captions-box {
+        background: rgba(15, 23, 42, 0.9);
+        border: 1px solid #334155;
+        border-radius: 8px;
+        padding: 10px 16px;
+        font-size: 16px;
+        color: #F8FAFC;
+        font-weight: 600;
+        text-align: center;
+        min-height: 44px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="player-header">
+      <div>
+        <h1 style="font-size: 24px; font-weight: 800;">Gramin PocketLab — 32s Overview (OpenMotion)</h1>
+        <p style="color: #94A3B8; font-size: 14px;">16:9 • 1920×1080 • 8-Scene Sequence</p>
+      </div>
+      <div style="background: #18794E; color: #fff; padding: 6px 14px; border-radius: 9999px; font-size: 14px; font-weight: 700;">
+        OpenMotion Contract Verified
+      </div>
+    </div>
+
+    <div class="viewport-stage" id="stage">
+      <iframe id="scene-frame" src="scenes/scene_01_identity.html"></iframe>
+    </div>
+
+    <div class="controls-bar">
+      <div class="scrub-row">
+        <span id="time-display" style="font-family: monospace; font-size: 16px; width: 80px;">00:00 / 00:32</span>
+        <input type="range" id="scrubber" class="scrub-slider" min="0" max="32" step="0.05" value="0" />
+      </div>
+
+      <div class="btn-row">
+        <div style="display: flex; gap: 12px; align-items: center;">
+          <button class="btn" id="btn-play">Play</button>
+          <button class="btn" id="btn-restart" style="background: #475569;">Restart</button>
+          <select class="scene-selector" id="scene-select">
+            <option value="0">Scene 1: Identity & Purpose (0-4s)</option>
+            <option value="1">Scene 2: Learner Journey (4-8s)</option>
+            <option value="2">Scene 3: Mathematics Water Share (8-12s)</option>
+            <option value="3">Scene 4: Biology Food Web (12-16s)</option>
+            <option value="4">Scene 5: Chemistry pH Lab (16-20s)</option>
+            <option value="5">Scene 6: Physics Sound Detective (20-24s)</option>
+            <option value="6">Scene 7: Product Scope (24-28s)</option>
+            <option value="7">Scene 8: Closing Brand Moment (28-32s)</option>
+          </select>
+        </div>
+        <div style="font-size: 14px; color: #94A3B8;">
+          Audio: None (Autonomous Readability Verified)
+        </div>
+      </div>
+
+      <div class="captions-box" id="captions">
+        Gramin PocketLab: Offline-First STEM Micro-Labs for Rural Students
+      </div>
+    </div>
+
+    <script>
+      const scenes = [
+        { file: "scenes/scene_01_identity.html", caption: "Gramin PocketLab: Offline-First STEM Micro-Labs for Rural Students" },
+        { file: "scenes/scene_02_journey.html", caption: "Structured 7-Step Active Learning: Brief → Predict → Explore → Diagnose → Exit" },
+        { file: "scenes/scene_03_mathematics.html", caption: "Mathematics: 12-Unit Canal Water Conservation and 1:2:3 Ratio Partition" },
+        { file: "scenes/scene_04_biology.html", caption: "Biology: Directional Energy Flow and Trophic Disturbance Scenarios" },
+        { file: "scenes/scene_05_chemistry.html", caption: "Chemistry: Turmeric & Universal Indicators — Distilled Water Neutrality vs Potability" },
+        { file: "scenes/scene_06_physics.html", caption: "Physics: Sound Waveforms — 220 Hz vs 440 Hz in 10 ms Window with Gain Ceiling" },
+        { file: "scenes/scene_07_scope.html", caption: "Current Scope: 4 Hardened Middle Stage STEM Labs; Classes 5–12 in Design" },
+        { file: "scenes/scene_08_closing.html", caption: "Gramin PocketLab: Empowering Every Village Classroom Offline" }
+      ];
+
+      const stage = document.getElementById('stage');
+      const iframe = document.getElementById('scene-frame');
+      const scrubber = document.getElementById('scrubber');
+      const timeDisplay = document.getElementById('time-display');
+      const captions = document.getElementById('captions');
+      const btnPlay = document.getElementById('btn-play');
+      const btnRestart = document.getElementById('btn-restart');
+      const sceneSelect = document.getElementById('scene-select');
+
+      let currentGlobalTime = 0;
+      let currentSceneIdx = -1;
+      let isPlaying = false;
+      let animFrame = null;
+      let lastTimestamp = null;
+
+      function resizeFrame() {
+        const stageW = stage.clientWidth;
+        const scale = stageW / 1920;
+        iframe.style.transform = `scale(${scale})`;
+      }
+      window.addEventListener('resize', resizeFrame);
+      resizeFrame();
+
+      function loadScene(idx, seekLocalTime = 0) {
+        if (currentSceneIdx !== idx) {
+          currentSceneIdx = idx;
+          sceneSelect.value = String(idx);
+          iframe.src = scenes[idx].file;
+          captions.textContent = scenes[idx].caption;
+          iframe.onload = () => {
+            seekInIframe(seekLocalTime);
+          };
+        } else {
+          seekInIframe(seekLocalTime);
+        }
+      }
+
+      function seekInIframe(localSec) {
+        try {
+          const win = iframe.contentWindow;
+          if (win && win.__SCENE_TIMELINE__) {
+            win.__SCENE_TIMELINE__.seek(localSec, false);
+          }
+        } catch (_) {}
+      }
+
+      function setGlobalTime(t) {
+        currentGlobalTime = Math.max(0, Math.min(32, t));
+        scrubber.value = currentGlobalTime;
+        const mm = String(Math.floor(currentGlobalTime / 60)).padStart(2, '0');
+        const ss = String(Math.floor(currentGlobalTime % 60)).padStart(2, '0');
+        timeDisplay.textContent = `${mm}:${ss} / 00:32`;
+
+        const sceneIdx = Math.min(7, Math.floor(currentGlobalTime / 4));
+        const sceneLocal = currentGlobalTime - (sceneIdx * 4);
+        loadScene(sceneIdx, sceneLocal);
+      }
+
+      scrubber.addEventListener('input', (e) => {
+        pause();
+        setGlobalTime(parseFloat(e.target.value));
+      });
+
+      sceneSelect.addEventListener('change', (e) => {
+        pause();
+        setGlobalTime(parseInt(e.target.value) * 4);
+      });
+
+      function play() {
+        if (currentGlobalTime >= 32) setGlobalTime(0);
+        isPlaying = true;
+        btnPlay.textContent = 'Pause';
+        lastTimestamp = performance.now();
+        animFrame = requestAnimationFrame(tick);
+      }
+
+      function pause() {
+        isPlaying = false;
+        btnPlay.textContent = 'Play';
+        if (animFrame) cancelAnimationFrame(animFrame);
+      }
+
+      function tick(now) {
+        if (!isPlaying) return;
+        const deltaSec = (now - lastTimestamp) / 1000;
+        lastTimestamp = now;
+        const nextTime = currentGlobalTime + deltaSec;
+        if (nextTime >= 32) {
+          setGlobalTime(32);
+          pause();
+        } else {
+          setGlobalTime(nextTime);
+          animFrame = requestAnimationFrame(tick);
+        }
+      }
+
+      btnPlay.addEventListener('click', () => {
+        if (isPlaying) pause(); else play();
+      });
+
+      btnRestart.addEventListener('click', () => {
+        pause();
+        setGlobalTime(0);
+        play();
+      });
+
+      // Initial load
+      setGlobalTime(0);
+    </script>
+  </body>
+</html>

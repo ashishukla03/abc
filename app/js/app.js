@@ -325,6 +325,7 @@ function updateActionBar(state) {
  */
 let runnerInstance = null;
 let activeExtendedLabId = null;
+let activeTopicInquiryLab = null;
 let catalogFilterGrade = 'all';
 let catalogFilterSubject = 'all';
 let catalogSearchQuery = '';
@@ -394,6 +395,11 @@ async function delegateRender(state) {
   if (!stage) return;
 
   const { activeTab = 'missions', currentSubject, currentStep } = state;
+
+  if (activeTopicInquiryLab) {
+    renderTopicInquiryLabStage(stage, state, activeTopicInquiryLab);
+    return;
+  }
 
   if (activeTab === 'browser') {
     renderCourseBrowser(stage, state);
@@ -1685,25 +1691,32 @@ function renderCourseBrowser(stage, state) {
 
         <div style="display: flex; flex-direction: column; gap: 20px;">
           ${units.map(unit => `
-            <div class="timetable-card p-4" style="border-radius: 20px; border: 1px solid rgba(255,255,255,0.85); background: rgba(255,255,255,0.8); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); box-shadow: 0 10px 32px 0 rgba(31,38,135,0.08);">
-              <div class="d-flex justify-between align-center mb-3 pb-2 border-bottom flex-wrap gap-2">
+            <div class="timetable-card p-4" style="border-radius: 20px; border: 1px solid rgba(255,255,255,0.14); background: rgba(15,23,42,0.8); backdrop-filter: blur(24px) saturate(190%); -webkit-backdrop-filter: blur(24px) saturate(190%); box-shadow: 0 16px 40px -10px rgba(0,0,0,0.65), inset 0 1px 1px rgba(255,255,255,0.15);">
+              <div class="d-flex justify-between align-center mb-3 pb-2 border-bottom flex-wrap gap-2" style="border-bottom-color: rgba(255,255,255,0.12) !important;">
                 <div>
                   <span class="badge badge-phys" style="font-size: 11px;">${unit.unitId.toUpperCase()}</span>
-                  <h3 class="font-bold text-md mt-1 mb-0">${escapeHtml(unit.unitTitle)}</h3>
+                  <h3 class="font-bold text-md mt-1 mb-0" style="color: #F8FAFC;">${escapeHtml(unit.unitTitle)}</h3>
                 </div>
                 <span class="text-xs text-secondary font-bold">${unit.chapters.length} Chapters</span>
               </div>
 
               <div style="display: flex; flex-direction: column; gap: 14px;">
                 ${unit.chapters.map(ch => `
-                  <div style="border: 1px solid rgba(255,255,255,0.8); border-radius: 16px; padding: 18px; background: rgba(248, 250, 252, 0.65); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);">
-                    <div class="d-flex justify-between align-center mb-3 flex-wrap gap-2" style="background: rgba(255, 255, 255, 0.88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.95); box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+                  <div style="border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 18px; background: rgba(10, 15, 30, 0.7); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);">
+                    <div class="d-flex justify-between align-center mb-3 flex-wrap gap-2" style="background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); padding: 12px 18px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.14); box-shadow: 0 4px 16px rgba(0,0,0,0.4);">
                       <div>
-                        <strong style="font-size: 15px; color: var(--color-text-main);">Chapter ${ch.number}: ${escapeHtml(ch.title)}</strong>
+                        <strong style="font-size: 15px; color: #F8FAFC;">Chapter ${ch.number}: ${escapeHtml(ch.title)}</strong>
                         <span class="text-xs text-secondary ml-2">(${ch.topics.length} topics)</span>
                       </div>
                       <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-primary btn-xs btn-launch-ch-lab" data-subject="${currentSubjectObj.id}" style="padding: 6px 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+                        <button type="button" class="btn btn-primary btn-xs btn-launch-ch-lab" 
+                          data-subject="${currentSubjectObj.id}" 
+                          data-chapter-id="${ch.id}" 
+                          data-chapter-number="${ch.number}" 
+                          data-chapter-title="${escapeHtml(ch.title)}" 
+                          data-first-topic-id="${ch.topics[0]?.id || ''}" 
+                          data-first-topic-title="${escapeHtml(ch.topics[0]?.title || '')}"
+                          style="padding: 7px 16px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 16px rgba(99, 102, 241, 0.45); cursor: pointer;">
                           ${renderIcon('Sparkles', { size: 14, color: '#FFFFFF' })} Launch Inquiry Lab →
                         </button>
                       </div>
@@ -1716,33 +1729,40 @@ function renderCourseBrowser(stage, state) {
                         const isInProgress = topicMastery[t.id]?.status === 'in_progress';
                         const markerClass = isMastered ? 'mastered' : (isInProgress ? 'current' : '');
                         const markerIcon = isMastered 
-                          ? renderIcon('Star', { size: 14, color: '#D97706', fill: '#F59E0B' }) 
+                          ? renderIcon('Star', { size: 14, color: '#F59E0B', fill: '#F59E0B' }) 
                           : (isInProgress 
-                            ? renderIcon('Clock', { size: 14, color: '#2563EB' }) 
-                            : '<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#94A3B8;"></span>');
+                            ? renderIcon('Clock', { size: 14, color: '#38BDF8' }) 
+                            : '<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#64748B;"></span>');
 
                         return `
                           <div class="skill-node-wrapper" style="margin-bottom: 10px;">
-                            <div class="skill-node-marker ${markerClass}" style="display: flex; align-items: center; justify-content: center;">
+                            <div class="skill-node-marker ${markerClass}" style="display: flex; align-items: center; justify-content: center; background: rgba(15, 23, 42, 0.9); border: 2px solid ${isMastered ? '#10B981' : (isInProgress ? '#38BDF8' : 'rgba(255,255,255,0.18)')};">
                               ${markerIcon}
                             </div>
-                            <div class="skill-node-content" style="background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid rgba(255, 255, 255, 0.9); border-radius: 14px; padding: 14px 18px; box-shadow: 0 4px 14px rgba(31, 38, 135, 0.04); transition: all 0.25s ease;">
+                            <div class="skill-node-content" style="background: rgba(15, 23, 42, 0.78); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 16px; padding: 14px 18px; box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.15); transition: all 0.25s ease;">
                               <div class="d-flex justify-between align-center flex-wrap gap-2">
                                 <div style="flex: 1; min-width: 200px;">
                                   <div class="d-flex align-center gap-2 mb-1 flex-wrap">
-                                    <span style="font-weight: 700; font-size: 14px; color: var(--color-text-main);">${escapeHtml(t.title)}</span>
+                                    <span style="font-weight: 700; font-size: 14px; color: #F8FAFC;">${escapeHtml(t.title)}</span>
                                     <span class="${isMastered ? 'topic-badge-mastered' : (isInProgress ? 'topic-badge-progress' : 'topic-badge-todo')}">
                                       ${isMastered ? '⭐ Mastered' : (isInProgress ? '🔄 In Progress' : '⚪ Ready to Learn')}
                                     </span>
-                                    <span class="badge badge-secondary" style="font-size: 10px; padding: 2px 6px;">⏱️ 5 mins</span>
+                                    <span class="badge badge-secondary" style="font-size: 10px; padding: 2px 6px; background: rgba(255,255,255,0.08); color: #94A3B8;">⏱️ 5 mins</span>
                                   </div>
-                                  <p class="text-xs text-secondary mb-0" style="line-height: 1.4;">${t.outcomes && t.outcomes[0] ? escapeHtml(t.outcomes[0]) : 'Core concept outcome'}</p>
+                                  <p class="text-xs text-secondary mb-0" style="line-height: 1.4; color: #94A3B8;">${t.outcomes && t.outcomes[0] ? escapeHtml(t.outcomes[0]) : 'Core concept outcome'}</p>
                                 </div>
                                 <div class="d-flex gap-2 align-center">
-                                  <button type="button" class="btn btn-secondary btn-xs btn-launch-topic-lab" data-subject="${currentSubjectObj.id}" style="padding: 6px 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 5px;">
-                                    ${renderIcon('FlaskConical', { size: 13, color: '#2563EB' })} Explore Lab
+                                  <button type="button" class="btn btn-secondary btn-xs btn-launch-topic-lab" 
+                                    data-subject="${currentSubjectObj.id}" 
+                                    data-chapter-id="${ch.id}" 
+                                    data-chapter-title="${escapeHtml(ch.title)}" 
+                                    data-topic-id="${t.id}" 
+                                    data-topic-title="${escapeHtml(t.title)}" 
+                                    data-topic-outcomes="${escapeHtml((t.outcomes && t.outcomes[0]) || '')}" 
+                                    style="padding: 6px 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; color: #38BDF8; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.35); cursor: pointer;">
+                                    ${renderIcon('FlaskConical', { size: 13, color: '#38BDF8' })} Explore Lab
                                   </button>
-                                  <button type="button" class="btn btn-primary btn-xs btn-trigger-topic-test" data-topic-id="${t.id}" data-topic-title="${escapeHtml(t.title)}" style="padding: 6px 14px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">
+                                  <button type="button" class="btn btn-primary btn-xs btn-trigger-topic-test" data-topic-id="${t.id}" data-topic-title="${escapeHtml(t.title)}" style="padding: 6px 14px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; cursor: pointer;">
                                     ${renderIcon('FileText', { size: 13, color: '#FFFFFF' })} Take Topic Test
                                   </button>
                                 </div>
@@ -1783,14 +1803,44 @@ function renderCourseBrowser(stage, state) {
     });
   });
 
-  stage.querySelectorAll('.btn-launch-ch-lab, .btn-launch-topic-lab').forEach(btn => {
+  stage.querySelectorAll('.btn-launch-ch-lab').forEach(btn => {
     btn.addEventListener('click', (e) => {
-      const sub = e.currentTarget.getAttribute('data-subject');
-      if (SUBJECT_IDS.includes(sub)) {
-        router.goToSubject(sub);
-      } else {
-        router.goToMap();
-      }
+      const sub = e.currentTarget.getAttribute('data-subject') || 'physics';
+      const chapterId = e.currentTarget.getAttribute('data-chapter-id') || 'cbse-7-ch13';
+      const chapterNumber = e.currentTarget.getAttribute('data-chapter-number') || '13';
+      const chapterTitle = e.currentTarget.getAttribute('data-chapter-title') || 'Motion and Time';
+      const firstTopicId = e.currentTarget.getAttribute('data-first-topic-id') || 't13-1';
+      const firstTopicTitle = e.currentTarget.getAttribute('data-first-topic-title') || 'Speed & Uniform vs Non-Uniform Motion';
+
+      launchTopicInquiryLab({
+        subjectId: sub,
+        chapterId,
+        chapterNumber,
+        chapterTitle,
+        topicId: firstTopicId,
+        topicTitle: firstTopicTitle,
+        outcome: 'Investigate speed, distance-time graphs, and harmonic pendulum invariants with interactive parameter sliders.'
+      });
+    });
+  });
+
+  stage.querySelectorAll('.btn-launch-topic-lab').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const sub = e.currentTarget.getAttribute('data-subject') || 'physics';
+      const chapterId = e.currentTarget.getAttribute('data-chapter-id') || 'cbse-7-ch13';
+      const chapterTitle = e.currentTarget.getAttribute('data-chapter-title') || 'Motion and Time';
+      const topicId = e.currentTarget.getAttribute('data-topic-id') || 't13-1';
+      const topicTitle = e.currentTarget.getAttribute('data-topic-title') || 'Speed & Uniform vs Non-Uniform Motion';
+      const outcome = e.currentTarget.getAttribute('data-topic-outcomes') || 'Calculate speed = distance/time with live interactive telemetry.';
+
+      launchTopicInquiryLab({
+        subjectId: sub,
+        chapterId,
+        chapterTitle,
+        topicId,
+        topicTitle,
+        outcome
+      });
     });
   });
 
@@ -2861,6 +2911,1018 @@ function renderOnboardingWizard(stage, state) {
       }
     } catch {}
   });
+}
+
+let currentSimAnimId = null;
+
+/**
+ * Launches an interactive, state-driven STEM inquiry lab for any topic or chapter.
+ */
+export function launchTopicInquiryLab(config) {
+  activeTopicInquiryLab = { ...config };
+  delegateRender(store.getState());
+}
+
+/**
+ * Renders the High-Fidelity Interactive STEM Inquiry Lab with Real-Time Physics Simulators.
+ */
+function renderTopicInquiryLabStage(stage, state, labInfo) {
+  if (currentSimAnimId) {
+    cancelAnimationFrame(currentSimAnimId);
+    currentSimAnimId = null;
+  }
+
+  const { 
+    topicId = 't13-1', 
+    topicTitle = 'Speed & Uniform vs Non-Uniform Motion', 
+    chapterId = 'cbse-7-ch13', 
+    chapterNumber = '13',
+    chapterTitle = 'Motion and Time', 
+    subjectId = 'physics',
+    outcome = 'Calculate speed = distance/time with live interactive telemetry.'
+  } = labInfo;
+
+  const topicTitleLower = topicTitle.toLowerCase();
+  const isPendulum = topicId.includes('13-2') || topicTitleLower.includes('pendulum');
+  const isMotion = !isPendulum && (topicId.includes('13-1') || topicTitleLower.includes('speed') || topicTitleLower.includes('motion') || chapterId.includes('ch13'));
+  const isCircuit = topicTitleLower.includes('electric') || topicTitleLower.includes('circuit') || chapterId.includes('ch14');
+  const isChem = topicTitleLower.includes('acid') || topicTitleLower.includes('base') || topicTitleLower.includes('salt') || topicTitleLower.includes('ph') || chapterId.includes('ch5');
+
+  const isCh13 = chapterId.includes('ch13') || topicId.includes('13-');
+
+  // Simulation Parameters
+  let motionState = {
+    speed: 12, // m/s
+    distance: 240, // m
+    accel: 0, // m/s^2
+    isUniform: true,
+    isRunning: false,
+    elapsedTime: 0,
+    currentDist: 0,
+    carX: 0
+  };
+
+  let pendulumState = {
+    length: 1.0, // meters
+    mass: 100, // grams
+    gravity: 9.8, // m/s^2
+    amplitudeDeg: 16,
+    isRunning: true,
+    time: 0,
+    oscillations: 0,
+    lastPeriodTime: 0
+  };
+
+  let circuitState = {
+    voltage: 12, // Volts
+    resistance: 6, // Ohms
+    switchClosed: true
+  };
+
+  let chemState = {
+    pH: 7.0,
+    indicator: 'universal'
+  };
+
+  let quizAnswered = false;
+
+  stage.innerHTML = `
+    <div class="interactive-lab-shell" style="max-width: 1200px; margin: 0 auto; padding-bottom: 60px;">
+      <!-- Sticky Obsidian Glass Top Header -->
+      <div class="d-flex justify-between align-center mb-4 pb-3 flex-wrap gap-3" style="background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 20px; padding: 16px 24px; box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(255, 255, 255, 0.15);">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-exit-topic-lab" style="padding: 8px 16px; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;">
+            ← Back to Course Browser
+          </button>
+          <div>
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <span style="font-size: 24px;">${isPendulum ? '⏱️' : (isMotion ? '🚀' : (isCircuit ? '⚡' : (isChem ? '🧪' : '🔬')))}</span>
+              <h1 class="text-xl font-bold mb-0" style="color: #F8FAFC; line-height: 1.2;">${escapeHtml(topicTitle)}</h1>
+              <span class="badge badge-purple" style="font-size: 11px; padding: 3px 10px;">NCERT Class 7 Science</span>
+              <span class="badge badge-success" style="font-size: 11px; padding: 3px 10px;">⚡ Active Inquiry Lab</span>
+            </div>
+            <span class="text-xs text-secondary mt-1" style="display: block; color: #94A3B8;">
+              ${escapeHtml(chapterTitle)} • ${escapeHtml(outcome)}
+            </span>
+          </div>
+        </div>
+        <div class="d-flex gap-2 align-center flex-wrap">
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-reset-topic-lab" style="padding: 8px 16px; border-radius: 12px; font-weight: 600; cursor: pointer;">
+            ↺ Reset Lab
+          </button>
+          <button type="button" class="btn btn-primary btn-sm" id="btn-complete-topic-lab" style="padding: 8px 20px; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 18px rgba(99, 102, 241, 0.5); cursor: pointer;">
+            ⭐ Mark Concept Mastered (+50 XP)
+          </button>
+        </div>
+      </div>
+
+      ${isCh13 ? `
+        <!-- Chapter 13 Investigation Switcher Tabs -->
+        <div class="d-flex gap-2 mb-4 p-2 flex-wrap" style="background: rgba(15, 23, 42, 0.65); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 16px; backdrop-filter: blur(16px);">
+          <button type="button" class="btn btn-sm ${isMotion ? 'btn-primary' : 'btn-ghost'}" id="tab-switch-motion" style="padding: 8px 18px; border-radius: 12px; font-weight: 700; cursor: pointer;">
+            🚀 Speed & Uniform vs Non-Uniform Motion
+          </button>
+          <button type="button" class="btn btn-sm ${isPendulum ? 'btn-primary' : 'btn-ghost'}" id="tab-switch-pendulum" style="padding: 8px 18px; border-radius: 12px; font-weight: 700; cursor: pointer;">
+            ⏱️ Simple Pendulum Periodic Invariants
+          </button>
+        </div>
+      ` : ''}
+
+      <!-- Main Lab Interactive Grid -->
+      <div style="display: grid; grid-template-columns: 1fr; gap: 24px;">
+        ${isMotion ? `
+          <!-- MOTION & SPEED SIMULATOR STAGE -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px;">
+            <!-- Left: Visualizer Canvas & Live Telemetry -->
+            <div style="background: rgba(15, 23, 42, 0.78); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 20px; padding: 22px; box-shadow: 0 16px 40px -10px rgba(0,0,0,0.65);">
+              <div class="d-flex justify-between align-center mb-3">
+                <h3 class="text-md font-bold mb-0" style="color: #F8FAFC;">📡 Real-Time Motion Track Visualizer</h3>
+                <span class="badge badge-info" id="motion-mode-badge">Uniform Motion (a = 0)</span>
+              </div>
+              <canvas id="sim-motion-canvas" width="600" height="220" style="width: 100%; height: 220px; border-radius: 14px; background: #070B19; border: 1px solid rgba(255,255,255,0.12); display: block;"></canvas>
+
+              <!-- Live Kinematics Telemetry Strip -->
+              <div class="mt-3 p-3" style="background: rgba(10, 15, 30, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px; display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 12px; text-align: center;">
+                <div>
+                  <span class="text-xs text-secondary" style="display: block; font-size: 11px;">Speed (v)</span>
+                  <strong style="color: #38BDF8; font-size: 18px; font-family: ui-monospace, monospace;" id="telemetry-speed">12 m/s</strong>
+                </div>
+                <div>
+                  <span class="text-xs text-secondary" style="display: block; font-size: 11px;">Target Distance (d)</span>
+                  <strong style="color: #A78BFA; font-size: 18px; font-family: ui-monospace, monospace;" id="telemetry-target-dist">240 m</strong>
+                </div>
+                <div>
+                  <span class="text-xs text-secondary" style="display: block; font-size: 11px;">Distance Covered</span>
+                  <strong style="color: #34D399; font-size: 18px; font-family: ui-monospace, monospace;" id="telemetry-curr-dist">0.0 m</strong>
+                </div>
+                <div>
+                  <span class="text-xs text-secondary" style="display: block; font-size: 11px;">Elapsed Time (t)</span>
+                  <strong style="color: #F59E0B; font-size: 18px; font-family: ui-monospace, monospace;" id="telemetry-time">0.00 s</strong>
+                </div>
+              </div>
+
+              <!-- Distance-Time Graph HUD Preview -->
+              <div class="mt-3 p-3" style="background: rgba(10, 15, 30, 0.65); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px;">
+                <div class="d-flex justify-between align-center mb-1">
+                  <span class="text-xs font-bold" style="color: #E2E8F0;">📈 Distance-Time Graph Line (s vs t)</span>
+                  <span class="text-xs" style="color: #38BDF8; font-family: ui-monospace, monospace;">Slope = Speed (v) = Δd / Δt</span>
+                </div>
+                <div style="font-size: 12px; color: #94A3B8; line-height: 1.4;">
+                  For uniform motion, distance increases linearly with time forming a perfectly straight line graph. Slope of the graph equals speed.
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Interactive Sliders & Scientific Invariant Controls -->
+            <div style="background: rgba(15, 23, 42, 0.78); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 20px; padding: 22px; box-shadow: 0 16px 40px -10px rgba(0,0,0,0.65); display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <h3 class="text-md font-bold mb-3" style="color: #F8FAFC;">⚙️ Kinematic Controls & Parameters</h3>
+
+                <!-- Speed Slider -->
+                <div class="mb-4">
+                  <div class="d-flex justify-between align-center mb-1">
+                    <label style="font-size: 13px; font-weight: 600; color: #E2E8F0;">Vehicle Speed (v)</label>
+                    <span class="badge badge-info" id="val-speed">12 m/s</span>
+                  </div>
+                  <input type="range" id="slider-speed" min="1" max="30" value="12" step="1" style="width: 100%; accent-color: #38BDF8; cursor: pointer;">
+                  <span class="text-xs text-secondary" style="font-size: 11px;">Range: 1 m/s (pedestrian) to 30 m/s (108 km/h expressway speed)</span>
+                </div>
+
+                <!-- Distance Slider -->
+                <div class="mb-4">
+                  <div class="d-flex justify-between align-center mb-1">
+                    <label style="font-size: 13px; font-weight: 600; color: #E2E8F0;">Target Distance (d)</label>
+                    <span class="badge badge-purple" id="val-dist">240 m</span>
+                  </div>
+                  <input type="range" id="slider-dist" min="20" max="500" value="240" step="10" style="width: 100%; accent-color: #818CF8; cursor: pointer;">
+                  <span class="text-xs text-secondary" style="font-size: 11px;">Graduated track distance: 20m to 500m</span>
+                </div>
+
+                <!-- Motion Mode Toggle -->
+                <div class="mb-4">
+                  <label style="font-size: 13px; font-weight: 600; color: #E2E8F0; display: block; mb-2;">Motion Regime:</label>
+                  <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-sm btn-primary" id="btn-mode-uniform" style="flex: 1; padding: 8px 12px; font-size: 12px; cursor: pointer;">
+                      Uniform (Constant Speed)
+                    </button>
+                    <button type="button" class="btn btn-sm btn-secondary" id="btn-mode-nonuniform" style="flex: 1; padding: 8px 12px; font-size: 12px; cursor: pointer;">
+                      Non-Uniform (Accelerating)
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Action Controls -->
+                <div class="d-flex gap-2 mb-4">
+                  <button type="button" class="btn btn-primary btn-sm" id="btn-run-motion" style="flex: 1; padding: 10px; font-weight: 700; cursor: pointer;">
+                    ▶ Run Vehicle
+                  </button>
+                  <button type="button" class="btn btn-secondary btn-sm" id="btn-pause-motion" style="padding: 10px 18px; font-weight: 600; cursor: pointer;">
+                    ⏸ Pause
+                  </button>
+                  <button type="button" class="btn btn-secondary btn-sm" id="btn-reset-motion" style="padding: 10px 18px; font-weight: 600; cursor: pointer;">
+                    ↺ Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Mathematical Law Callout Card -->
+              <div class="p-3" style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 14px;">
+                <span class="badge badge-info" style="font-size: 10px; margin-bottom: 4px;">NCERT Invariant Principle</span>
+                <p class="text-xs mb-1" style="color: #BAE6FD; font-weight: 600; line-height: 1.4;">
+                  $$\text{Speed } (v) = \frac{\text{Total Distance Covered } (d)}{\text{Total Time Taken } (t)} \iff t = \frac{d}{v}$$
+                </p>
+                <p class="text-xs mb-0" style="color: #94A3B8; line-height: 1.3;" id="motion-calc-breakdown">
+                  With distance = 240m and speed = 12 m/s: Calculated duration is exactly <strong>20.0 seconds</strong>.
+                </p>
+              </div>
+            </div>
+          </div>
+        ` : (isPendulum ? `
+          <!-- PENDULUM HARMONIC INVARIANTS SIMULATOR STAGE -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px;">
+            <!-- Left: Oscillating Harmonic Pendulum Canvas -->
+            <div style="background: rgba(15, 23, 42, 0.78); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 20px; padding: 22px; box-shadow: 0 16px 40px -10px rgba(0,0,0,0.65);">
+              <div class="d-flex justify-between align-center mb-3">
+                <h3 class="text-md font-bold mb-0" style="color: #F8FAFC;">🪐 Galileo Pendulum Harmonic Chamber</h3>
+                <span class="badge badge-purple" id="pendulum-gravity-badge">Earth (g = 9.8 m/s²)</span>
+              </div>
+              <canvas id="sim-pendulum-canvas" width="600" height="260" style="width: 100%; height: 260px; border-radius: 14px; background: #070B19; border: 1px solid rgba(255,255,255,0.12); display: block;"></canvas>
+
+              <!-- Live Harmonic Telemetry -->
+              <div class="mt-3 p-3" style="background: rgba(10, 15, 30, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px; display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 12px; text-align: center;">
+                <div>
+                  <span class="text-xs text-secondary" style="display: block; font-size: 11px;">Length (L)</span>
+                  <strong style="color: #38BDF8; font-size: 18px; font-family: ui-monospace, monospace;" id="telemetry-pend-len">1.00 m</strong>
+                </div>
+                <div>
+                  <span class="text-xs text-secondary" style="display: block; font-size: 11px;">Bob Mass (m)</span>
+                  <strong style="color: #A78BFA; font-size: 18px; font-family: ui-monospace, monospace;" id="telemetry-pend-mass">100 g</strong>
+                </div>
+                <div>
+                  <span class="text-xs text-secondary" style="display: block; font-size: 11px;">Time Period (T)</span>
+                  <strong style="color: #34D399; font-size: 18px; font-family: ui-monospace, monospace;" id="telemetry-pend-period">2.01 s</strong>
+                </div>
+                <div>
+                  <span class="text-xs text-secondary" style="display: block; font-size: 11px;">Oscillations (N)</span>
+                  <strong style="color: #F59E0B; font-size: 18px; font-family: ui-monospace, monospace;" id="telemetry-pend-swings">0</strong>
+                </div>
+              </div>
+
+              <!-- Galileo Invariant Verification Banner -->
+              <div class="mt-3 p-3" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 14px;">
+                <div class="d-flex align-center gap-2 mb-1">
+                  <span style="font-size: 16px;">💡</span>
+                  <strong style="color: #34D399; font-size: 12px;">Galileo's Invariant Mass Law:</strong>
+                </div>
+                <p class="text-xs mb-0" style="color: #94A3B8; line-height: 1.35;">
+                  Change the <strong>Bob Mass slider</strong> from 20g to 500g! Notice how the time period <strong>remains exactly identical</strong>. The period of a simple pendulum is completely independent of the mass of the bob!
+                </p>
+              </div>
+            </div>
+
+            <!-- Right: Interactive Pendulum Controls -->
+            <div style="background: rgba(15, 23, 42, 0.78); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 20px; padding: 22px; box-shadow: 0 16px 40px -10px rgba(0,0,0,0.65); display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <h3 class="text-md font-bold mb-3" style="color: #F8FAFC;">⚙️ Harmonic Oscillation Variables</h3>
+
+                <!-- String Length Slider -->
+                <div class="mb-4">
+                  <div class="d-flex justify-between align-center mb-1">
+                    <label style="font-size: 13px; font-weight: 600; color: #E2E8F0;">String Length (L)</label>
+                    <span class="badge badge-info" id="val-pend-len">1.0 m</span>
+                  </div>
+                  <input type="range" id="slider-pend-len" min="0.2" max="2.5" value="1.0" step="0.1" style="width: 100%; accent-color: #38BDF8; cursor: pointer;">
+                  <span class="text-xs text-secondary" style="font-size: 11px;">Longer string = longer period (T ∝ √L)</span>
+                </div>
+
+                <!-- Bob Mass Slider -->
+                <div class="mb-4">
+                  <div class="d-flex justify-between align-center mb-1">
+                    <label style="font-size: 13px; font-weight: 600; color: #E2E8F0;">Bob Mass (m) — Test Galileo's Invariant!</label>
+                    <span class="badge badge-purple" id="val-pend-mass">100 g</span>
+                  </div>
+                  <input type="range" id="slider-pend-mass" min="20" max="500" value="100" step="10" style="width: 100%; accent-color: #818CF8; cursor: pointer;">
+                  <span class="text-xs text-secondary" style="font-size: 11px;">Verify period invariance across 20g to 500g</span>
+                </div>
+
+                <!-- Celestial Gravitational Field Selection -->
+                <div class="mb-4">
+                  <label style="font-size: 13px; font-weight: 600; color: #E2E8F0; display: block; margin-bottom: 6px;">Celestial Gravitational Environment (g):</label>
+                  <select id="select-pend-gravity" style="width: 100%; padding: 10px 14px; border-radius: 12px; background: rgba(10, 15, 30, 0.9); border: 1px solid rgba(255, 255, 255, 0.2); color: #F8FAFC; font-size: 13px; font-weight: 600; cursor: pointer;">
+                    <option value="9.8" selected>🌍 Earth (g = 9.80 m/s²)</option>
+                    <option value="1.62">🌕 Moon (g = 1.62 m/s²)</option>
+                    <option value="3.72">🪐 Mars (g = 3.72 m/s²)</option>
+                    <option value="24.79">⚡ Jupiter (g = 24.79 m/s²)</option>
+                  </select>
+                </div>
+
+                <!-- Run Controls -->
+                <div class="d-flex gap-2 mb-4">
+                  <button type="button" class="btn btn-primary btn-sm" id="btn-release-pend" style="flex: 1; padding: 10px; font-weight: 700; cursor: pointer;">
+                    ▶ Release Bob
+                  </button>
+                  <button type="button" class="btn btn-secondary btn-sm" id="btn-pause-pend" style="padding: 10px 18px; font-weight: 600; cursor: pointer;">
+                    ⏸ Pause
+                  </button>
+                  <button type="button" class="btn btn-secondary btn-sm" id="btn-reset-pend" style="padding: 10px 18px; font-weight: 600; cursor: pointer;">
+                    ↺ Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Mathematical Formula Callout -->
+              <div class="p-3" style="background: rgba(192, 132, 252, 0.1); border: 1px solid rgba(192, 132, 252, 0.3); border-radius: 14px;">
+                <span class="badge badge-purple" style="font-size: 10px; margin-bottom: 4px;">Harmonic Period Formula</span>
+                <p class="text-xs mb-1" style="color: #E9D5FF; font-weight: 600; line-height: 1.4;">
+                  $$T = 2\pi \sqrt{\frac{L}{g}}$$
+                </p>
+                <p class="text-xs mb-0" style="color: #94A3B8; line-height: 1.3;" id="pend-calc-breakdown">
+                  On Earth ($g=9.8\text{ m/s}^2$) with $L=1.0\text{m}$: Period $T \approx 2.007\text{ seconds}$.
+                </p>
+              </div>
+            </div>
+          </div>
+        ` : (isCircuit ? `
+          <!-- ELECTRIC CIRCUIT & OHM'S LAW SIMULATOR STAGE -->
+          <div style="background: rgba(15, 23, 42, 0.78); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 20px; padding: 22px;">
+            <h3 class="text-md font-bold mb-3" style="color: #F8FAFC;">⚡ Electric Circuit & Heating Effect Simulator</h3>
+            <canvas id="sim-circuit-canvas" width="600" height="220" style="width: 100%; height: 220px; border-radius: 14px; background: #070B19; border: 1px solid rgba(255,255,255,0.12); display: block;"></canvas>
+            <div class="mt-3 d-flex gap-3 flex-wrap">
+              <div style="flex: 1; min-width: 200px;">
+                <label class="text-xs text-secondary">Battery Voltage (V): <strong id="val-volt" style="color: #38BDF8;">12 V</strong></label>
+                <input type="range" id="slider-volt" min="1.5" max="24" value="12" step="1.5" style="width: 100%; accent-color: #38BDF8;">
+              </div>
+              <div style="flex: 1; min-width: 200px;">
+                <label class="text-xs text-secondary">Resistance (R): <strong id="val-res" style="color: #F59E0B;">6 Ω</strong></label>
+                <input type="range" id="slider-res" min="1" max="50" value="6" step="1" style="width: 100%; accent-color: #F59E0B;">
+              </div>
+              <div>
+                <button type="button" class="btn btn-primary btn-sm" id="btn-toggle-switch" style="margin-top: 14px;">Switch: CLOSED (Active)</button>
+              </div>
+            </div>
+          </div>
+        ` : `
+          <!-- UNIVERSAL SCIENTIFIC INQUIRY STAGE -->
+          <div style="background: rgba(15, 23, 42, 0.78); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 20px; padding: 22px;">
+            <h3 class="text-md font-bold mb-2" style="color: #F8FAFC;">🔬 Conceptual Scientific Simulation</h3>
+            <p class="text-xs text-secondary mb-3">${escapeHtml(outcome)}</p>
+            <canvas id="sim-universal-canvas" width="600" height="200" style="width: 100%; height: 200px; border-radius: 14px; background: #070B19; border: 1px solid rgba(255,255,255,0.12); display: block;"></canvas>
+            <div class="mt-3 d-flex gap-3">
+              <button type="button" class="btn btn-primary btn-sm" id="btn-run-universal">▶ Simulate Observation</button>
+            </div>
+          </div>
+        `))}
+
+        <!-- Formative Diagnostic Quiz & Concept Mastery Challenge -->
+        <div style="background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 20px; padding: 24px; box-shadow: 0 16px 40px -10px rgba(0,0,0,0.65);">
+          <div class="d-flex justify-between align-center mb-3">
+            <div>
+              <span class="badge badge-purple" style="font-size: 11px;">Instant Mastery Check</span>
+              <h3 class="text-md font-bold mt-1 mb-0" style="color: #F8FAFC;">
+                📝 ${isPendulum ? 'Pendulum Invariant Diagnostic Challenge' : 'Motion & Speed Diagnostic Challenge'}
+              </h3>
+            </div>
+            <span class="badge badge-success">+25 Bonus XP</span>
+          </div>
+
+          <p class="text-sm font-semibold mb-3" style="color: #E2E8F0; line-height: 1.4;">
+            ${isPendulum 
+              ? 'A student attaches a 50g wooden bob to a 1.0m string and measures its period as 2.01s. If they replace the bob with a 200g brass bob on the exact same 1.0m string, what will the new period be?' 
+              : 'A school bus travels 240 meters along a straight rural road at a constant uniform speed of 12 m/s. Exactly how many seconds does the journey take?'}
+          </p>
+
+          <div style="display: flex; flex-direction: column; gap: 10px;" id="quiz-options-container">
+            ${isPendulum ? `
+              <button type="button" class="btn btn-secondary btn-quiz-opt" data-correct="false" style="text-align: left; justify-content: flex-start; padding: 12px 18px; border-radius: 12px; font-size: 13px;">
+                A) The period quadruples to 8.04 seconds because the mass quadrupled.
+              </button>
+              <button type="button" class="btn btn-secondary btn-quiz-opt" data-correct="true" style="text-align: left; justify-content: flex-start; padding: 12px 18px; border-radius: 12px; font-size: 13px;">
+                B) The period remains exactly 2.01 seconds because period is independent of bob mass.
+              </button>
+              <button type="button" class="btn btn-secondary btn-quiz-opt" data-correct="false" style="text-align: left; justify-content: flex-start; padding: 12px 18px; border-radius: 12px; font-size: 13px;">
+                C) The period drops to 0.50 seconds because heavier objects swing much faster.
+              </button>
+            ` : `
+              <button type="button" class="btn btn-secondary btn-quiz-opt" data-correct="false" style="text-align: left; justify-content: flex-start; padding: 12px 18px; border-radius: 12px; font-size: 13px;">
+                A) 12 seconds (calculated by multiplying distance by 2)
+              </button>
+              <button type="button" class="btn btn-secondary btn-quiz-opt" data-correct="true" style="text-align: left; justify-content: flex-start; padding: 12px 18px; border-radius: 12px; font-size: 13px;">
+                B) 20 seconds (calculated via t = d / v = 240m / 12 m/s)
+              </button>
+              <button type="button" class="btn btn-secondary btn-quiz-opt" data-correct="false" style="text-align: left; justify-content: flex-start; padding: 12px 18px; border-radius: 12px; font-size: 13px;">
+                C) 2880 seconds (calculated by multiplying distance and speed)
+              </button>
+            `}
+          </div>
+
+          <div id="quiz-feedback-box" class="mt-3 p-3" style="display: none; border-radius: 12px; font-size: 13px; line-height: 1.4;"></div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Attach Exit & Complete Handlers
+  stage.querySelector('#btn-exit-topic-lab')?.addEventListener('click', () => {
+    if (currentSimAnimId) {
+      cancelAnimationFrame(currentSimAnimId);
+      currentSimAnimId = null;
+    }
+    activeTopicInquiryLab = null;
+    delegateRender(store.getState());
+  });
+
+  stage.querySelector('#btn-reset-topic-lab')?.addEventListener('click', () => {
+    motionState.elapsedTime = 0;
+    motionState.currentDist = 0;
+    motionState.carX = 0;
+    pendulumState.oscillations = 0;
+    pendulumState.time = 0;
+    announce('Inquiry experiment reset to baseline variables.');
+  });
+
+  stage.querySelector('#btn-complete-topic-lab')?.addEventListener('click', () => {
+    store.addXP(50);
+    store.recordTopicMastery(topicId, 'mastered', 100);
+    announce('Concept mastered! +50 XP awarded to your learning profile.');
+    
+    // Play audio tone
+    try {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+      osc.frequency.exponentialRampToValueAtTime(659.25, audioCtx.currentTime + 0.15); // E5
+      osc.frequency.exponentialRampToValueAtTime(783.99, audioCtx.currentTime + 0.3); // G5
+      gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.5);
+    } catch {}
+
+    alert(`🎉 INQUIRY LAB MASTERED!\n\nTopic: ${topicTitle}\nReward: +50 XP & Star Badge Awarded!\nYour status has been updated to ⭐ Mastered on the Course Browser.`);
+    
+    // Smoothly return to course browser
+    activeTopicInquiryLab = null;
+    delegateRender(store.getState());
+  });
+
+  // Tab switchers inside Chapter 13
+  stage.querySelector('#tab-switch-motion')?.addEventListener('click', () => {
+    launchTopicInquiryLab({
+      subjectId,
+      chapterId,
+      chapterNumber,
+      chapterTitle,
+      topicId: 't13-1',
+      topicTitle: 'Speed & Uniform vs Non-Uniform Motion',
+      outcome: 'Calculate speed = distance/time with live interactive telemetry.'
+    });
+  });
+
+  stage.querySelector('#tab-switch-pendulum')?.addEventListener('click', () => {
+    launchTopicInquiryLab({
+      subjectId,
+      chapterId,
+      chapterNumber,
+      chapterTitle,
+      topicId: 't13-2',
+      topicTitle: 'Simple Pendulum Periodic Invariants',
+      outcome: 'Measure time period and observe amplitude/mass independence.'
+    });
+  });
+
+  // QUIZ INTERACTION
+  stage.querySelectorAll('.btn-quiz-opt').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      if (quizAnswered) return;
+      const isCorrect = e.currentTarget.getAttribute('data-correct') === 'true';
+      const feedbackBox = stage.querySelector('#quiz-feedback-box');
+      if (!feedbackBox) return;
+
+      quizAnswered = true;
+      stage.querySelectorAll('.btn-quiz-opt').forEach(b => {
+        b.style.pointerEvents = 'none';
+        if (b.getAttribute('data-correct') === 'true') {
+          b.style.borderColor = '#10B981';
+          b.style.background = 'rgba(16, 185, 129, 0.2)';
+          b.style.color = '#34D399';
+        } else {
+          b.style.opacity = '0.5';
+        }
+      });
+
+      feedbackBox.style.display = 'block';
+      if (isCorrect) {
+        feedbackBox.style.background = 'rgba(16, 185, 129, 0.15)';
+        feedbackBox.style.border = '1px solid #10B981';
+        feedbackBox.style.color = '#34D399';
+        feedbackBox.innerHTML = `<strong>✓ Spot on!</strong> ${isPendulum ? 'Galileo established that the period of a simple pendulum depends ONLY on length L and gravitational field g. The bob mass has zero effect on the period.' : 'Speed is distance divided by time: 240 meters / 12 m/s = exactly 20 seconds.'} <br><span class="badge badge-success mt-2">+25 Bonus XP Added!</span>`;
+        store.addXP(25);
+        store.recordTopicMastery(topicId, 'mastered', 100);
+      } else {
+        feedbackBox.style.background = 'rgba(239, 68, 68, 0.15)';
+        feedbackBox.style.border = '1px solid #EF4444';
+        feedbackBox.style.color = '#F87171';
+        feedbackBox.innerHTML = `<strong>Notice:</strong> Look closely at the formula! ${isPendulum ? 'T = 2π√(L/g). Notice there is NO mass term (m) in the equation. Therefore mass does not alter the period.' : 'Time is distance divided by speed: t = d / v = 240 / 12 = 20 seconds.'}`;
+      }
+    });
+  });
+
+  // =========================================================================
+  // ANIMATION & CONTROLS: MOTION SIMULATOR
+  // =========================================================================
+  if (isMotion) {
+    const canvas = stage.querySelector('#sim-motion-canvas');
+    const ctx = canvas ? canvas.getContext('2d') : null;
+
+    const sliderSpeed = stage.querySelector('#slider-speed');
+    const sliderDist = stage.querySelector('#slider-dist');
+    const btnRun = stage.querySelector('#btn-run-motion');
+    const btnPause = stage.querySelector('#btn-pause-motion');
+    const btnReset = stage.querySelector('#btn-reset-motion');
+    const btnModeUniform = stage.querySelector('#btn-mode-uniform');
+    const btnModeNonUniform = stage.querySelector('#btn-mode-nonuniform');
+
+    function updateMotionReadouts() {
+      const spdVal = stage.querySelector('#val-speed');
+      const distVal = stage.querySelector('#val-dist');
+      const telemSpeed = stage.querySelector('#telemetry-speed');
+      const telemTarget = stage.querySelector('#telemetry-target-dist');
+      const telemTime = stage.querySelector('#telemetry-time');
+      const telemCurr = stage.querySelector('#telemetry-curr-dist');
+      const breakdown = stage.querySelector('#motion-calc-breakdown');
+
+      if (spdVal) spdVal.textContent = `${motionState.speed} m/s`;
+      if (distVal) distVal.textContent = `${motionState.distance} m`;
+      if (telemSpeed) telemSpeed.textContent = `${motionState.speed} m/s`;
+      if (telemTarget) telemTarget.textContent = `${motionState.distance} m`;
+      if (telemTime) telemTime.textContent = `${motionState.elapsedTime.toFixed(2)} s`;
+      if (telemCurr) telemCurr.textContent = `${motionState.currentDist.toFixed(1)} m`;
+
+      if (breakdown) {
+        const timeNeeded = (motionState.distance / motionState.speed).toFixed(1);
+        breakdown.innerHTML = `With target distance = <strong>${motionState.distance}m</strong> and speed = <strong>${motionState.speed} m/s</strong>: Calculated duration is exactly <strong>${timeNeeded} seconds</strong>.`;
+      }
+    }
+
+    sliderSpeed?.addEventListener('input', (e) => {
+      motionState.speed = Number(e.target.value);
+      updateMotionReadouts();
+    });
+
+    sliderDist?.addEventListener('input', (e) => {
+      motionState.distance = Number(e.target.value);
+      updateMotionReadouts();
+    });
+
+    btnModeUniform?.addEventListener('click', () => {
+      motionState.isUniform = true;
+      btnModeUniform.className = 'btn btn-sm btn-primary';
+      btnModeNonUniform.className = 'btn btn-sm btn-secondary';
+      const badge = stage.querySelector('#motion-mode-badge');
+      if (badge) badge.textContent = 'Uniform Motion (a = 0)';
+    });
+
+    btnModeNonUniform?.addEventListener('click', () => {
+      motionState.isUniform = false;
+      btnModeUniform.className = 'btn btn-sm btn-secondary';
+      btnModeNonUniform.className = 'btn btn-sm btn-primary';
+      const badge = stage.querySelector('#motion-mode-badge');
+      if (badge) badge.textContent = 'Non-Uniform (Accelerating a = 2 m/s²)';
+    });
+
+    btnRun?.addEventListener('click', () => {
+      motionState.isRunning = true;
+      if (motionState.currentDist >= motionState.distance) {
+        motionState.currentDist = 0;
+        motionState.elapsedTime = 0;
+      }
+    });
+
+    btnPause?.addEventListener('click', () => {
+      motionState.isRunning = false;
+    });
+
+    btnReset?.addEventListener('click', () => {
+      motionState.isRunning = false;
+      motionState.currentDist = 0;
+      motionState.elapsedTime = 0;
+      updateMotionReadouts();
+    });
+
+    // Render loop for motion canvas
+    let lastTs = performance.now();
+    function animateMotion(ts) {
+      const dt = Math.min((ts - lastTs) / 1000, 0.1);
+      lastTs = ts;
+
+      if (motionState.isRunning) {
+        motionState.elapsedTime += dt;
+        const currentSpeed = motionState.isUniform ? motionState.speed : (motionState.speed + 2 * motionState.elapsedTime);
+        motionState.currentDist += currentSpeed * dt;
+
+        if (motionState.currentDist >= motionState.distance) {
+          motionState.currentDist = motionState.distance;
+          motionState.isRunning = false;
+          announce('Target distance achieved!');
+        }
+        updateMotionReadouts();
+      }
+
+      if (ctx && canvas) {
+        const w = canvas.width;
+        const h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+
+        // Grid Background
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+        ctx.lineWidth = 1;
+        for (let x = 0; x < w; x += 30) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, h);
+          ctx.stroke();
+        }
+
+        // Running Track
+        const trackY = h - 60;
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(40, trackY);
+        ctx.lineTo(w - 40, trackY);
+        ctx.stroke();
+
+        // Distance Tick Marks
+        const trackLen = w - 80;
+        ctx.fillStyle = '#64748B';
+        ctx.font = '10px ui-monospace, monospace';
+        ctx.textAlign = 'center';
+        for (let i = 0; i <= 5; i++) {
+          const frac = i / 5;
+          const x = 40 + frac * trackLen;
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+          ctx.beginPath();
+          ctx.moveTo(x, trackY - 6);
+          ctx.lineTo(x, trackY + 6);
+          ctx.stroke();
+          const meters = Math.round(frac * motionState.distance);
+          ctx.fillText(`${meters}m`, x, trackY + 20);
+        }
+
+        // Calculate Car Position
+        const prog = motionState.distance > 0 ? (motionState.currentDist / motionState.distance) : 0;
+        const carX = 40 + prog * trackLen;
+        const carY = trackY - 18;
+
+        // Draw Particle Exhaust Glow
+        if (motionState.isRunning) {
+          const glowGrad = ctx.createRadialGradient(carX - 15, carY + 8, 2, carX - 15, carY + 8, 18);
+          glowGrad.addColorStop(0, 'rgba(56, 189, 248, 0.8)');
+          glowGrad.addColorStop(1, 'rgba(56, 189, 248, 0)');
+          ctx.fillStyle = glowGrad;
+          ctx.beginPath();
+          ctx.arc(carX - 15, carY + 8, 18, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Futuristic Vehicle Body
+        ctx.fillStyle = '#38BDF8';
+        ctx.beginPath();
+        ctx.roundRect(carX - 20, carY, 40, 16, 6);
+        ctx.fill();
+
+        ctx.fillStyle = '#0F172A';
+        ctx.beginPath();
+        ctx.roundRect(carX - 10, carY - 6, 22, 10, 4);
+        ctx.fill();
+
+        // Glowing Wheels
+        ctx.fillStyle = '#F59E0B';
+        ctx.beginPath();
+        ctx.arc(carX - 12, carY + 16, 6, 0, Math.PI * 2);
+        ctx.arc(carX + 12, carY + 16, 6, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Headlight Beam
+        const beamGrad = ctx.createLinearGradient(carX + 20, carY + 4, carX + 80, carY + 4);
+        beamGrad.addColorStop(0, 'rgba(255, 255, 255, 0.7)');
+        beamGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        ctx.fillStyle = beamGrad;
+        ctx.beginPath();
+        ctx.moveTo(carX + 20, carY + 2);
+        ctx.lineTo(carX + 70, carY - 8);
+        ctx.lineTo(carX + 70, carY + 18);
+        ctx.closePath();
+        ctx.fill();
+
+        // Speedometer Gauge in Top Right
+        const gaugeX = w - 65;
+        const gaugeY = 55;
+        const gaugeR = 36;
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.5)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(gaugeX, gaugeY, gaugeR, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        const speedRatio = Math.min(motionState.speed / 30, 1);
+        const needleAngle = Math.PI * 0.75 + speedRatio * Math.PI * 1.5;
+        ctx.strokeStyle = '#EF4444';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(gaugeX, gaugeY);
+        ctx.lineTo(gaugeX + Math.cos(needleAngle) * (gaugeR - 8), gaugeY + Math.sin(needleAngle) * (gaugeR - 8));
+        ctx.stroke();
+
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = 'bold 9px ui-monospace, monospace';
+        ctx.fillText(`${motionState.speed} m/s`, gaugeX, gaugeY + 20);
+      }
+
+      currentSimAnimId = requestAnimationFrame(animateMotion);
+    }
+
+    currentSimAnimId = requestAnimationFrame(animateMotion);
+    updateMotionReadouts();
+  }
+
+  // =========================================================================
+  // ANIMATION & CONTROLS: PENDULUM SIMULATOR
+  // =========================================================================
+  if (isPendulum) {
+    const canvas = stage.querySelector('#sim-pendulum-canvas');
+    const ctx = canvas ? canvas.getContext('2d') : null;
+
+    const sliderLen = stage.querySelector('#slider-pend-len');
+    const sliderMass = stage.querySelector('#slider-pend-mass');
+    const selectGravity = stage.querySelector('#select-pend-gravity');
+    const btnRelease = stage.querySelector('#btn-release-pend');
+    const btnPause = stage.querySelector('#btn-pause-pend');
+    const btnReset = stage.querySelector('#btn-reset-pend');
+
+    function updatePendulumReadouts() {
+      const valLen = stage.querySelector('#val-pend-len');
+      const valMass = stage.querySelector('#val-pend-mass');
+      const telemLen = stage.querySelector('#telemetry-pend-len');
+      const telemMass = stage.querySelector('#telemetry-pend-mass');
+      const telemPeriod = stage.querySelector('#telemetry-pend-period');
+      const telemSwings = stage.querySelector('#telemetry-pend-swings');
+      const breakdown = stage.querySelector('#pend-calc-breakdown');
+
+      // T = 2 * pi * sqrt(L / g)
+      const T = 2 * Math.PI * Math.sqrt(pendulumState.length / pendulumState.gravity);
+
+      if (valLen) valLen.textContent = `${pendulumState.length.toFixed(1)} m`;
+      if (valMass) valMass.textContent = `${pendulumState.mass} g`;
+      if (telemLen) telemLen.textContent = `${pendulumState.length.toFixed(2)} m`;
+      if (telemMass) telemMass.textContent = `${pendulumState.mass} g`;
+      if (telemPeriod) telemPeriod.textContent = `${T.toFixed(2)} s`;
+      if (telemSwings) telemSwings.textContent = `${pendulumState.oscillations}`;
+
+      if (breakdown) {
+        breakdown.innerHTML = `With length $L=${pendulumState.length.toFixed(1)}\\text{m}$, gravity $g=${pendulumState.gravity}\\text{ m/s}^2$: Theoretical period is exactly <strong>${T.toFixed(2)} seconds</strong>.`;
+      }
+    }
+
+    sliderLen?.addEventListener('input', (e) => {
+      pendulumState.length = Number(e.target.value);
+      updatePendulumReadouts();
+    });
+
+    sliderMass?.addEventListener('input', (e) => {
+      pendulumState.mass = Number(e.target.value);
+      updatePendulumReadouts();
+    });
+
+    selectGravity?.addEventListener('change', (e) => {
+      pendulumState.gravity = Number(e.target.value);
+      const gravBadge = stage.querySelector('#pendulum-gravity-badge');
+      if (gravBadge) {
+        const optText = e.target.options[e.target.selectedIndex].text;
+        gravBadge.textContent = optText;
+      }
+      updatePendulumReadouts();
+    });
+
+    btnRelease?.addEventListener('click', () => {
+      pendulumState.isRunning = true;
+    });
+
+    btnPause?.addEventListener('click', () => {
+      pendulumState.isRunning = false;
+    });
+
+    btnReset?.addEventListener('click', () => {
+      pendulumState.time = 0;
+      pendulumState.oscillations = 0;
+      updatePendulumReadouts();
+    });
+
+    // Render loop for pendulum canvas
+    let lastTs = performance.now();
+    let prevTheta = 0;
+
+    function animatePendulum(ts) {
+      const dt = Math.min((ts - lastTs) / 1000, 0.1);
+      lastTs = ts;
+
+      const omega = Math.sqrt(pendulumState.gravity / pendulumState.length);
+      const theta0 = (pendulumState.amplitudeDeg * Math.PI) / 180;
+
+      if (pendulumState.isRunning) {
+        pendulumState.time += dt;
+        // Count zero crossings for oscillation counter
+        const currentTheta = theta0 * Math.cos(omega * pendulumState.time);
+        if (prevTheta < 0 && currentTheta >= 0) {
+          pendulumState.oscillations += 1;
+          updatePendulumReadouts();
+        }
+        prevTheta = currentTheta;
+      }
+
+      if (ctx && canvas) {
+        const w = canvas.width;
+        const h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+
+        const pivotX = w / 2;
+        const pivotY = 35;
+
+        // Top Mounting Bracket
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(pivotX - 60, pivotY - 14, 120, 14);
+        ctx.fillStyle = '#94A3B8';
+        ctx.beginPath();
+        ctx.arc(pivotX, pivotY, 6, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Current angle
+        const theta = theta0 * Math.cos(omega * pendulumState.time);
+        const pixelLen = 60 + (pendulumState.length / 2.5) * 150;
+        const bobX = pivotX + pixelLen * Math.sin(theta);
+        const bobY = pivotY + pixelLen * Math.cos(theta);
+
+        // Trajectory Arc
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.15)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.arc(pivotX, pivotY, pixelLen, Math.PI * 0.5 - theta0 * 1.1, Math.PI * 0.5 + theta0 * 1.1);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // String
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(pivotX, pivotY);
+        ctx.lineTo(bobX, bobY);
+        ctx.stroke();
+
+        // Bob Radius proportional to mass (10g to 500g -> 12px to 28px)
+        const bobRadius = 12 + (pendulumState.mass / 500) * 16;
+
+        // Radial Specular Glow on Metallic Bob
+        const bobGrad = ctx.createRadialGradient(bobX - bobRadius * 0.3, bobY - bobRadius * 0.3, 2, bobX, bobY, bobRadius);
+        bobGrad.addColorStop(0, '#FFFFFF');
+        bobGrad.addColorStop(0.3, '#38BDF8');
+        bobGrad.addColorStop(1, '#0369A1');
+
+        ctx.fillStyle = bobGrad;
+        ctx.beginPath();
+        ctx.arc(bobX, bobY, bobRadius, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // Velocity Arrow (tangential)
+        const vel = -theta0 * omega * Math.sin(omega * pendulumState.time);
+        if (Math.abs(vel) > 0.05) {
+          const arrowLen = vel * 25;
+          const tangentAngle = theta + Math.PI / 2;
+          const arrowEndX = bobX + Math.cos(tangentAngle) * arrowLen;
+          const arrowEndY = bobY + Math.sin(tangentAngle) * arrowLen;
+
+          ctx.strokeStyle = '#F59E0B';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(bobX, bobY);
+          ctx.lineTo(arrowEndX, arrowEndY);
+          ctx.stroke();
+        }
+      }
+
+      currentSimAnimId = requestAnimationFrame(animatePendulum);
+    }
+
+    currentSimAnimId = requestAnimationFrame(animatePendulum);
+    updatePendulumReadouts();
+  }
+
+  // =========================================================================
+  // ANIMATION: ELECTRIC CIRCUIT SIMULATOR
+  // =========================================================================
+  if (isCircuit) {
+    const canvas = stage.querySelector('#sim-circuit-canvas');
+    const ctx = canvas ? canvas.getContext('2d') : null;
+    const btnToggle = stage.querySelector('#btn-toggle-switch');
+    const sliderVolt = stage.querySelector('#slider-volt');
+    const sliderRes = stage.querySelector('#slider-res');
+
+    btnToggle?.addEventListener('click', () => {
+      circuitState.switchClosed = !circuitState.switchClosed;
+      btnToggle.textContent = circuitState.switchClosed ? 'Switch: CLOSED (Active)' : 'Switch: OPEN (Broken)';
+      btnToggle.className = circuitState.switchClosed ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm';
+    });
+
+    sliderVolt?.addEventListener('input', (e) => {
+      circuitState.voltage = Number(e.target.value);
+      const el = stage.querySelector('#val-volt');
+      if (el) el.textContent = `${circuitState.voltage} V`;
+    });
+
+    sliderRes?.addEventListener('input', (e) => {
+      circuitState.resistance = Number(e.target.value);
+      const el = stage.querySelector('#val-res');
+      if (el) el.textContent = `${circuitState.resistance} Ω`;
+    });
+
+    let particleOffset = 0;
+    function animateCircuit() {
+      if (ctx && canvas) {
+        const w = canvas.width;
+        const h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+
+        const current = circuitState.switchClosed ? (circuitState.voltage / circuitState.resistance) : 0;
+        const power = current * circuitState.voltage;
+
+        // Circuit Loop Rectangle
+        ctx.strokeStyle = '#475569';
+        ctx.lineWidth = 4;
+        ctx.strokeRect(60, 40, w - 120, h - 80);
+
+        // Animated Electrons Flowing
+        if (circuitState.switchClosed && current > 0) {
+          particleOffset += current * 1.5;
+          ctx.fillStyle = '#38BDF8';
+          for (let p = 0; p < 20; p++) {
+            const pos = (p * 45 + particleOffset) % ((w - 120) * 2 + (h - 80) * 2);
+            let px = 60, py = 40;
+            const topW = w - 120;
+            const rightH = h - 80;
+            if (pos < topW) {
+              px = 60 + pos; py = 40;
+            } else if (pos < topW + rightH) {
+              px = 60 + topW; py = 40 + (pos - topW);
+            } else if (pos < topW * 2 + rightH) {
+              px = 60 + topW - (pos - topW - rightH); py = 40 + rightH;
+            } else {
+              px = 60; py = 40 + rightH - (pos - topW * 2 - rightH);
+            }
+            ctx.beginPath();
+            ctx.arc(px, py, 3, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+
+        // Light Bulb at Right
+        const bulbX = w - 60;
+        const bulbY = h / 2;
+        const glowRadius = Math.min(10 + power * 1.5, 45);
+        if (circuitState.switchClosed && power > 0) {
+          const bulbGlow = ctx.createRadialGradient(bulbX, bulbY, 4, bulbX, bulbY, glowRadius);
+          bulbGlow.addColorStop(0, 'rgba(251, 191, 36, 0.9)');
+          bulbGlow.addColorStop(1, 'rgba(251, 191, 36, 0)');
+          ctx.fillStyle = bulbGlow;
+          ctx.beginPath();
+          ctx.arc(bulbX, bulbY, glowRadius, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        ctx.fillStyle = circuitState.switchClosed && power > 0 ? '#FBBF24' : '#64748B';
+        ctx.beginPath();
+        ctx.arc(bulbX, bulbY, 14, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Multimeter Text
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = '12px ui-monospace, monospace';
+        ctx.fillText(`Current: ${current.toFixed(2)} A`, 80, 75);
+        ctx.fillText(`Power: ${power.toFixed(1)} W`, 80, 95);
+      }
+      currentSimAnimId = requestAnimationFrame(animateCircuit);
+    }
+    currentSimAnimId = requestAnimationFrame(animateCircuit);
+  }
 }
 
 function renderExtendedLabStage(stage, state, moduleId) {

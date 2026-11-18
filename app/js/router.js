@@ -284,6 +284,7 @@ class ClientRouter {
       this.goToMap();
       return;
     }
+    if (typeof store.setActiveTab === 'function') store.setActiveTab('missions');
     this.navigate(subjectId, 's1_intro');
   }
 
